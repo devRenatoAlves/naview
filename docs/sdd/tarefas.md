@@ -55,5 +55,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] `impeccable` descartado (baixa um programa compilado; o visual já fica coberto)
 - [x] Criar a página (design, seções, download)
 - [x] Gerar o pacote de download com versão e SHA-256 (`ferramentas/gerar_site.py`)
-- [~] Definir como o código chega ao Coolify (repositório git ou envio direto) e o domínio
+- [x] Repositório privado no GitHub: `devRenatoAlves/naview` (ramo `main`)
+- [~] Usuário criar o subdomínio `review.hunpe.com.br` apontando para a VPS
 - [ ] Publicar na VPS pelo Coolify (domínio e HTTPS)
+- [ ] Testar o download e a instalação a partir do site publicado

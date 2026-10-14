@@ -60,3 +60,13 @@ Ler o código de cada ferramenta da comunidade antes de instalar.
 - Instalação em 3 passos com botão de copiar: dependências `apt`, extrair em `~`, `instalar.sh`.
 - Testado com o Playwright em 1366 px e 375 px: sem rolagem lateral, sem erros no console;
   animações desligadas com "reduzir movimento".
+
+## Publicação
+
+- Código no GitHub, repositório privado `devRenatoAlves/naview`, ramo `main`.
+- Endereço: `https://review.hunpe.com.br`.
+- Coolify: recurso a partir de repositório privado (GitHub App), Build Pack = Dockerfile,
+  Base Directory = `/`, Dockerfile Location = `/site/Dockerfile`, porta 80.
+- O `Dockerfile` tem dois estágios: um Python que roda `ferramentas/gerar_site.py` e um nginx que
+  serve `site/publico`. Por isso `site/publico` não vai para o git (`.gitignore`).
+- `.dockerignore` deixa de fora `docs/`, `.claude/`, `.git` e arquivos gerados.
