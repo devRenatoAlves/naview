@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NaView: seus clientes do AnyDesk em abas</title>
+<meta name="description" content="O NaView junta as conexões do AnyDesk em abas, numa única janela, com a lista de contatos ao lado. Para Linux com KDE Plasma.">
+<meta property="og:title" content="NaView">
+<meta property="og:description" content="Seus clientes do AnyDesk, todos numa janela só.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0e1638">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/Fredoka[wdth,wght].ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<a class="pular" href="#principal">Pular para o conteúdo</a>
+
+<header class="hero" data-tema="mar" id="topo">
+  <div class="cena" aria-hidden="true">
+    <div class="camada so-mar">
+      <img class="mar-sol" src="arte/mar/sol.svg" alt="">
+      <img class="mar-farol" src="arte/mar/farol.svg" alt="">
+      <img class="mar-gaivota g1" src="arte/mar/gaivota.svg" alt="">
+      <img class="mar-gaivota g2" src="arte/mar/gaivota.svg" alt="">
+      <div class="mar-ondas-fundo"></div>
+      <img class="mar-veleiro" src="arte/mar/veleiro.svg" alt="">
+      <div class="mar-ondas-frente"></div>
+    </div>
+    <div class="camada so-neon">
+      <img class="neon-sol" src="arte/neon/sol.svg" alt="">
+      <img class="neon-montanhas" src="arte/neon/montanhas.svg" alt="">
+      <img class="neon-grade" src="arte/neon/grade.svg" alt="">
+    </div>
+    <div class="camada so-espaco">
+      <div class="espaco-estrelas"></div>
+      <img class="espaco-nebulosa" src="arte/espaco/nebulosa_roxa.svg" alt="">
+      <img class="espaco-planeta" src="arte/espaco/planeta.svg" alt="">
+      <img class="espaco-foguete" src="arte/espaco/foguete.svg" alt="">
+    </div>
+    <div class="camada so-pixel">
+      <img class="pixel-nuvem n1" src="arte/pixel/nuvem.svg" alt="">
+      <img class="pixel-nuvem n2" src="arte/pixel/nuvem.svg" alt="">
+      <img class="pixel-slime" src="arte/pixel/slime.svg" alt="">
+      <img class="pixel-fantasma" src="arte/pixel/fantasma.svg" alt="">
+      <div class="pixel-grama"></div>
+    </div>
+    <div class="camada so-hq">
+      <div class="hq-pontos"></div>
+      <img class="hq-cidade" src="arte/hq/cidade.svg" alt="">
+      <img class="hq-explosao" src="arte/hq/explosao.svg" alt="">
+    </div>
+    <div class="camada so-terminal"><div class="terminal-linhas"></div></div>
+  </div>
+
+  <nav class="topo-nav" aria-label="Principal">
+    <a class="marca" href="#topo"><img src="icone.svg" alt="" width="36" height="36"><span>NaView</span></a>
+    <a class="nav-baixar" href="#instalar">Baixar</a>
+  </nav>
+
+  <div class="hero-grade">
+    <div class="hero-texto">
+      <h1>Seus clientes do AnyDesk, todos numa janela só.</h1>
+      <p class="hero-sub">O NaView junta as conexões em abas, com a lista de contatos ao lado. Menos janelas para caçar, mais tempo para resolver o problema do cliente.</p>
+      <div class="hero-acoes">
+        <a class="botao botao-principal" href="download/{{ARQUIVO}}" download>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
+          Baixar para Linux
+        </a>
+        <a class="botao botao-leve" href="#dia-a-dia">Ver como funciona</a>
+      </div>
+      <p class="hero-nota">Versão {{VERSAO}}, para Linux com KDE Plasma.</p>
+    </div>
+
+    <div class="demo">
+      <div class="janela" data-ativo="0" role="group" aria-label="Demonstração do NaView. Clique nas abas para trocar de cliente.">
+        <div class="janela-barra">
+          <img class="janela-logo" src="icone.svg" alt="" width="18" height="18">
+          <div class="abas" role="tablist" aria-label="Conexões abertas">
+            <button class="aba" role="tab" id="aba-0" aria-selected="true" aria-controls="sessao" data-cliente="0"><span class="bolinha" style="--cor:#6366f1"></span>Padaria Pão Quente<span class="fechar" aria-hidden="true">×</span></button>
+            <button class="aba" role="tab" id="aba-1" aria-selected="false" aria-controls="sessao" data-cliente="1" tabindex="-1"><span class="bolinha" style="--cor:#10b981"></span>Clínica Sorriso<span class="fechar" aria-hidden="true">×</span></button>
+            <button class="aba" role="tab" id="aba-2" aria-selected="false" aria-controls="sessao" data-cliente="2" tabindex="-1"><span class="bolinha" style="--cor:#f43f5e"></span>Escritório Lima<span class="fechar" aria-hidden="true">×</span></button>
+          </div>
+          <span class="janela-mais" aria-hidden="true">+</span>
+        </div>
+        <div class="janela-corpo">
+          <aside class="contatos" aria-hidden="true">
+            <div class="busca">Buscar contato ou ID</div>
+            <ul>
+              <li class="ativo-0"><span class="avatar" style="--cor:#6366f1">P</span><span>Padaria Pão Quente</span></li>
+              <li class="ativo-1"><span class="avatar" style="--cor:#10b981">C</span><span>Clínica Sorriso</span></li>
+              <li class="ativo-2"><span class="avatar" style="--cor:#f43f5e">E</span><span>Escritório Lima</span></li>
+              <li><span class="avatar" style="--cor:#f59e0b">M</span><span>Mercado Bom Preço</span></li>
+              <li><span class="avatar" style="--cor:#0ea5e9">A</span><span>Auto Peças Silva</span></li>
+            </ul>
+          </aside>
+          <div class="sessao" id="sessao" role="tabpanel" aria-labelledby="aba-0" data-cliente="0">
+            <div class="tela-remota">
+              <div class="tr-janela tr-a"><span></span><span></span><span></span></div>
+              <div class="tr-janela tr-b"><span></span><span></span></div>
+              <div class="tr-tarefas"><i></i><i></i><i></i><b></b></div>
+            </div>
+            <p class="sessao-legenda" aria-live="polite">Conectado em Padaria Pão Quente</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="temas">
+        <p class="temas-titulo" id="temas-titulo">Cada tema é uma carta do jogo. Experimente:</p>
+        <div class="temas-lista" role="group" aria-labelledby="temas-titulo">
+          <button class="carta-tema" data-tema="mar" aria-pressed="true" style="--rar:#f5b81b"><span class="ct-previa" style="--a:#111a44;--b:#f59e0b;--c:#38bdf8"></span><span class="ct-nome">Alto-mar</span><span class="ct-rar">Lendária</span></button>
+          <button class="carta-tema" data-tema="pixel" aria-pressed="false" style="--rar:#ff4d6d"><span class="ct-previa" style="--a:#8fd3ff;--b:#e8402a;--c:#fff8e1"></span><span class="ct-nome">Aventura Pixel</span><span class="ct-rar">Mítica</span></button>
+          <button class="carta-tema" data-tema="hq" aria-pressed="false" style="--rar:#ff4d6d"><span class="ct-previa" style="--a:#ffd600;--b:#e53935;--c:#1e40af"></span><span class="ct-nome">Heróis HQ</span><span class="ct-rar">Mítica</span></button>
+          <button class="carta-tema" data-tema="espaco" aria-pressed="false" style="--rar:#f5b81b"><span class="ct-previa" style="--a:#070b1f;--b:#a78bfa;--c:#38bdf8"></span><span class="ct-nome">Espaço</span><span class="ct-rar">Lendária</span></button>
+          <button class="carta-tema" data-tema="neon" aria-pressed="false" style="--rar:#f5b81b"><span class="ct-previa" style="--a:#14052b;--b:#ff2bd6;--c:#22d3ee"></span><span class="ct-nome">Neon 80s</span><span class="ct-rar">Lendária</span></button>
+          <button class="carta-tema" data-tema="terminal" aria-pressed="false" style="--rar:#a855f7"><span class="ct-previa" style="--a:#050805;--b:#33ff66;--c:#0b140b"></span><span class="ct-nome">Terminal</span><span class="ct-rar">Épica</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="principal">
+
+<section class="dia" id="dia-a-dia" aria-labelledby="dia-titulo">
+  <div class="largura">
+    <h2 id="dia-titulo">Feito para quem atende o dia inteiro</h2>
+    <ul class="recursos">
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="12" width="40" height="30" rx="5"/><path d="M4 18h40M8 12V8h12v4M22 12V8h12v4"/></svg>
+        <div>
+          <h3>Uma aba para cada cliente</h3>
+          <p>Cada conexão vira uma aba com a cor do contato. Arraste para mudar a ordem. O botão do meio do mouse encerra a conexão.</p>
+        </div>
+      </li>
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="17" r="7"/><path d="M5 40c1.5-7 7-11 13-11s11.5 4 13 11"/><path d="M32 12a6 6 0 0 1 0 12M36 30c3.5 1.5 6 5 7 10"/></svg>
+        <div>
+          <h3>Seus contatos do AnyDesk ao lado</h3>
+          <p>A lista vem do seu catálogo do AnyDesk. Dois cliques conectam. Se o cliente já está aberto, o NaView só troca de aba.</p>
+        </div>
+      </li>
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="13" width="40" height="24" rx="4"/><path d="M10 20h3M17 20h3M24 20h3M31 20h3M38 20h0M10 26h3M17 26h3M24 26h3M31 26h3M14 31h20"/></svg>
+        <div>
+          <h3>O teclado vai para o cliente</h3>
+          <p>Com uma sessão na tela, o que você digita vai direto para o computador do cliente. F9 mostra os contatos, Ctrl+F abre a busca.</p>
+        </div>
+      </li>
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M26 4 10 27h12l-2 17 16-23H24z"/></svg>
+        <div>
+          <h3>Leve durante o atendimento</h3>
+          <p>Desenhos e animações aparecem só na tela inicial. Com uma sessão aberta, nada fica pesando no computador.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="colecao" aria-labelledby="colecao-titulo">
+  <div class="largura colecao-grade">
+    <div class="colecao-texto">
+      <h2 id="colecao-titulo">Cada atendimento conta</h2>
+      <p>A cada 10 atendimentos de 3 minutos ou mais, você ganha um baú. Dentro dele vêm temas, pets, acessórios, molduras para os contatos e sons de conexão.</p>
+      <p>São 31 cartas em cinco raridades. O ritmo é lento de propósito: completar a coleção leva meses.</p>
+      <p>E tem um pet. Ele nasce de um ovo, come, brinca, cresce e dorme quando o app está fechado.</p>
+      <ul class="pets" aria-label="Pets da coleção">
+        <li><img src="arte/pets/slime.svg" alt="Slime"></li>
+        <li><img src="arte/pets/pintinho.svg" alt="Pintinho"></li>
+        <li><img src="arte/pets/fantasma.svg" alt="Fantasminha"></li>
+        <li><img src="arte/pets/gato.svg" alt="Gatinho"></li>
+        <li><img src="arte/pets/robo.svg" alt="Robô"></li>
+        <li><img src="arte/pets/dragao.svg" alt="Dragãozinho"></li>
+      </ul>
+    </div>
+
+    <div class="bau-area">
+      <div class="bau-palco">
+        <button class="bau" id="bau" aria-describedby="bau-nota">
+          <img src="arte/baus/madeira.svg" alt="">
+          <span class="bau-rotulo">Abrir um baú</span>
+        </button>
+        <div class="carta-ganha" id="carta-ganha" hidden>
+          <div class="cg-arte"><img id="cg-img" alt=""></div>
+          <p class="cg-rar" id="cg-rar"></p>
+          <p class="cg-nome" id="cg-nome"></p>
+          <p class="cg-desc" id="cg-desc"></p>
+        </div>
+      </div>
+      <p class="bau-status" id="bau-status" aria-live="polite"></p>
+      <button class="botao botao-contorno" id="bau-outro" hidden>Abrir outro baú</button>
+      <p class="bau-nota" id="bau-nota">Baú de demonstração, com as mesmas chances do app. No NaView, as cartas vão para a sua coleção.</p>
+    </div>
+  </div>
+</section>
+
+<section class="instalar" id="instalar" aria-labelledby="instalar-titulo">
+  <div class="largura">
+    <h2 id="instalar-titulo">Instale em três passos</h2>
+    <div class="baixar-caixa">
+      <a class="botao botao-principal botao-grande" href="download/{{ARQUIVO}}" download>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
+        Baixar o NaView {{VERSAO}}
+      </a>
+      <p class="baixar-meta">Pacote <code>{{ARQUIVO}}</code>, {{TAMANHO}}. Para Linux com KDE Plasma e AnyDesk instalado.</p>
+      <details class="soma">
+        <summary>Conferir se o arquivo chegou inteiro</summary>
+        <p>Rode o comando abaixo na pasta do download. O resultado deve ser igual a este código:</p>
+        <pre><code>{{SHA256}}</code></pre>
+        <div class="comando"><pre><code>sha256sum {{ARQUIVO}}</code></pre><button class="copiar" type="button">Copiar</button></div>
+      </details>
+    </div>
+
+    <ol class="passos">
+      <li>
+        <h3>Instale o que o NaView precisa</h3>
+        <p>No Ubuntu e no Kubuntu, abra o terminal e rode:</p>
+        <div class="comando"><pre><code>sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good gir1.2-notify-0.7</code></pre><button class="copiar" type="button">Copiar</button></div>
+      </li>
+      <li>
+        <h3>Extraia o pacote na sua pasta pessoal</h3>
+        <div class="comando"><pre><code>tar -xzf ~/Downloads/{{ARQUIVO}} -C ~</code></pre><button class="copiar" type="button">Copiar</button></div>
+        <p>Isso cria a pasta <code>~/naview</code>.</p>
+      </li>
+      <li>
+        <h3>Crie o atalho no menu</h3>
+        <div class="comando"><pre><code>~/naview/instalar.sh</code></pre><button class="copiar" type="button">Copiar</button></div>
+        <p>Pronto: procure por NaView no menu do KDE.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="largura">
+    <p><img src="icone.svg" alt="" width="24" height="24"> NaView, feito pela equipe de suporte para a equipe de suporte.</p>
+    <p class="rodape-miudo">AnyDesk é marca da AnyDesk Software GmbH. O NaView não tem ligação com a empresa. Fontes sob a licença OFL. Ícones do app: Phosphor (MIT).</p>
+  </div>
+</footer>
+
+<script src="vendor/confetti.browser.min.js" defer></script>
+<script src="pagina.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+"""Contatos: importados do AnyDesk (~/.anydesk/user.conf) + apelidos salvos pelo app."""
+import json
+from pathlib import Path
+
+ANYDESK_CONF = Path.home() / ".anydesk" / "user.conf"
+ARQUIVO = Path.home() / ".config" / "naview" / "contatos.json"
+
+
+def formatar_id(anydesk_id):
+    """'1270225788' -> '1 270 225 788' (mesmo formato que o AnyDesk mostra)."""
+    if not anydesk_id.isdigit():
+        return anydesk_id
+    grupos = []
+    while anydesk_id:
+        grupos.insert(0, anydesk_id[-3:])
+        anydesk_id = anydesk_id[:-3]
+    return " ".join(grupos)
+
+
+def ler_anydesk():
+    """Lista de (id, apelido) do catálogo do AnyDesk.
+
+    Formato da chave ad.roster.items: 'id,endereço,apelido,...;id,endereço,apelido,...'
+    """
+    try:
+        linhas = ANYDESK_CONF.read_text(errors="replace").splitlines()
+    except OSError:
+        return []
+    for linha in linhas:
+        if linha.startswith("ad.roster.items="):
+            itens = []
+            for entrada in linha.split("=", 1)[1].split(";"):
+                campos = entrada.split(",")
+                if campos and campos[0].strip():
+                    apelido = campos[2].strip() if len(campos) > 2 else ""
+                    itens.append((campos[0].strip(), apelido))
+            return itens
+    return []
+
+
+class Contatos:
+    def __init__(self):
+        self.apelidos = {}  # id -> apelido definido no app
+        try:
+            self.apelidos = json.loads(ARQUIVO.read_text()).get("apelidos", {})
+        except (OSError, ValueError):
+            pass
+
+    def listar(self):
+        """[(id, nome)] com AnyDesk + apelidos do app, sem repetir IDs."""
+        vistos, saida = set(), []
+        for cid, apelido in ler_anydesk():
+            if cid not in vistos:
+                vistos.add(cid)
+                saida.append((cid, self.apelidos.get(cid) or apelido))
+        # Contatos que só existem no app (ex.: ID digitado e renomeado aqui).
+        for cid, apelido in self.apelidos.items():
+            if cid not in vistos:
+                saida.append((cid, apelido))
+        return saida
+
+    def nome(self, cid):
+        return self.apelidos.get(cid) or dict(ler_anydesk()).get(cid) or ""
+
+    def renomear(self, cid, apelido):
+        if apelido:
+            self.apelidos[cid] = apelido
+        else:
+            self.apelidos.pop(cid, None)
+        ARQUIVO.parent.mkdir(parents=True, exist_ok=True)
+        ARQUIVO.write_text(json.dumps({"apelidos": self.apelidos}, ensure_ascii=False, indent=2))

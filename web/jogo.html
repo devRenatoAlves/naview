@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coleção</title>
+  <link rel="stylesheet" href="jogo.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="perfil" title="Seu nível: sobe com atendimentos, baús abertos e cartas melhoradas">
+      <div class="escudo"><span id="nivel">1</span></div>
+      <div class="xp">
+        <div class="xp-rotulo">Nível <b id="nivel-texto">1</b></div>
+        <div class="barra"><div id="xp-barra"></div><span id="xp-texto">0/100</span></div>
+      </div>
+    </div>
+    <div class="recursos">
+      <div class="recurso" title="Moedas"><img src="../arte/jogo/moeda.svg" alt=""><span id="moedas">0</span></div>
+      <div class="recurso" title="Petiscos do pet"><img class="pixel" src="../arte/jogo/petisco.svg" alt=""><span id="petiscos">0</span></div>
+      <button class="icone-bt" id="bt-som" title="Sons do jogo"></button>
+      <button class="icone-bt" id="bt-fechar" title="Voltar às conexões"><i data-ic="x"></i></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- BAÚS -->
+    <section class="tela ativa" id="tela-baus">
+      <div class="linha-paineis">
+        <div class="painel gratis">
+          <h2>Baú grátis</h2>
+          <img class="bau-mini" src="../arte/baus/madeira.svg" alt="">
+          <div class="painel-info" id="gratis-info"></div>
+          <button class="bt bt-ouro" id="bt-gratis">Abrir</button>
+        </div>
+        <div class="painel diario">
+          <h2>Recompensa diária <small id="diario-seq"></small></h2>
+          <div class="calendario" id="calendario"></div>
+          <button class="bt bt-verde" id="bt-diario">Pegar recompensa</button>
+        </div>
+      </div>
+      <div class="progresso-trabalho">
+        <span>Próximo baú de trabalho:</span>
+        <div class="bolinhas" id="rumo-bau"></div>
+        <small id="rumo-texto"></small>
+      </div>
+      <div class="espacos" id="espacos"></div>
+    </section>
+
+    <!-- COLEÇÃO -->
+    <section class="tela" id="tela-colecao">
+      <div class="colecao-topo">
+        <h2>Coleção <span id="colecao-contagem"></span></h2>
+        <div class="barra larga"><div id="colecao-barra"></div></div>
+      </div>
+      <div class="filtros" id="filtros"></div>
+      <div class="grade-cartas" id="grade-cartas"></div>
+    </section>
+
+    <!-- PET -->
+    <section class="tela" id="tela-pet">
+      <div class="palco" id="palco">
+        <div class="balao" id="pet-fala"></div>
+        <div class="pet-area" id="pet-area"></div>
+        <div class="zzz" id="zzz">Z<span>z</span><span>z</span></div>
+        <div class="chao"></div>
+      </div>
+      <div class="pet-info">
+        <div class="pet-nome-linha">
+          <button class="pet-nome" id="pet-nome" title="Mudar o nome"></button>
+          <button class="bt bt-azul bt-pequeno" id="bt-renomear"><i data-ic="pencil-simple"></i> Renomear</button>
+          <span class="pet-estagio" id="pet-estagio"></span>
+        </div>
+        <div class="barra larga"><div id="pet-xp"></div><span id="pet-xp-texto"></span></div>
+        <div class="atributos" id="atributos"></div>
+        <div class="acoes-pet" id="acoes-pet"></div>
+        <div class="guarda-roupa" id="guarda-roupa">
+          <h3>Espécies <small id="conta-especies"></small></h3>
+          <div class="roupas" id="roupas-especies"></div>
+          <h3>Acessórios <small id="conta-acessorios"></small></h3>
+          <div class="roupas" id="roupas-acessorios"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOJA -->
+    <section class="tela" id="tela-loja">
+      <h2>Ofertas do dia <small id="loja-renova"></small></h2>
+      <div class="ofertas" id="ofertas"></div>
+      <h2>Petiscos</h2>
+      <div class="petiscos-loja">
+        <div class="painel petisco-item">
+          <img class="pixel" src="../arte/jogo/petisco.svg" alt="">
+          <span>1 petisco</span>
+          <button class="bt bt-ouro" data-petiscos="1"></button>
+        </div>
+        <div class="painel petisco-item">
+          <img class="pixel" src="../arte/jogo/petisco.svg" alt=""><span>5 petiscos</span>
+          <button class="bt bt-ouro" data-petiscos="5"></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="menu">
+    <button class="menu-bt ativo" data-tela="baus"><i class="menu-icone" data-ic="gift"></i>Baús<i class="ponto" id="ponto-baus"></i></button>
+    <button class="menu-bt" data-tela="colecao"><i class="menu-icone" data-ic="cards"></i>Coleção<i class="ponto" id="ponto-colecao"></i></button>
+    <button class="menu-bt" data-tela="pet"><i class="menu-icone" data-ic="paw-print"></i>Pet<i class="ponto" id="ponto-pet"></i></button>
+    <button class="menu-bt" data-tela="loja"><i class="menu-icone" data-ic="storefront"></i>Loja</button>
+  </nav>
+
+  <!-- abertura de baú -->
+  <div class="abertura" id="abertura" hidden>
+    <div class="raios" id="raios"></div>
+    <div class="abertura-titulo" id="abertura-titulo"></div>
+    <img class="abertura-bau" id="abertura-bau" alt="">
+    <div class="restantes" id="restantes"></div>
+    <div class="revelacao" id="revelacao"></div>
+    <div class="resumo" id="resumo" hidden></div>
+    <div class="dica-toque" id="dica-toque">Toque para continuar</div>
+  </div>
+
+  <!-- detalhe de carta -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-caixa" id="modal-caixa"></div>
+  </div>
+
+  <div class="aviso" id="aviso"></div>
+  <canvas id="confete"></canvas>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/confetti.browser.min.js"></script>
+  <script src="icones.js"></script>
+  <script src="jogo.js"></script>
+</body>
+</html>

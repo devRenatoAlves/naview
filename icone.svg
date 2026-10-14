@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#fundo)"/>
+  <!-- bandeira no topo do mastro -->
+  <path d="M20 6 h9 l-3 2.5 3 2.5 h-9 z" fill="#f59e0b"/>
+  <!-- letra R: mastro (haste), vela grande (curva) e vela da frente (perna) -->
+  <path fill-rule="evenodd" fill="#ffffff"
+        d="M20 9 h15 a10.5 10.5 0 0 1 0 21 h-9 v14 h-6 z
+           M26 15 h8.5 a4.5 4.5 0 0 1 0 9 h-8.5 z"/>
+  <path d="M30 30 h7 l11 14 h-7 z" fill="#ffffff"/>
+  <!-- casco -->
+  <path d="M9 44 h46 l-6.5 9 a3 3 0 0 1 -2.4 1.2 h-28.2 a3 3 0 0 1 -2.4 -1.2 z" fill="#1e1b4b"/>
+  <rect x="14" y="47" width="36" height="1.6" rx="0.8" fill="#f59e0b"/>
+  <!-- ondas -->
+  <path d="M6 57.5 q4 -3 8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+</svg>

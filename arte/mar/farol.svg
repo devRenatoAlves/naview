@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 200">
+  <defs>
+    <clipPath id="torre"><path d="M31 62 H59 L68 186 H22 Z"/></clipPath>
+  </defs>
+  <path d="M6 200 C10 182 28 176 45 178 C64 176 82 184 86 200 Z" fill="#1e1b4b"/>
+  <g clip-path="url(#torre)">
+    <rect x="0" y="62" width="90" height="124" fill="#ffffff"/>
+    <rect x="0" y="80" width="90" height="18" fill="#1e1b4b"/>
+    <rect x="0" y="118" width="90" height="18" fill="#1e1b4b"/>
+    <rect x="0" y="156" width="90" height="18" fill="#1e1b4b"/>
+  </g>
+  <rect x="24" y="54" width="42" height="8" rx="2" fill="#1e1b4b"/>
+  <rect x="33" y="32" width="24" height="22" rx="2" fill="#f59e0b"/>
+  <rect x="33" y="32" width="24" height="22" rx="2" fill="none" stroke="#1e1b4b" stroke-width="3"/>
+  <line x1="45" y1="32" x2="45" y2="54" stroke="#1e1b4b" stroke-width="2"/>
+  <path d="M29 33 L45 14 L61 33 Z" fill="#1e1b4b"/>
+  <circle cx="45" cy="12" r="3" fill="#f59e0b"/>
+</svg>
