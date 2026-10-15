@@ -5,6 +5,7 @@ valores do tema, os ajustes do usuário e o CSS extra que cada tema quiser.
 """
 import hashlib
 import json
+import os
 from pathlib import Path
 from string import Template
 
@@ -21,6 +22,10 @@ CACHE = Path.home() / ".cache" / "naview"
 MAX_FUNDO = (1920, 1080)
 
 AJUSTES = ("destaque", "fundo", "lateral", "barra")
+
+# Só o KWin (KDE) desfoca o que fica atrás da janela. Nos outros ambientes (GNOME, XFCE etc.)
+# o vidro fica sem desfoque, e o fundo precisa ser mais escuro para o texto continuar legível.
+TEM_DESFOQUE = "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
 
 
 def arte(nome):
@@ -554,7 +559,8 @@ def cores_do_tema(cfg):
     if tema.get("vidro"):
         # Intensidade 0 = quase sem tinta (mais vidro); 1 = painéis mais opacos.
         i = max(0.0, min(1.0, cfg.get("intensidade_vidro", 0.5)))
-        valores = {"tinta": f"{0.08 + 0.45 * i:.2f}", "painel": f"{0.06 + 0.22 * i:.2f}",
+        tinta = 0.08 + 0.45 * i if TEM_DESFOQUE else 0.70 + 0.25 * i
+        valores = {"tinta": f"{tinta:.2f}", "painel": f"{0.06 + 0.22 * i:.2f}",
                    "barra": f"{0.03 + 0.15 * i:.2f}", "campo": f"{0.10 + 0.18 * i:.2f}"}
         cores = {k: v.format(**valores) for k, v in cores.items()}
     for chave in AJUSTES:

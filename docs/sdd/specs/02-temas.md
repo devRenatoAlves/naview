@@ -26,6 +26,9 @@
   - Trocar de tema descarta os ajustes de cor, mas mantém a imagem de fundo, com um aviso.
 - **Vidro:** a propriedade X `_KDE_NET_WM_BLUR_BEHIND_REGION` recebe os retângulos arredondados.
   A força do desfoque é uma configuração global do KDE, que o app não altera.
+  Só o KWin desfoca. `temas.TEM_DESFOQUE` olha `XDG_CURRENT_DESKTOP`; fora do KDE, o fundo
+  do vidro vai de 0,70 a 0,95 de opacidade (no KDE, de 0,08 a 0,53), e o rótulo da intensidade
+  explica isso numa dica.
 - **Desempenho:** sem `radial-gradient` e sem sombras com desfoque grande no CSS do GTK. Desenhos
   e animações só na tela inicial.
 - **Recursos:**

@@ -8,6 +8,7 @@ Uso: python3 ferramentas/gerar_site.py
 - Preenche no HTML a versão, o nome do arquivo, o tamanho e o SHA-256.
 - Piloto Windows: se o GitHub Actions já guardou site/piloto-windows/naview-piloto-windows.zip,
   copia para download/ e preenche a página piloto/ (não divulgada, ver specs/06-windows.md).
+- Página gnome/ (não divulgada): download do mesmo pacote Linux, com o roteiro de teste no GNOME.
 """
 import hashlib
 import shutil
@@ -112,13 +113,21 @@ def main():
     sha256 = hashlib.sha256(dados).hexdigest()
     (SAIDA / "download" / f"{pacote.name}.sha256").write_text(f"{sha256}  {pacote.name}\n")
 
-    html = (SAIDA / "index.html").read_text()
-    for chave, valor in {
+    valores = {
         "{{VERSAO}}": versao,
         "{{ARQUIVO}}": pacote.name,
         "{{TAMANHO}}": tamanho_legivel(len(dados)),
         "{{SHA256}}": sha256,
-    }.items():
+    }
+    # Página de teste no GNOME (não divulgada): o mesmo pacote Linux da página principal.
+    gnome = SAIDA / "gnome" / "index.html"
+    html = gnome.read_text()
+    for chave, valor in valores.items():
+        html = html.replace(chave, valor)
+    gnome.write_text(html)
+
+    html = (SAIDA / "index.html").read_text()
+    for chave, valor in valores.items():
         html = html.replace(chave, valor)
     # O nginx guarda CSS e JS no navegador por 7 dias: o ?v= muda junto com o conteúdo.
     for arquivo in ("estilo.css", "pagina.js"):

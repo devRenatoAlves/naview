@@ -1,10 +1,11 @@
 # NaView
 
-Junta várias conexões do AnyDesk em abas, numa única janela (Linux / KDE Wayland).
+Junta várias conexões do AnyDesk em abas, numa única janela (Linux: KDE, GNOME e outros ambientes, em Wayland ou X11).
 
 ## Como funciona
 
-- O app e o AnyDesk rodam pelo XWayland (`GDK_BACKEND=x11`). Isso permite encaixar a janela do
+- O app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`), que existe no KDE, no GNOME
+  e nos outros ambientes. Isso permite encaixar a janela do
   AnyDesk dentro de uma aba (`Gtk.Socket`).
 - **Contatos** (barra lateral): importados do catálogo do AnyDesk (`ad.roster.items` em
   `~/.anydesk/user.conf`), com busca e avatar colorido. O lápis renomeia num balão; o nome fica
@@ -54,7 +55,9 @@ imagem de fundo da tela inicial, desenhos e animações (podem ser desligados).
 - Fontes em `fonts/` (licença OFL, arquivos `OFL-*.txt`), carregadas só para o app por
   `fontes.py`, sem instalar no sistema.
 - A força do desfoque é uma configuração global do KDE (Configurações do sistema > Efeitos da
-  área de trabalho > Desfoque).
+  área de trabalho > Desfoque). Só o KDE desfoca o que fica atrás da janela: no GNOME e nos
+  outros ambientes, o vidro fica sem desfoque e com o fundo mais escuro, para o texto continuar
+  legível.
 
 ## Jogo: baús, coleção e pet
 
@@ -76,7 +79,7 @@ janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.
 - **Pet (Tamagotchi)**: nasce de um ovo, tem comida, alegria e energia que caem com o tempo,
   dorme quando o app está fechado, come petiscos, brinca, tira soneca, cresce (bebê, jovem,
   adulto) e usa acessórios. Guarda-roupa separado em Espécies e Acessórios; botão de renomear. Fica no rodapé da barra de contatos.
-- **Avisos**: notificação do KDE quando um baú fica pronto e para a recompensa diária.
+- **Avisos**: notificação do sistema quando um baú fica pronto e para a recompensa diária.
 
 Arquitetura: `jogo/progresso.py` guarda tudo e faz todos os sorteios; a tela (`web/jogo.html`,
 `jogo.css`, `jogo.js`, com GSAP e canvas-confetti) só pede ações e desenha. Para levar a um
@@ -109,16 +112,26 @@ servidor da equipe, basta trocar `Progresso` por uma classe com os mesmos métod
 python3 app.py
 ```
 
-Para criar o atalho no menu do KDE (com ícone), rode uma vez:
+Para criar o atalho no menu de aplicativos (KDE, GNOME e outros, com ícone), rode uma vez:
 
 ```bash
 ./instalar.sh
 ```
 
-Depois é só procurar "NaView" no menu e, para fixar na barra de tarefas, clicar com o
-botão direito no ícone > "Fixar no Gerenciador de tarefas".
+O script também avisa se falta alguma biblioteca e mostra o pacote para instalar.
 
-Requisitos: Python 3, PyGObject (GTK 3), libX11 e AnyDesk. Não precisa instalar nada além disso.
+Depois é só procurar "NaView" no menu. Para fixar: no KDE, botão direito no ícone > "Fixar no
+Gerenciador de tarefas"; no GNOME, botão direito no ícone da dock > "Fixar no Dash".
+
+Requisitos: Python 3, PyGObject (GTK 3), libX11 e AnyDesk. O jogo usa também WebKit2GTK 4.1,
+libnotify e GStreamer. No Ubuntu com GNOME:
+
+```bash
+sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-notify-0.7 \
+  gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good
+```
+
+Sem o WebKit, o app funciona normalmente e só o jogo fica indisponível (aparece um aviso).
 
 ## Limitações conhecidas
 

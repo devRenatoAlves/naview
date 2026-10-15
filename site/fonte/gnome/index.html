@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Página não divulgada: só quem recebe o link chega aqui. -->
+<meta name="robots" content="noindex, nofollow">
+<title>NaView: teste no GNOME</title>
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<style>
+  @font-face { font-family: "Fredoka"; src: url("../fonts/Fredoka[wdth,wght].ttf") format("truetype"); font-weight: 300 700; font-display: swap; }
+  :root {
+    --mar: #0e1638; --casco: #1e1b4b; --anil: #6366f1; --celeste: #38bdf8; --bandeira: #f59e0b;
+    --espuma: #eef6ff; --tinta: #16204f; --tinta-suave: #44507f; --branco: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Fredoka", system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.55;
+    color: var(--tinta); background: var(--espuma);
+  }
+  header {
+    background: linear-gradient(160deg, var(--mar), var(--casco) 60%, #312e81); color: var(--branco);
+    padding: 40px 16px 56px; text-align: center;
+  }
+  header img { width: 64px; height: 64px; }
+  h1 { margin: 10px 0 6px; font-size: clamp(1.7rem, 5vw, 2.4rem); line-height: 1.15; }
+  header p { margin: 0 auto; max-width: 560px; color: #c7d2fe; }
+  .selo {
+    display: inline-block; margin-bottom: 8px; padding: 2px 12px; border-radius: 999px;
+    background: var(--bandeira); color: #3a2400; font-weight: 600; font-size: 0.85rem;
+  }
+  main { max-width: 720px; margin: -32px auto 48px; padding: 0 16px; }
+  .cartao {
+    background: var(--branco); border-radius: 18px; padding: 24px; margin-bottom: 16px;
+    box-shadow: 0 6px 24px rgba(22, 32, 79, 0.10);
+  }
+  h2 { margin: 0 0 10px; font-size: 1.25rem; }
+  .botao {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px;
+    background: var(--anil); color: var(--branco); font-weight: 600; text-decoration: none;
+  }
+  .botao:hover { background: #4f46e5; }
+  .botao:focus-visible { outline: 3px solid var(--celeste); outline-offset: 2px; }
+  .meta { color: var(--tinta-suave); font-size: 0.9rem; margin: 10px 0 0; overflow-wrap: anywhere; }
+  ol, ul { margin: 0; padding-left: 1.3em; }
+  li { margin-bottom: 8px; }
+  .aviso { border-left: 4px solid var(--bandeira); background: #fff8e8; }
+  code { background: #eef0ff; padding: 1px 6px; border-radius: 6px; font-size: 0.9em; overflow-wrap: anywhere; }
+  pre {
+    margin: 8px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--mar); color: #e0e7ff;
+    font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="../icone.svg" alt="">
+  <div><span class="selo">Teste · GNOME</span></div>
+  <h1>NaView no GNOME</h1>
+  <p>O NaView nasceu no KDE. Este teste confere se as sessões do AnyDesk funcionam encaixadas em
+    abas também no GNOME.</p>
+</header>
+<main>
+  <section class="cartao">
+    <h2>Baixar</h2>
+    <a class="botao" href="../download/{{ARQUIVO}}" download>Baixar o NaView para Linux</a>
+    <p class="meta">Arquivo <code>{{ARQUIVO}}</code>, {{TAMANHO}}, versão {{VERSAO}}.<br>
+      SHA-256: <code>{{SHA256}}</code></p>
+  </section>
+
+  <section class="cartao aviso">
+    <h2>Antes de começar</h2>
+    <ol>
+      <li><strong>Conecte só num computador de teste</strong> (outro PC seu ou da equipe), nunca no de
+        um cliente.</li>
+      <li>O AnyDesk precisa estar instalado.</li>
+    </ol>
+  </section>
+
+  <section class="cartao">
+    <h2>Instalar</h2>
+    <ol>
+      <li>Abra o terminal na pasta onde o arquivo foi baixado e extraia:
+        <pre>tar -xzf {{ARQUIVO}}
+cd naview
+./instalar.sh</pre></li>
+      <li>O <code>instalar.sh</code> cria o atalho no menu e confere as bibliotecas. Se ele listar
+        pacotes que faltam, instale e rode o script de novo. No Ubuntu, normalmente é:
+        <pre>sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-notify-0.7 gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good</pre></li>
+      <li>Procure <strong>NaView</strong> no menu de aplicativos e abra.</li>
+    </ol>
+  </section>
+
+  <section class="cartao">
+    <h2>O que testar</h2>
+    <ul>
+      <li><strong>Abas:</strong> digite o ID do computador de teste e conecte. A sessão deve abrir
+        dentro de uma aba do NaView, não numa janela separada. Abra uma segunda e troque entre elas.</li>
+      <li><strong>Teclado (o mais importante):</strong> clique dentro da sessão e digite, use atalhos
+        (Ctrl+C, Ctrl+V, Alt+Tab do computador remoto). Depois clique na busca de contatos e veja se
+        o teclado volta para o NaView.</li>
+      <li><strong>Janela:</strong> maximize, redimensione, coloque em tela cheia.</li>
+      <li><strong>Atalho:</strong> o ícone aparece certo no menu e na dock?</li>
+      <li><strong>Jogo:</strong> abra pelo botão do jogo e veja se carrega. Os avisos dos baús
+        aparecem como notificação do GNOME?</li>
+      <li><strong>Tema "Vidro líquido"</strong> (menu ⋮ &gt; Aparência): no GNOME ele fica sem
+        desfoque, mais escuro. O texto está legível?</li>
+    </ul>
+    <p class="meta">Anote o que travou ou ficou estranho (com print, se der) e envie para quem te
+      mandou o link. Diga também a versão do GNOME e da distribuição (Configurações &gt; Sobre).</p>
+  </section>
+</main>
+</body>
+</html>

@@ -9,7 +9,8 @@
 - R5. Contatos importados do AnyDesk, com busca, avatar e apelido próprio.
 - R6. O nome da aba se atualiza sozinho: apelido, depois nome do computador, depois ID.
 - R7. Barra de contatos retrátil.
-- R8. Atalho no menu do KDE, com ícone próprio.
+- R8. Atalho no menu de aplicativos (KDE, GNOME e outros), com ícone próprio.
+- R9. Funcionar em qualquer ambiente Linux com X11 ou XWayland, não só no KDE.
 
 ## Design
 

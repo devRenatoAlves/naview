@@ -21,7 +21,9 @@ separada, e alternar entre elas é lento e confuso.
 
 ## Ambiente
 
-- Linux com KDE Plasma em Wayland. O app e o AnyDesk rodam pelo XWayland (`GDK_BACKEND=x11`).
+- Linux com KDE Plasma em Wayland (máquina do usuário). Também deve rodar no GNOME e nos outros
+  ambientes, em Wayland ou X11: o app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`).
+  Só o desfoque do tema vidro é do KDE.
 - AnyDesk 8.1.0 (GTK3).
 - Python 3.14 e PyGObject (GTK 3). Também são usados WebKit2 4.1, GStreamer 1.0 e libnotify 0.7.
 - O projeto fica em `/home/renato/Documentos/dev-projects/naview`. Não é um repositório

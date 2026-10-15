@@ -26,6 +26,10 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Testar com sessões reais: teclado, atalhos, tela cheia, transferência de arquivos
 - [ ] Conferir o formato do título da janela de sessão (nome do computador) em sessão real
 - [ ] Atalhos para trocar de aba (Ctrl+Tab, Ctrl+1..9)
+- [x] Funcionar fora do KDE (GNOME e outros): vidro sem desfoque e mais opaco, instalador
+  genérico que confere as bibliotecas, jogo com aviso se faltar o WebKit
+- [~] Testar no GNOME (um amigo do usuário vai testar): encaixe, foco do teclado, atalho no menu,
+  avisos e tema vidro
 
 ## Temas ([spec](specs/02-temas.md))
 
@@ -38,6 +42,9 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Ritmo lento de recompensas: coleção completa em ~4 a 8 meses
 - [x] Nível da conta só como comemoração (as recompensas de nível foram removidas)
 - [x] Simulador da economia (`ferramentas/simular_economia.py`)
+- [x] Artes novas (15/10/2026): acessórios redesenhados pixel a pixel, petisco, moeda e baús com
+  mais detalhe
+- [x] Pet do rodapé sem o espaço vazio do quadro: todos os pets com o mesmo tamanho e centralizados
 - [ ] Fase 2: missões diárias e mais cartas (efeitos, fundos)
 - [ ] Dar uso às moedas que sobram; efeito de nível para todos os tipos de carta
 
@@ -67,6 +74,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] (15/10/2026) Revisão do topo: trocar de tema não move mais título, botões, janela nem cartas;
   fontes dos temas carregadas no início; abas da demonstração encolhem com reticências
 - [x] Publicar a revisão do topo (no ar em 15/10/2026; CSS e JS com `?v=` contra cache antigo)
+- [x] Página não divulgada `/gnome/` para o teste no GNOME (download do pacote Linux e roteiro)
 
 ## Windows ([spec](specs/06-windows.md))
 

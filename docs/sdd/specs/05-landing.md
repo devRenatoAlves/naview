@@ -109,3 +109,10 @@ do dedo). O que mudou:
   para o piloto.
 - Depois de cada montagem, o `main` remoto tem um commit do robô: rodar `git pull` antes de
   continuar.
+
+## Teste no GNOME (15/10/2026)
+
+- Página não divulgada `/gnome/` (`site/fonte/gnome/index.html`, com `noindex`): download do mesmo
+  pacote Linux da página principal, com instalação e roteiro de teste no GNOME. A página principal
+  não tem link para ela.
+- `gerar_site.py` preenche nela versão, arquivo, tamanho e SHA-256, como na página principal.

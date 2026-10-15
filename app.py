@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """NaView: várias conexões do AnyDesk em abas numa única janela.
 
-Funciona no KDE Wayland porque tanto este app quanto o AnyDesk rodam via XWayland
-(GDK_BACKEND=x11), o que permite encaixar a janela do AnyDesk dentro de uma aba.
+Funciona no KDE, no GNOME e nos outros ambientes Linux (Wayland ou X11) porque tanto este app
+quanto o AnyDesk rodam pelo X11/XWayland (GDK_BACKEND=x11), o que permite encaixar a janela do
+AnyDesk dentro de uma aba.
 """
 import math
 import os
@@ -25,7 +26,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GLib  # noqa: E402
 
-# Nome da janela para o KDE: liga ela ao atalho naview.desktop (StartupWMClass)
+# Nome da janela para o KDE e o GNOME: liga ela ao atalho naview.desktop (StartupWMClass)
 # e faz a barra de tarefas mostrar o ícone certo. Precisa vir antes de importar o Gtk,
 # que fixa esse nome ao ser importado.
 GLib.set_prgname("naview")
@@ -49,7 +50,7 @@ migrar_pastas_antigas()  # antes de temas, contatos e progresso lerem os arquivo
 import temas  # noqa: E402
 from contatos import Contatos, formatar_id  # noqa: E402
 from jogo import catalogo as cat_jogo  # noqa: E402
-from jogo.gtk import Notificacoes, Sons, compor_pet  # noqa: E402
+from jogo.gtk import Notificacoes, Sons, pet_rodape  # noqa: E402
 from jogo.progresso import Progresso  # noqa: E402
 from janela_aparencia import JanelaAparencia  # noqa: E402
 from x11 import X11  # noqa: E402
@@ -334,7 +335,7 @@ class App(Gtk.Window):
 
     def montar_pet_mini(self):
         """Pet no rodapé da barra de contatos; clicar abre a aba do pet no jogo."""
-        self.pet_imagem = Gtk.Image(valign=Gtk.Align.END)
+        self.pet_imagem = Gtk.Image(valign=Gtk.Align.CENTER)
         self.pet_nome = classes(Gtk.Label(xalign=0, ellipsize=Pango.EllipsizeMode.END), "pet-nome")
         self.pet_humor = Gtk.Image()  # ícone do humor ao lado do nome
         self.pet_fala = classes(Gtk.Label(xalign=0, ellipsize=Pango.EllipsizeMode.END), "pet-fala")
@@ -503,7 +504,8 @@ class App(Gtk.Window):
             GLib.idle_add(self.atualizar_vidro)
 
     def atualizar_vidro(self, *_args):
-        """Tema vidro: pede ao KWin para desfocar o que está atrás da janela inteira."""
+        """Tema vidro: pede ao KWin para desfocar o que está atrás da janela inteira.
+        Fora do KDE o pedido é ignorado e o tema compensa com um fundo mais escuro."""
         self._vidro_agendado = False
         janela = self.get_window()
         if not janela:
@@ -553,7 +555,12 @@ class App(Gtk.Window):
             GLib.source_remove(self._liberar_jogo_timer)
             self._liberar_jogo_timer = None
         if self.tela_jogo is None:
-            from jogo.tela import TelaJogo  # WebKit só é carregado quando precisa
+            try:
+                from jogo.tela import TelaJogo  # WebKit só é carregado quando precisa
+            except (ValueError, ImportError):  # WebKit2 4.1 não instalado (comum fora do KDE)
+                self._marcar_botao_jogo(False)
+                self.avisar("O jogo precisa do WebKit2GTK 4.1 (pacote gir1.2-webkit2-4.1 no Ubuntu).")
+                return True
             self.tela_jogo = TelaJogo(self.progresso, lambda: self.cfg["tema"], self.ao_mudar_jogo,
                                       self.fechar_jogo)
             self.tela_jogo.show()
@@ -634,7 +641,7 @@ class App(Gtk.Window):
 
     def atualizar_pet_mini(self, pet=None):
         pet = pet or self.progresso.pet()
-        self.pet_imagem.set_from_pixbuf(compor_pet(pet["especie"], pet["acessorio"]))
+        self.pet_imagem.set_from_pixbuf(pet_rodape(pet["especie"], pet["acessorio"]))
         humor = {"feliz": "smiley", "normal": "smiley-meh", "triste": "smiley-sad", "dormindo": "moon-stars"}
         icone = humor.get(pet["humor"], "smiley") if pet["chocado"] else "egg"
         self.pet_nome.set_text(pet["nome"])
