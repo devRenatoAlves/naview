@@ -21,35 +21,43 @@ TIPOS = {
     "som": "Som de conexão",
 }
 
-# Onde cada acessório encaixa em cada pet (linhas do desenho 16x16).
-# topo = linha de cima da cabeça, olhos = linha dos olhos, pescoco = linha do pescoço.
+# Pets em pixel art num quadro de PET_LADO x PET_LADO (1 unidade = 1 pixel do desenho). Acima dele
+# ficam PET_ACIMA linhas livres para os chapéus: o pet com acessório ocupa PET_LADO x (PET_LADO + PET_ACIMA).
+PET_LADO = 64
+PET_ACIMA = 16
+
+# Pontos de encaixe de cada pet, (x, y) no quadro do pet: topo = alto da cabeça (onde o chapéu
+# assenta), olhos = meio entre os olhos, pescoco = meio do pescoço.
 ENCAIXE_PET = {
-    "slime": {"topo": 0, "olhos": 6, "pescoco": 10},
-    "fantasma": {"topo": 0, "olhos": 5, "pescoco": 9},
-    "pintinho": {"topo": 2, "olhos": 5, "pescoco": 9},
-    "gato": {"topo": 3, "olhos": 5, "pescoco": 10},
-    "robo": {"topo": 3, "olhos": 6, "pescoco": 11},
-    "dragao": {"topo": 2, "olhos": 4, "pescoco": 9},
-    "pinscher": {"topo": 5, "olhos": 7, "pescoco": 11},
-    "corgi": {"topo": 4, "olhos": 7, "pescoco": 12},
-    "salsicha": {"topo": 4, "olhos": 6, "pescoco": 9},
-    "passarinho": {"topo": 2, "olhos": 4, "pescoco": 8},
-    "pikachu": {"topo": 4, "olhos": 7, "pescoco": 11},
-    "eevee": {"topo": 4, "olhos": 7, "pescoco": 11},
-    "jigglypuff": {"topo": 0, "olhos": 6, "pescoco": 11},
+    "slime": {"topo": (32, 38), "olhos": (32, 50), "pescoco": (32, 58)},
+    "fantasma": {"topo": (32, 26), "olhos": (32, 39), "pescoco": (32, 49)},
+    "pintinho": {"topo": (33, 35), "olhos": (33, 42), "pescoco": (33, 51)},
+    "gato": {"topo": (30, 31), "olhos": (30, 38), "pescoco": (30, 51)},
+    "robo": {"topo": (32, 28), "olhos": (32, 35), "pescoco": (32, 46)},
+    "dragao": {"topo": (32, 30), "olhos": (32, 36), "pescoco": (32, 48)},
+    "pinscher": {"topo": (32, 30), "olhos": (32, 37), "pescoco": (32, 49)},
+    "corgi": {"topo": (33, 31), "olhos": (33, 39), "pescoco": (33, 50)},
+    "salsicha": {"topo": (42, 34), "olhos": (45, 38), "pescoco": (38, 49)},
+    "passarinho": {"topo": (36, 36), "olhos": (39, 39), "pescoco": (34, 49)},
+    "pikachu": {"topo": (23, 29), "olhos": (21, 33), "pescoco": (24, 45)},
+    "eevee": {"topo": (24, 33), "olhos": (22, 40), "pescoco": (24, 46)},
+    "jigglypuff": {"topo": (32, 32), "olhos": (31, 44), "pescoco": (31, 52)},
+    "gengar": {"topo": (30, 16), "olhos": (26, 34), "pescoco": (28, 48)},
 }
-# Linha do desenho do acessório que encosta no ponto de encaixe.
+# Cada acessório: (ponto do pet, âncora x, âncora y, largura, altura). A âncora é o pixel do
+# desenho do acessório que encosta no ponto do pet.
 ENCAIXE_ACESSORIO = {
-    "laco": ("topo", 5), "bone": ("topo", 5), "mago": ("topo", 6), "coroa": ("topo", 6),
-    "oculos": ("olhos", 5), "cachecol": ("pescoco", 5),
+    "laco": ("topo", 7, 9, 15, 11), "bone": ("topo", 11, 10, 26, 13),
+    "mago": ("topo", 13, 17, 27, 20), "coroa": ("topo", 9, 12, 19, 13),
+    "oculos": ("olhos", 13, 4, 26, 9), "cachecol": ("pescoco", 15, 2, 30, 15),
 }
 
 
-def deslocamento_acessorio(especie, acessorio):
-    """Quantas linhas (no desenho de 16 px) o acessório fica abaixo do topo do pet."""
-    ponto, linha = ENCAIXE_ACESSORIO[acessorio]
-    ajuste = 1 if ponto == "topo" else 0  # chapéu "senta" uma linha para dentro da cabeça
-    return ENCAIXE_PET[especie][ponto] - linha + ajuste
+def encaixe_acessorio(especie, acessorio):
+    """Posição e tamanho do acessório no quadro do pet com o espaço de cima (x, y, w, h)."""
+    ponto, ax, ay, w, h = ENCAIXE_ACESSORIO[acessorio]
+    px, py = ENCAIXE_PET[especie][ponto]
+    return {"x": px - ax, "y": PET_ACIMA + py - ay, "w": w, "h": h}
 
 
 def _c(cid, tipo, nome, raridade, descricao, arte=None, **extra):
@@ -105,6 +113,8 @@ CARTAS = [
        "pets/eevee.svg", alvo="eevee"),
     _c("pet-pikachu", "pet", "Pikachu", "lendaria", "Pika! Reinicia o servidor no choque.",
        "pets/pikachu.svg", alvo="pikachu"),
+    _c("pet-gengar", "pet", "Gengar", "lendaria", "Sorri no escuro e assombra os bugs.",
+       "pets/gengar.svg", alvo="gengar"),
     # acessórios
     _c("acc-laco", "acessorio", "Laço", "comum", "Um charme.", "acessorios/laco.svg", alvo="laco"),
     _c("acc-bone", "acessorio", "Boné", "comum", "Pronto para a visita técnica.", "acessorios/bone.svg",

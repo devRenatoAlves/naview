@@ -16,6 +16,12 @@
 - Não mexer na configuração global do KWin (força do desfoque).
 - Evitar simular teclas com XTest, porque o KDE pode pedir permissão.
 
+## Liberar todas as cartas (testes no app real)
+
+Com `"liberar_tudo": true` em `~/.config/naview/config.json`, o app entrega todas as cartas do
+catálogo (nível 1) toda vez que abre, inclusive as que entrarem depois. O usuário pediu isso ligado
+na conta dele. O padrão é `false`, e a opção não aparece na interface.
+
 ## Regras do jogo
 
 `Progresso` aceita relógio, data e sorteio falsos:

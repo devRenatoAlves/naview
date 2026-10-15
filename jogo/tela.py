@@ -35,8 +35,9 @@ def catalogo_para_web():
         "temas": {chave: {"nome": t["nome"], "previa": t["previa"], "fonte": t.get("fonte"),
                           "texto": temas.cor_texto(t["previa"][0]) or "#ffffff"}
                   for chave, t in temas.TEMAS.items()},
-        "deslocamentos": {e: {a: cat.deslocamento_acessorio(e, a) for a in cat.ENCAIXE_ACESSORIO}
-                          for e in cat.ENCAIXE_PET},
+        "pet": {"lado": cat.PET_LADO, "acima": cat.PET_ACIMA},
+        "encaixes": {e: {a: cat.encaixe_acessorio(e, a) for a in cat.ENCAIXE_ACESSORIO}
+                     for e in cat.ENCAIXE_PET},
         "nivel_max": cat.NIVEL_MAX,
         "copias_por_nivel": cat.COPIAS_POR_NIVEL,
         "moedas_por_nivel": cat.MOEDAS_POR_NIVEL,

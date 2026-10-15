@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """Gera os desenhos (SVG) dos temas em arte/. Rodar de novo só se mudar algum desenho.
 
-Toda a arte é original: pixel art desenhada aqui, e formas geométricas.
+Toda a arte é original (pixel art e formas geométricas), menos os Pokémon: sprites oficiais
+baixados por baixar_sprites.py, só para uso interno da equipe.
 """
 import math
 import random
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import desenhos_pets  # noqa: E402
+from pixel_vetor import no_quadro, svg as svg_pixels  # noqa: E402
+
+PET_LADO = 64  # igual a jogo/catalogo.py
 
 SAIDA = Path(__file__).resolve().parent.parent / "arte"
 
@@ -310,272 +318,16 @@ PALETA_PET = dict(PALETA, **{
     "x": "#7a4a1c", "a": "#f6e7c8", "J": "#ffb3c7", "j": "#f08aa8", "p": "#c06a2b", "q": "#8a4519",
 })
 
-GATO = """
-..K..........K..
-.KCK........KCK.
-.KCCK......KCCK.
-.KCCCKKKKKKCCCK.
-.KCCCCCCCCCCCCK.
-KCCCWKCCCCWKCCCK
-KCCCKKCCCCKKCCCK
-KCHCCCCKKCCCCHCK
-KCCCCCKCCKCCCCCK
-.KCCCCCCCCCCCCK.
-..KCCCCCCCCCCK..
-..KcCCCCCCCCcK..
-..KccKKccKKccK..
-...KK..KK..KK...
-"""
 
-ROBO = """
-.......KK.......
-.......KZK......
-.......KK.......
-...KKKKKKKKKK...
-..KEEEEEEEEEEK..
-..KEKKKKKKKKEK..
-..KEKFFKKFFKEK..
-..KEKFFKKFFKEK..
-..KEKKKKKKKKEK..
-..KEEEEKKEEEEK..
-..KEEEEEEEEEEK..
-.KKKeeeeeeeeKKK.
-.KEKeTTeeTTeKEK.
-.KKKeeeeeeeeKKK.
-...KeeK..KeeK...
-...KKKK..KKKK...
-"""
 
-DRAGAO = """
-...K......K.....
-..KAK....KAK....
-..KVVKKKKKVVK...
-.KVVVVVVVVVVVK..
-.KVVWKVVVVWKVK..
-.KVVKKVVVVKKVK..
-KVVVVVVVVVVVVVK.
-KVVVZVVVVVZVVVK.
-.KVVVVVVVVVVVK..
-..KVUUUUUUUUK.KK
-.KVKUUUUUUUUKKVK
-KVVKUUUUUUUUKVK.
-KVK.KUUUUUUKKK..
-.K..KVVKKVVK....
-....KKK..KKK....
-"""
 
-OVO = """
-......KKKK......
-....KKWWWWKK....
-...KWWWWWWWWK...
-..KWWWTWWWWWWK..
-..KWWTTTWWWWWK..
-.KWWWWTWWWWWWWK.
-.KWWWWWWWWTWWWK.
-.KWWWWWWWTTTWWK.
-.KWWTWWWWWTWWWK.
-.KWTTTWWWWWWWWK.
-..KWTWWWWWWWWK..
-..KLWWWWWWWWLK..
-...KLLWWWWLLK...
-....KKKKKKKK....
-"""
 
-PINSCHER = """
-.K............K.
-.KK..........KK.
-.KpK........KpK.
-.KpqK......KqpK.
-.KpqqK....KqqpK.
-..KpppKKKKpppK..
-..KppppppppppK..
-..KpWKppppWKpK..
-..KpKKppppKKpK..
-...KpppqqpppK...
-....KpqKKqpK....
-.....KpHHpK.....
-....KppKKppK....
-....KppppppK....
-....KpK..KpK....
-....KK....KK....
-"""
 
-CORGI = """
-.KK..........KK.
-.KgK........KgK.
-.KgHK......KHgK.
-.KgHgK....KgHgK.
-..KggKKKKKKggK..
-.KgggggWWgggggK.
-KgggggWWWWgggggK
-KggWKgWWWWgWKggK
-KggKKWWWWWWKKggK
-.KgWWWWKKWWWWgK.
-..KWWWKWWKWWWK..
-...KWWWHHWWWK...
-..KgggWWWWgggK..
-.KggggWWWWggggK.
-.KWWKKKKKKKKWWK.
-..KK........KK..
-"""
 
-# Salsicha de lado, olhando para a direita (cabeça perto do centro, para os chapéus).
-SALSICHA = """
-................
-................
-................
-................
-........KKKK....
-.......KNNNNK...
-......KNNNNWKK..
-......KnNNNNNNKK
-......KnnNNNNNK.
-K.....KnnKNNKK..
-.KKKKKKKKNNNK...
-KNNNNNNNNNNNNK..
-KNNNNNNNNNNNNK..
-.KNnNNNNNNNnNK..
-.KnK.......KnK..
-.KK........KK...
-"""
 
-PASSARINHO = """
-................
-................
-.....KKKKK......
-....KbbbbbK.....
-...KbbbbWKbbK...
-...KbbbbKKbbKAK.
-..KbbbbbbbbbbAAK
-.KdbbbbbbbbbbKK.
-KddbbbbbbbbbbK..
-KdddbbWWWWWbbK..
-.KdddbWWWWWWbK..
-..KddbWWWWWWbK..
-.KdKKbbWWWWbK...
-KdK..KKbbbbK....
-......KAK.KAK...
-"""
 
-PIKACHU = """
-.K............K.
-.KK..........KK.
-.KYK........KYK.
-..KYK......KYK..
-..KYYKKKKKKYYK..
-..KYYYYYYYYYYK..
-.KYYYYYYYYYYYYK.
-.KYYWKYYYYWKYYK.
-.KYYKKYYYYKKYYK.
-.KRRYYYKKYYYRRK.
-.KRRYYKYYKYYRRK.
-..KYYYYYYYYYYK..
-..KYYYYYYYYYYK..
-.KyYYYYYYYYYYyK.
-.KyyKyyyyyyKyyK.
-..KK.KKKKKK.KK..
-"""
 
-EEVEE = """
-.KK..........KK.
-.KXK........KXK.
-.KXXK......KXXK.
-.KXxXK....KXxXK.
-..KXxXKKKKXxXK..
-..KXXXXXXXXXXK..
-.KXXXXXXXXXXXXK.
-.KXXWKXXXXWKXXK.
-.KXXKKXXXXKKXXK.
-.KXXXXXKKXXXXXK.
-..KXXXXXXXXXXK..
-.KaaKXXXXXXKaaK.
-KaaaaaKXXKaaaaaK
-.KaaaaaaaaaaaaK.
-..KXXKaaaaKXXK..
-...KK.KKKK.KK...
-"""
 
-JIGGLYPUFF = """
-..KK..KKKK..KK..
-..KJKKJJJJKKJK..
-..KJJJJJJjJJJK..
-.KJJJJJJjjJJJJK.
-.KJJJJJJJjJJJJK.
-KJJKKKJJJJKKKJJK
-KJKWFFKJJKWFFKJK
-KJKFFFKJJKFFFKJK
-KJJKKKJJJJKKKJJK
-KJHJJJJJJJJJJHJK
-KJJJJJJKKJJJJJJK
-.KJJJJJJJJJJJJK.
-.KJJJJJJJJJJJJK.
-..KJJJJJJJJJJK..
-..KjjK....KjjK..
-...KK......KK...
-"""
-
-ACESSORIOS = {
-    "laco": """
-................
-................
-.....KK..KK.....
-....KHHKKHHK....
-....KHHHHHHK....
-.....KKHHKK.....
-................
-................
-""",
-    "bone": """
-................
-................
-.....KKKKKK.....
-....KZZZZZZK....
-...KZZZWZZZZK...
-...KKKKKKKKKKKK.
-................
-................
-""",
-    "oculos": """
-................
-................
-................
-................
-..KKKKK..KKKKK..
-..KKFKKKKKKFKK..
-..KKKKK..KKKKK..
-................
-""",
-    "cachecol": """
-................
-................
-................
-................
-................
-..KKKKKKKKKKKK..
-..KZWZWZWZWZWK..
-..KKKKKKKZWK....
-""",
-    "mago": """
-.......KK.......
-......KMMK......
-.....KMMAMK.....
-....KMMMMMMK....
-...KMMAMMMMMK...
-..KmmmmmmmmmmK..
-.KKKKKKKKKKKKKK.
-................
-""",
-    "coroa": """
-................
-..K...K..K...K..
-..KAK.KAAK.KAK..
-..KAAKAAAAKAAK..
-..KAZAAFAAAZAK..
-..KAAAAAAAAAAK..
-...KKKKKKKKKK...
-................
-""",
-}
 
 PETISCO = """
 ....KKKKKK....
@@ -611,19 +363,13 @@ def bau(cor, faixa, brilho, gema):
 
 
 def gerar_jogo():
-    salvar("pets/slime.svg", pixel_svg(mapa(SLIME)))
-    salvar("pets/fantasma.svg", pixel_svg(mapa(FANTASMA)))
-    salvar("pets/pintinho.svg", pixel_svg(mapa(PINTINHO)))
-    salvar("pets/gato.svg", pixel_svg(mapa(GATO), PALETA_PET))
-    salvar("pets/robo.svg", pixel_svg(mapa(ROBO), PALETA_PET))
-    salvar("pets/dragao.svg", pixel_svg(mapa(DRAGAO), PALETA_PET))
-    salvar("pets/ovo.svg", pixel_svg(mapa(OVO), PALETA_PET))
-    for nome, desenho in (("pinscher", PINSCHER), ("corgi", CORGI), ("salsicha", SALSICHA),
-                          ("passarinho", PASSARINHO), ("pikachu", PIKACHU), ("eevee", EEVEE),
-                          ("jigglypuff", JIGGLYPUFF)):
-        salvar(f"pets/{nome}.svg", pixel_svg(mapa(desenho), PALETA_PET))
-    for nome, desenho in ACESSORIOS.items():
-        salvar(f"acessorios/{nome}.svg", pixel_svg(mapa(desenho), PALETA_PET))
+    # Pets e acessórios desenhados (os Pokémon vêm de baixar_sprites.py).
+    for nome, desenho in desenhos_pets.PETS.items():
+        salvar(f"pets/{nome}.svg", no_quadro(desenho(), PET_LADO)[0])
+    for nome, desenho in desenhos_pets.ACESSORIOS.items():
+        grade, w, h, _ax, _ay = desenho()
+        salvar(f"acessorios/{nome}.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" '
+                                         f'shape-rendering="crispEdges">{"".join(svg_pixels(grade))}</svg>')
     salvar("jogo/petisco.svg", pixel_svg(mapa(PETISCO), PALETA_PET))
     baus = {
         "madeira": ("#8b5a2b", "#5d3a17", "#c48a4a", "#e0c08a"),
