@@ -89,6 +89,11 @@ def main():
         "{{SHA256}}": sha256,
     }.items():
         html = html.replace(chave, valor)
+    # O nginx guarda CSS e JS no navegador por 7 dias: o ?v= muda junto com o conteúdo.
+    for arquivo in ("estilo.css", "pagina.js"):
+        codigo = hashlib.sha256((SAIDA / arquivo).read_bytes()).hexdigest()[:10]
+        assert html.count(f'"{arquivo}"') == 1, arquivo
+        html = html.replace(f'"{arquivo}"', f'"{arquivo}?v={codigo}"')
     (SAIDA / "index.html").write_text(html)
 
     print(f"Site gerado em {SAIDA}")

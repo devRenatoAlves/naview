@@ -52,6 +52,9 @@ Ler o código de cada ferramenta da comunidade antes de instalar.
   rode o script de novo.
 - `site/Dockerfile` (nginx 1.27-alpine) e `site/nginx.conf`: servem `publico/`; `/download/`
   sempre baixa como arquivo.
+- Cache: SVG, fontes, CSS e JS ficam 7 dias no navegador; a página usa `no-cache`. O
+  `gerar_site.py` põe `?v=<código do conteúdo>` em `estilo.css` e `pagina.js`, então uma versão
+  nova chega na hora (antes, quem já tinha visitado via o HTML novo com o CSS antigo).
 - Visual: tema Alto-mar (Fredoka, cores do ícone). Topo com janela do app de demonstração (abas
   clicáveis, setas do teclado trocam de aba) e cartas de tema que trocam o cenário e a janela
   (Alto-mar, Aventura Pixel, Heróis HQ, Espaço, Neon 80s, Terminal) com as cores de `temas.py`.
