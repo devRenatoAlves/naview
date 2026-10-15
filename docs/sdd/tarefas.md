@@ -61,4 +61,4 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Testar o download e a instalação a partir do site publicado
 - [x] (15/10/2026) Revisão do topo: trocar de tema não move mais título, botões, janela nem cartas;
   fontes dos temas carregadas no início; abas da demonstração encolhem com reticências
-- [ ] Publicar a revisão do topo (enviar ao GitHub e montar de novo no Coolify)
+- [x] Publicar a revisão do topo (no ar em 15/10/2026; CSS e JS com `?v=` contra cache antigo)
