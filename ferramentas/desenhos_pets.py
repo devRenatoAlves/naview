@@ -5,7 +5,7 @@ sprites oficiais, baixados por baixar_sprites.py.
 """
 import re
 
-from pixel_vetor import montar, sombreado as sb
+from pixel_vetor import de_mapa, montar, sombreado as sb
 
 
 def espelho_x(d, lado=48):
@@ -267,61 +267,148 @@ PETS = {"pinscher": pinscher, "corgi": corgi, "salsicha": salsicha, "passarinho"
 
 # ---- acessórios: (desenho, largura, altura, âncora x, âncora y) --------------------
 # A âncora é o pixel do acessório que encosta no ponto do pet (topo, olhos ou pescoço).
+# Desenhados pixel a pixel (um caractere por pixel, "." = vazio), com contorno, cor base, sombra
+# embaixo à direita e luz em cima à esquerda.
+
+LACO = """
+.KK.........KK.
+KLRKK.....KKRrK
+KLRRRKK.KKRRRrK
+KLRRRRKKKRRRRrK
+KRRRrKLLRKrRRrK
+KRRrrKLRrKrrRrK
+KRrrKKRrrKKrrrK
+.KKKKKKKKKKKKK.
+....KRK.KrK....
+...KRK...KrK...
+...KK.....KK...
+"""
+
+BONE = """
+.......KKKKKKK............
+.....KKLLRRRRRKK..........
+....KLLRRRRRRRRRK.........
+...KLRRRRWWWRRRRrK........
+..KLRRRRWWWWWRRRRrK.......
+..KLRRRRRWWWRRRRRrK.......
+.KLRRRRRRRRRRRRRRrrK......
+.KRRRRRRRRRRRRRRRrrK......
+.KRRRRRRRRRRRRRRrrrKKKK...
+.KrrrrrrrrrrrrrrrKKrrrrKK.
+.KKKKKKKKKKKKKKKKrrrrrrrrK
+...............KKrrrrrrrK.
+................KKKKKKKKK.
+"""
+
+OCULOS = """
+.KKKKKKKKKK....KKKKKKKKKK.
+KWWdDDDDDDDKKKKKWWdDDDDDDK
+KWdDDDDDDDDKFFKKWdDDDDDDDK
+KdDDDDDDDDDK....KdDDDDDDDK
+KDDDDDDDDDdK....KDDDDDDDdK
+KDDDDDDDDdlK....KDDDDDDdlK
+.KDDDDdlllK......KDDDdllK.
+..KKKKKKKK........KKKKKK..
+"""
+
+MAGO = """
+...............KKK.........
+.............KKPMK.........
+............KPMMK..........
+...........KPMMmK..........
+..........KPMMMmK..........
+..........KPMYMmK..........
+.........KPMYYYmmK.........
+.........KPMMYMMmK.........
+........KPMMMMMMmmK........
+........KPMMMMMMMmK........
+.......KPMMMMMyMMmmK.......
+.......KPMMMMMMMMMmK.......
+......KKKKKKKKKKKKKKK......
+......KYYYYYYYYYYYYYK......
+......KyyyyyyyyyyyyyK......
+..KKKKKKKKKKKKKKKKKKKKKKK..
+.KPPMMMMMMMMMMMMMMMMMMMmmK.
+KMMMMMMMMMMMMMMMMMMMMMMmmmK
+.KmmmmmmmmmmmmmmmmmmmmmmmK.
+..KKKKKKKKKKKKKKKKKKKKKKK..
+"""
+
+COROA = """
+.KKK....KKK....KKK.
+KWOoK..KWOoK..KWOoK
+.KOK....KOK....KOK.
+.KOK...KOOOK...KOK.
+.KOOK.KLOOOoK.KOoK.
+.KLOOOKOOOOOKOOOoK.
+.KLOOOOOOOOOOOOOoK.
+.KKKKKKKKKKKKKKKKK.
+.KOOCOOORRROOOCOoK.
+.KOCWcOORWrOOCWcoK.
+.KOOcOOOrrrOOOcOoK.
+.KoooooooooooooooK.
+.KKKKKKKKKKKKKKKKK.
+"""
+
 
 def laco():
-    RO, ROs = "#ff6fa8", "#d6437f"
-    g = montar([
-        (sb('<path d="M7 5 L1 1 L1 9 Z"/><path d="M7 5 L13 1 L13 9 Z"/>', RO, ROs, id_="l"), [RO, ROs], True),
-        (f'<rect x="5" y="3" width="4" height="4" rx="1" fill="{ROs}"/>', [ROs], True),
-    ], "#6b1d3d", 15, 11)
-    return g, 15, 11, 7, 9
+    return de_mapa(LACO, {"K": "#6b1d3d", "R": "#ff6fa8", "r": "#d6437f", "L": "#ffc2da"}), 15, 11, 7, 9
 
 
 def bone():
-    VM, VMs, BR = "#e8402a", "#a82a18", "#ffffff"
-    g = montar([
-        (f'<rect x="12" y="9" width="12" height="2" rx="1" fill="{VMs}"/>', [VMs], True),
-        (sb('<path d="M2 10 Q2 2 11 2 Q20 2 20 10 Z"/>', VM, VMs,
-            f'<rect x="9" y="4" width="4" height="3" fill="{BR}"/>', id_="b"), [VM, VMs, BR], True),
-    ], "#4a120a", 26, 13)
-    return g, 26, 13, 11, 10
+    paleta = {"K": "#4a120a", "R": "#e8402a", "r": "#a82a18", "L": "#ff8a6a", "W": "#ffffff"}
+    return de_mapa(BONE, paleta), 26, 13, 11, 10
 
 
 def oculos():
-    PR, LE = "#1b1b1b", "#3a4a6b"
-    g = montar([
-        (f'<rect x="1" y="1" width="10" height="7" rx="2" fill="{LE}"/><rect x="15" y="1" width="10" height="7" rx="2" fill="{LE}"/>'
-         f'<rect x="10" y="2" width="6" height="2" fill="{PR}"/>', [LE, PR], True),
-    ], "#111111", 26, 9, detalhes=[("#9fb3d9", [(3, 3), (4, 3), (3, 4), (17, 3), (18, 3), (17, 4)])])
-    return g, 26, 9, 13, 4
+    paleta = {"K": "#111111", "F": "#3a3a3a", "D": "#22304f", "d": "#3b5a8c", "l": "#6fa0e0", "W": "#ffffff"}
+    return de_mapa(OCULOS, paleta), 26, 9, 13, 4
 
 
 def cachecol():
-    VM, VMs, BR = "#ff595e", "#c23a3f", "#ffffff"
-    listras = "".join(f'<rect x="{x}" y="1" width="2" height="5" fill="{BR}"/>' for x in (5, 11, 17, 23))
-    g = montar([
-        (sb('<rect x="1" y="1" width="28" height="5" rx="2"/>', VM, VMs, id_="c") + listras, [VM, VMs, BR], True),
-        (sb('<rect x="19" y="4" width="5" height="9" rx="1"/>', VM, VMs, id_="p")
-         + f'<rect x="19" y="8" width="5" height="2" fill="{BR}"/>', [VM, VMs, BR], True),
-    ], "#5a1418", 30, 15)
+    """Faixa listrada com uma leve curva, nó e a ponta caindo com franja."""
+    K, VM, VMs, VMl, BR, BRs = "#5a1418", "#ff595e", "#c23a3f", "#ff9a9c", "#ffffff", "#e8d2d2"
+
+    def tricô(x, linha, ultima):
+        """Listras na diagonal; linha 1 = luz, última = sombra."""
+        if (x + linha) // 2 % 3 == 0:
+            return BR if linha < ultima else BRs
+        return VMl if linha == 1 else (VMs if linha == ultima else VM)
+
+    g = {}
+    for x in range(30):  # faixa em volta do pescoço
+        topo = (0 if x < 4 or x > 25 else 1) + (x in (0, 29))
+        base = topo + (3 if x in (0, 29) else 5)
+        for y in range(topo, base + 1):
+            borda = y in (topo, base) or x in (0, 29)
+            g[(x, y)] = K if borda else tricô(x, y - topo, base - topo - 1)
+    for y in range(6, 13):  # ponta que cai, inclinada para a direita
+        x0 = 17 + (y >= 10)
+        for x in range(x0, x0 + 7):
+            borda = x in (x0, x0 + 6) or y == 12
+            g[(x, y)] = K if borda else tricô(y, x - x0, 5)
+    for y in range(2, 7):  # nó
+        for x in range(16, 22):
+            if x in (16, 21) or y in (2, 6):
+                g[(x, y)] = K
+            else:
+                g[(x, y)] = VMl if x == 17 and y < 5 else (VMs if x == 20 or y == 5 else VM)
+    for x in range(18, 25):  # franja
+        g[(x, 13)] = VM if x % 2 == 0 else K
+        if x % 2 == 0:
+            g[(x, 14)] = K
     return g, 30, 15, 15, 2
 
 
 def mago():
-    RX, RXs, AM = "#5b4bc4", "#3d2f9e", "#ffd166"
-    g = montar([
-        (sb('<path d="M13 1 Q16 10 20 15 L6 15 Q10 9 13 1 Z"/>', RX, RXs, id_="m"), [RX, RXs], True),
-        (sb('<ellipse cx="13" cy="16" rx="12" ry="2.5"/>', RX, RXs, id_="a"), [RX, RXs], True),
-    ], "#1f1660", 27, 20, detalhes=[(AM, [(12, 7), (11, 8), (12, 8), (13, 8), (12, 9), (15, 12), (10, 13)])])
-    return g, 27, 20, 13, 17
+    paleta = {"K": "#1f1660", "M": "#6a5ae0", "m": "#4434b0", "P": "#9d8ff5", "Y": "#ffd166", "y": "#e0a030"}
+    return de_mapa(MAGO, paleta), 27, 20, 13, 17
 
 
 def coroa():
-    OU, OUs, VM, CY = "#f5b81b", "#b8860b", "#ff595e", "#4cc9f0"
-    g = montar([
-        (sb('<path d="M1 11 L1 2 L5 6 L9 1 L13 6 L17 2 L17 11 Z"/>', OU, OUs, id_="c"), [OU, OUs], True),
-    ], "#5a3d00", 19, 13, detalhes=[(VM, [(8, 8), (9, 8)]), (CY, [(4, 8), (13, 8)]), ("#fff3b0", [(3, 4), (9, 3)])])
-    return g, 19, 13, 9, 12
+    paleta = {"K": "#5a3d00", "O": "#f5b81b", "o": "#c98a0b", "L": "#fff1a8", "W": "#ffffff",
+              "R": "#ff3b5c", "r": "#b0123a", "C": "#4cc9f0", "c": "#1f8fb8"}
+    return de_mapa(COROA, paleta), 19, 13, 9, 12
 
 
 ACESSORIOS = {"laco": laco, "bone": bone, "oculos": oculos, "cachecol": cachecol, "mago": mago, "coroa": coroa}

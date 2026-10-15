@@ -3,14 +3,25 @@
     <linearGradient id="t" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff7a1a"/>
     </linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.3"/>
+    </linearGradient>
   </defs>
-  <ellipse cx="100" cy="158" rx="80" ry="9" fill="#000" fill-opacity="0.25"/>
+  <ellipse cx="100" cy="158" rx="82" ry="9" fill="#000" fill-opacity="0.28"/>
   <rect x="22" y="72" width="156" height="82" rx="10" fill="url(#t)" stroke="#1b1b1b" stroke-width="6"/>
+  <rect x="25" y="75" width="150" height="76" rx="8" fill="url(#c)"/>
+  <path d="M28 108 H172 M28 132 H172" stroke="#000" stroke-opacity="0.18" stroke-width="3"/>
   <path d="M22 76 C22 30 178 30 178 76 Z" fill="url(#t)" stroke="#1b1b1b" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M30 60 C50 44 150 44 170 60" fill="none" stroke="#000" stroke-opacity="0.15" stroke-width="3"/>
+  <path d="M34 64 C42 52 64 46 88 45" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="5" stroke-linecap="round"/>
   <rect x="22" y="70" width="156" height="14" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="5"/>
   <rect x="44" y="40" width="16" height="114" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="5"/>
   <rect x="140" y="40" width="16" height="114" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="5"/>
-  <rect x="84" y="64" width="32" height="40" rx="6" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="5"/>
-  <circle cx="100" cy="82" r="7" fill="#ffffff" stroke="#1b1b1b" stroke-width="3"/>
-  <path d="M34 92 C60 86 80 86 84 88" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="5" stroke-linecap="round"/>
+  <path d="M47 46 V150 M143 46 V150" stroke="#fff" stroke-opacity="0.25" stroke-width="3"/>
+  <path d="M22 128 L22 144 Q22 154 32 154 L48 154 L48 146 L30 146 L30 128 Z" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="4" stroke-linejoin="round"/><path d="M178 128 L178 144 Q178 154 168 154 L152 154 L152 146 L170 146 L170 128 Z" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="4" stroke-linejoin="round"/><circle cx="52" cy="96" r="3" fill="#ffd166" stroke="#1b1b1b" stroke-width="1.5"/><circle cx="52" cy="140" r="3" fill="#ffd166" stroke="#1b1b1b" stroke-width="1.5"/><circle cx="148" cy="96" r="3" fill="#ffd166" stroke="#1b1b1b" stroke-width="1.5"/><circle cx="148" cy="140" r="3" fill="#ffd166" stroke="#1b1b1b" stroke-width="1.5"/>
+  <rect x="82" y="62" width="36" height="46" rx="7" fill="#7a1fa2" stroke="#1b1b1b" stroke-width="5"/>
+  <circle cx="100" cy="78" r="8" fill="#ffffff" stroke="#1b1b1b" stroke-width="3"/>
+  <circle cx="97" cy="75" r="2.5" fill="#fff" fill-opacity="0.85"/>
+  <path d="M100 90 a4 4 0 0 1 2.5 7 L104 103 H96 L97.5 97 a4 4 0 0 1 2.5 -7 Z" fill="#1b1b1b"/>
+  <path d="M34 92 C60 86 80 86 82 88" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round"/>
 </svg>

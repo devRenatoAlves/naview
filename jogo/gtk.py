@@ -40,6 +40,43 @@ def compor_pet(especie, acessorio, unidade=1):
     return tela
 
 
+# Área do pet no rodapé, em px: o desenho é ampliado até caber em RODAPE_W x RODAPE_H, com
+# RODAPE_FOLGA px livres em cima para a animação de flutuar não cortar a cabeça.
+RODAPE_W, RODAPE_H, RODAPE_FOLGA = 72, 56, 8
+RODAPE_ZOOM_MAX = 1.7
+
+
+def _caixa_opaca(imagem):
+    """(x0, y0, x1, y1) dos pixels não transparentes; x1 e y1 exclusivos."""
+    w, h = imagem.get_width(), imagem.get_height()
+    px, passo, canais = imagem.get_pixels(), imagem.get_rowstride(), imagem.get_n_channels()
+    linhas = [y for y in range(h) if any(px[y * passo + x * canais + 3] for x in range(w))]
+    if not linhas:
+        return 0, 0, w, h
+    colunas = [x for x in range(w) if any(px[y * passo + x * canais + 3] for y in linhas)]
+    return colunas[0], linhas[0], colunas[-1] + 1, linhas[-1] + 1
+
+
+@lru_cache(maxsize=16)
+def pet_rodape(especie, acessorio):
+    """Pet do rodapé, sem o espaço vazio do quadro e ampliado para o mesmo tamanho na tela.
+
+    No quadro, cada pet ocupa uma parte diferente (o slime tem 35 px de altura, o Gengar 56) e
+    todos ficam encostados embaixo; sem recortar, os menores ficavam pequenos e baixos.
+    """
+    x0, y0, x1, y1 = _caixa_opaca(compor_pet(especie, acessorio))
+    w, h = x1 - x0, y1 - y0
+    zoom = min(RODAPE_W / w, RODAPE_H / h, RODAPE_ZOOM_MAX)
+    # Amplia a partir da versão 4x e reduz com filtro: o pixel art fica nítido sem degraus tortos.
+    grande = compor_pet(especie, acessorio, 4).new_subpixbuf(x0 * 4, y0 * 4, w * 4, h * 4)
+    pw, ph = round(w * zoom), round(h * zoom)
+    desenho = grande.scale_simple(pw, ph, GdkPixbuf.InterpType.BILINEAR)
+    tela = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, RODAPE_W, RODAPE_H + RODAPE_FOLGA)
+    tela.fill(0x00000000)
+    desenho.copy_area(0, 0, pw, ph, tela, (RODAPE_W - pw) // 2, RODAPE_FOLGA + (RODAPE_H - ph) // 2)
+    return tela
+
+
 class Sons:
     """Toca os WAV de sons/ com o GStreamer (carregado só na primeira vez)."""
 

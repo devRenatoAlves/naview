@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import desenhos_pets  # noqa: E402
-from pixel_vetor import no_quadro, svg as svg_pixels  # noqa: E402
+from pixel_vetor import de_mapa, no_quadro, svg as svg_pixels  # noqa: E402
 
 PET_LADO = 64  # igual a jogo/catalogo.py
 
@@ -330,35 +330,69 @@ PALETA_PET = dict(PALETA, **{
 
 
 PETISCO = """
-....KKKKKK....
-..KKUUUUUUKK..
-.KUUCUUUCUUUK.
-KUUUUUUUUCUUUK
-KUCUUUCUUUUUUK
-KUUUUUUUUUCUUK
-.KUUCUUUUUUUK.
-..KKUUUUUCKK..
-....KKKKKK....
+.....KKKKK......
+...KKLLLLLKK....
+..KLLLBBBBBK....
+.KLLCCBBBBBBKK..
+.KLLCcBBBCCBBBK.
+KLLBBBBBBCcBBBbK
+KLBBBBBBBBBBBBbK
+KLBBCCBBBBBBBbbK
+KLBBCcBBBBBCBbbK
+KBBBBBBBBBCcBbbK
+KBBBBBBBBBBBbbbK
+.KBBBCCBBBBBbbK.
+.KbBBCcBBBBbbbK.
+..KbbBBBBbbbbK..
+...KKbbbbbbKK...
+.....KKKKKK.....
 """
+PALETA_PETISCO = {"K": "#5b3212", "B": "#e0a458", "b": "#c07a32", "L": "#f6cf8a", "C": "#5a2d0c", "c": "#9a5a2a"}
+
+
+def estrela_d(cx, cy, r_ext, r_int, pontas=5):
+    """Caminho SVG de uma estrela com a ponta para cima."""
+    pts = []
+    for i in range(pontas * 2):
+        r = r_ext if i % 2 == 0 else r_int
+        a = math.pi * i / pontas - math.pi / 2
+        pts.append(f"{cx + r * math.cos(a):.2f} {cy + r * math.sin(a):.2f}")
+    return "M" + " L".join(pts) + " Z"
 
 
 def bau(cor, faixa, brilho, gema):
+    rebites = "".join(f'<circle cx="{x}" cy="{y}" r="3" fill="{brilho}" stroke="#1b1b1b" stroke-width="1.5"/>'
+                      for x in (52, 148) for y in (96, 140))
+    cantos = "".join(f'<path d="{d}" fill="{faixa}" stroke="#1b1b1b" stroke-width="4" stroke-linejoin="round"/>'
+                     for d in ("M22 128 L22 144 Q22 154 32 154 L48 154 L48 146 L30 146 L30 128 Z",
+                               "M178 128 L178 144 Q178 154 168 154 L152 154 L152 146 L170 146 L170 128 Z"))
     return f"""
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 170">
   <defs>
     <linearGradient id="t" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="{brilho}"/><stop offset="1" stop-color="{cor}"/>
     </linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.3"/>
+    </linearGradient>
   </defs>
-  <ellipse cx="100" cy="158" rx="80" ry="9" fill="#000" fill-opacity="0.25"/>
+  <ellipse cx="100" cy="158" rx="82" ry="9" fill="#000" fill-opacity="0.28"/>
   <rect x="22" y="72" width="156" height="82" rx="10" fill="url(#t)" stroke="#1b1b1b" stroke-width="6"/>
+  <rect x="25" y="75" width="150" height="76" rx="8" fill="url(#c)"/>
+  <path d="M28 108 H172 M28 132 H172" stroke="#000" stroke-opacity="0.18" stroke-width="3"/>
   <path d="M22 76 C22 30 178 30 178 76 Z" fill="url(#t)" stroke="#1b1b1b" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M30 60 C50 44 150 44 170 60" fill="none" stroke="#000" stroke-opacity="0.15" stroke-width="3"/>
+  <path d="M34 64 C42 52 64 46 88 45" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="5" stroke-linecap="round"/>
   <rect x="22" y="70" width="156" height="14" fill="{faixa}" stroke="#1b1b1b" stroke-width="5"/>
   <rect x="44" y="40" width="16" height="114" fill="{faixa}" stroke="#1b1b1b" stroke-width="5"/>
   <rect x="140" y="40" width="16" height="114" fill="{faixa}" stroke="#1b1b1b" stroke-width="5"/>
-  <rect x="84" y="64" width="32" height="40" rx="6" fill="{faixa}" stroke="#1b1b1b" stroke-width="5"/>
-  <circle cx="100" cy="82" r="7" fill="{gema}" stroke="#1b1b1b" stroke-width="3"/>
-  <path d="M34 92 C60 86 80 86 84 88" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="5" stroke-linecap="round"/>
+  <path d="M47 46 V150 M143 46 V150" stroke="#fff" stroke-opacity="0.25" stroke-width="3"/>
+  {cantos}{rebites}
+  <rect x="82" y="62" width="36" height="46" rx="7" fill="{faixa}" stroke="#1b1b1b" stroke-width="5"/>
+  <circle cx="100" cy="78" r="8" fill="{gema}" stroke="#1b1b1b" stroke-width="3"/>
+  <circle cx="97" cy="75" r="2.5" fill="#fff" fill-opacity="0.85"/>
+  <path d="M100 90 a4 4 0 0 1 2.5 7 L104 103 H96 L97.5 97 a4 4 0 0 1 2.5 -7 Z" fill="#1b1b1b"/>
+  <path d="M34 92 C60 86 80 86 82 88" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round"/>
 </svg>"""
 
 
@@ -370,7 +404,8 @@ def gerar_jogo():
         grade, w, h, _ax, _ay = desenho()
         salvar(f"acessorios/{nome}.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" '
                                          f'shape-rendering="crispEdges">{"".join(svg_pixels(grade))}</svg>')
-    salvar("jogo/petisco.svg", pixel_svg(mapa(PETISCO), PALETA_PET))
+    salvar("jogo/petisco.svg", '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">'
+                               + "".join(svg_pixels(de_mapa(PETISCO, PALETA_PETISCO))) + "</svg>")
     baus = {
         "madeira": ("#8b5a2b", "#5d3a17", "#c48a4a", "#e0c08a"),
         "prata": ("#8a96a3", "#5d6873", "#dfe6ee", "#7dd3fc"),
@@ -380,11 +415,21 @@ def gerar_jogo():
     }
     for nome, (cor, faixa, brilho, gema) in baus.items():
         salvar(f"baus/{nome}.svg", bau(cor, faixa, brilho, gema))
-    salvar("jogo/moeda.svg", """
+    salvar("jogo/moeda.svg", f"""
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <circle cx="20" cy="20" r="18" fill="#f5b81b" stroke="#8a5a00" stroke-width="3"/>
-  <circle cx="20" cy="20" r="12" fill="none" stroke="#ffe08a" stroke-width="3"/>
-  <path d="M14 12 Q18 9 22 12" stroke="#fff" stroke-opacity="0.7" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe680"/><stop offset="0.55" stop-color="#f5b81b"/><stop offset="1" stop-color="#d98c00"/>
+    </linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7c23a"/><stop offset="1" stop-color="#b87300"/>
+    </linearGradient>
+  </defs>
+  <circle cx="20" cy="21.5" r="17.5" fill="#7a4d00"/>
+  <circle cx="20" cy="19.5" r="17.5" fill="url(#b)" stroke="#7a4d00" stroke-width="2"/>
+  <circle cx="20" cy="19.5" r="13" fill="url(#f)" stroke="#c98a0b" stroke-width="1.5"/>
+  <path d="{estrela_d(20, 20, 7.5, 3.2)}" fill="#fff1a8" stroke="#b87800" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M8.5 14 A12.5 12.5 0 0 1 15 7.5" fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="2.4" stroke-linecap="round"/>
 </svg>""")
 
 

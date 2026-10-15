@@ -51,6 +51,16 @@ def montar(camadas, contorno, largura=48, altura=48, detalhes=()):
     return grade
 
 
+def de_mapa(mapa, paleta):
+    """{(x, y): cor} de um desenho em texto: um caractere por pixel, "." = vazio."""
+    grade = {}
+    for y, linha in enumerate(mapa.strip("\n").split("\n")):
+        for x, c in enumerate(linha):
+            if c != ".":
+                grade[(x, y)] = paleta[c]
+    return grade
+
+
 def sombreado(forma, base, sombra, luz="", dx=-1.2, dy=-1.4, id_="s"):
     """Forma na cor da sombra com a cor base deslocada para cima e para a esquerda por dentro.
 

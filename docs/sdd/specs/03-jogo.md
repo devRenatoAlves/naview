@@ -36,7 +36,10 @@
   - O brilho das cartas lendárias e míticas anda com `transform` sobre a arte, não com
     `background-position` (que repintava a carta inteira a cada quadro).
 - **`jogo/gtk.py`:** pet no rodapé, sons (GStreamer) e notificações (libnotify).
-  - `compor_pet` fica em cache (`lru_cache`). O GStreamer carrega 3 s depois de abrir o app, se
+  - Pet do rodapé (`pet_rodape`): recorta o espaço vazio do quadro e amplia o desenho até caber em
+    72 x 56 px (no máximo 1,7 vez), centralizado, com 8 px livres em cima para a animação. Sem isso,
+    os pets menores (slime, salsicha, Jigglypuff) ficavam pequenos e encostados embaixo.
+  - `compor_pet` e `pet_rodape` ficam em cache (`lru_cache`). O GStreamer carrega 3 s depois de abrir o app, se
     houver som de conexão equipado (`Sons.preparar`).
 - **`app.py`:**
   - `registrar_atendimento`: só sessões de 180 s ou mais contam.
@@ -91,12 +94,16 @@ corridos (14/10/2026, já com o tema Alto-mar e os 8 pets novos):
   - Pets próprios: camadas vetoriais convertidas em pixels com contorno e sombra em blocos
     (`ferramentas/desenhos_pets.py` e `ferramentas/pixel_vetor.py`), geradas por `gerar_arte.py`.
   - Pokémon: sprites oficiais de Black/White (PokeAPI), baixados por `ferramentas/baixar_sprites.py`.
-  - Acessórios: desenhos próprios com uma âncora. `ENCAIXE_PET` guarda os pontos (x, y) de
+  - Acessórios: desenhados pixel a pixel em texto (um caractere por pixel, em
+    `ferramentas/desenhos_pets.py`, lido por `de_mapa`), com contorno, luz e sombra; o cachecol é
+    montado por código. Cada um tem uma âncora. `ENCAIXE_PET` guarda os pontos (x, y) de
     topo, olhos e pescoço de cada pet, e `encaixe_acessorio()` devolve posição e tamanho. É usado
     pelo app (`compor_pet`) e pela tela do jogo (`CAT.encaixes`).
   - Pet novo: desenhar (ou baixar), medir os três pontos no quadro e somar em `ENCAIXE_PET`.
   - Tela do pet: cada pixel do desenho vira 4 px (bebê), 4,5 px (jovem) ou 5 px (adulto); o ovo,
     4 px.
+- Petisco (biscoito com gotas, pixel art 16 x 16), moeda (com estrela e borda em relevo) e baús
+  (tábuas, cantoneiras, rebites e fechadura) são gerados por `ferramentas/gerar_arte.py`.
 - Problemas conhecidos:
   - As moedas sobram com o tempo.
   - O nível da carta só tem efeito nos temas (versão dourada).
