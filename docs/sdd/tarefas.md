@@ -56,6 +56,9 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Criar a página (design, seções, download)
 - [x] Gerar o pacote de download com versão e SHA-256 (`ferramentas/gerar_site.py`)
 - [x] Repositório privado no GitHub: `devRenatoAlves/naview` (ramo `main`)
-- [~] Usuário criar o subdomínio `review.hunpe.com.br` apontando para a VPS
+- [~] Usuário criar o subdomínio `naview.hunpe.com.br` apontando para a VPS
 - [ ] Publicar na VPS pelo Coolify (domínio e HTTPS)
 - [ ] Testar o download e a instalação a partir do site publicado
+- [x] (15/10/2026) Revisão do topo: trocar de tema não move mais título, botões, janela nem cartas;
+  fontes dos temas carregadas no início; abas da demonstração encolhem com reticências
+- [ ] Publicar a revisão do topo (enviar ao GitHub e montar de novo no Coolify)

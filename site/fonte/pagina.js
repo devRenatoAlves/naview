@@ -43,14 +43,53 @@
   const corDoTopo = { mar: "#0e1638", pixel: "#5ec2ff", hq: "#ffd600", espaco: "#070b1f", neon: "#0d0220", terminal: "#050805" };
   const meta = document.querySelector('meta[name="theme-color"]');
 
+  const caixaTitulo = hero.querySelector(".titulo-caixa");
+  const titulo = caixaTitulo.querySelector("h1");
+
+  // Reserva para o título a altura do tema em que ele fica mais alto. Assim, trocar de tema não
+  // empurra o texto, os botões nem as cartas. A troca é feita e desfeita antes de a tela ser
+  // desenhada, então o visitante não vê nada piscar.
+  function reservarTitulo() {
+    const atual = hero.dataset.tema;
+    hero.classList.add("medindo");
+    let maior = 0;
+    for (const carta of cartasTema) {
+      hero.dataset.tema = carta.dataset.tema;
+      maior = Math.max(maior, titulo.getBoundingClientRect().height);
+    }
+    hero.dataset.tema = atual;
+    caixaTitulo.style.minHeight = Math.ceil(maior) + "px";
+    hero.offsetHeight; // aplica o tema atual antes de religar as transições
+    hero.classList.remove("medindo");
+  }
+
+  // Carrega já as fontes dos temas: sem isso, o primeiro clique em cada tema mostra uma fonte
+  // provisória e depois pula para a certa.
+  const fontesDosTemas = ['16px "Press Start 2P"', '16px "Bangers"', '16px "Orbitron"', '16px "VT323"', '16px "Audiowide"'];
+  Promise.all(fontesDosTemas.map((f) => document.fonts.load(f).catch(() => null)))
+    .then(() => document.fonts.ready)
+    .then(reservarTitulo);
+  reservarTitulo();
+
+  let esperaRedimensionar;
+  addEventListener("resize", () => {
+    clearTimeout(esperaRedimensionar);
+    esperaRedimensionar = setTimeout(reservarTitulo, 150);
+  });
+
   cartasTema.forEach((carta) => {
     carta.addEventListener("click", () => {
       const tema = carta.dataset.tema;
+      if (hero.dataset.tema === tema) return;
       hero.dataset.tema = tema;
       cartasTema.forEach((c) => c.setAttribute("aria-pressed", String(c === carta)));
       meta.setAttribute("content", corDoTopo[tema]);
+      hero.classList.remove("trocando");
+      hero.offsetWidth; // reinicia a animação de troca
+      hero.classList.add("trocando");
     });
   });
+  hero.addEventListener("animationend", () => hero.classList.remove("trocando"));
 
   // ---------- Baú de demonstração (mesmas chances do app: jogo/catalogo.py) ----------
 

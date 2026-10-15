@@ -61,10 +61,31 @@ Ler o código de cada ferramenta da comunidade antes de instalar.
 - Testado com o Playwright em 1366 px e 375 px: sem rolagem lateral, sem erros no console;
   animações desligadas com "reduzir movimento".
 
+### Revisão do topo (15/10/2026)
+
+Antes, trocar de tema movia tudo (até 118 px em 1366 px; no celular, a carta tocada saía de baixo
+do dedo). O que mudou:
+
+- O título fica numa `.titulo-caixa` com altura reservada. O `pagina.js` mede o título em todos os
+  temas (sem desenhar a troca) e usa a maior altura; mede de novo ao carregar as fontes e ao
+  redimensionar. O texto fica encostado embaixo da caixa, perto do subtítulo.
+- `--h-tam` do HQ e do Terminal reduzidos para o título ocupar as mesmas linhas do Alto-mar.
+- Grade do topo com `align-items: start`: a janela não depende da altura do texto.
+- Janela com tamanho fixo: borda desenhada com `outline` (espessura `--j-borda-l`, cor
+  `--j-borda-cor`), barra com 44 px e corpo com altura fixa.
+- Abas encolhem com reticências (nome em `.aba-nome`); a aba ativa não encolhe.
+- Até 960 px, as cartas de tema ficam acima da janela.
+- As 5 fontes dos temas são carregadas ao abrir a página (`document.fonts.load`).
+- O fundo de cada tema também fica na camada do cenário (`--fundo-<tema>`), então a troca é um
+  esmaecido; título e janela fazem um esmaecido curto (classe `trocando`).
+- Explosão do HQ abaixo do menu (cobria "Baixar"); fantasma do Pixel mais baixo (cobria uma carta).
+- Conferido com o Playwright em 1366, 1024, 768 e 375 px: subtítulo, botões, janela e cartas na
+  mesma posição nos 6 temas; sem rolagem lateral; sem erros no console.
+
 ## Publicação
 
 - Código no GitHub, repositório privado `devRenatoAlves/naview`, ramo `main`.
-- Endereço: `https://review.hunpe.com.br`.
+- Endereço: `https://naview.hunpe.com.br`.
 - Coolify: recurso a partir de repositório privado (GitHub App), Build Pack = Dockerfile,
   Base Directory = `/`, Dockerfile Location = `/site/Dockerfile`, porta 80.
 - O `Dockerfile` tem dois estágios: um Python que roda `ferramentas/gerar_site.py` e um nginx que
