@@ -14,10 +14,15 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Ícone novo: letra R em forma de veleiro (`icone.svg`)
 - [x] Tema lendário Alto-mar (barco, mar e a marca da logo)
 - [x] 7 pets novos: pinscher caramelo, corgi, salsicha, passarinho, Pikachu, Eevee e Jigglypuff
+- [x] Pets redesenhados em pixel art 64 x 64 (sprites oficiais para os Pokémon) e Gengar
 - [x] Barra de contatos retrátil
 - [x] Corrigir a tela do jogo cortada quando o app abre com a barra lateral aberta
 - [x] Atalho no menu do KDE (`.desktop`) e ícone próprio
 - [x] Revisão da interface: ícones, cartão de conexão rápida, avatares, avisos, abas
+- [x] Revisão de fluidez e usabilidade (15/10/2026): leitura do AnyDesk em cache, recentes na tela
+  inicial, lista ordenada, Enter da busca corrigido, confirmação ao fechar sessão longa, jogo mais
+  leve e liberado da memória
+- [ ] Conferir em sessão real se o aviso do rodapé aparece por cima da janela do AnyDesk
 - [ ] Testar com sessões reais: teclado, atalhos, tela cheia, transferência de arquivos
 - [ ] Conferir o formato do título da janela de sessão (nome do computador) em sessão real
 - [ ] Atalhos para trocar de aba (Ctrl+Tab, Ctrl+1..9)
@@ -62,3 +67,14 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] (15/10/2026) Revisão do topo: trocar de tema não move mais título, botões, janela nem cartas;
   fontes dos temas carregadas no início; abas da demonstração encolhem com reticências
 - [x] Publicar a revisão do topo (no ar em 15/10/2026; CSS e JS com `?v=` contra cache antigo)
+
+## Windows ([spec](specs/06-windows.md))
+
+- [x] Levantar o que serve, o que quebra e o caminho (Qt nos dois sistemas)
+- [x] Script do teste de viabilidade (`ferramentas/teste_windows.py`)
+- [x] Piloto para a equipe: `.exe` montado pelo GitHub Actions e página `/piloto/` no site
+- [ ] Confirmar a primeira montagem no GitHub Actions e o download no site
+- [~] Usuário (e 2 ou 3 colegas) rodar o piloto e trazer o `relatorio-windows.txt`
+- [ ] Fase 1: módulo `janelas` (X11 e Windows) e app reescrito em Qt (PySide6)
+- [ ] Fase 2: jogo no `QWebEngineView` com `QWebChannel`
+- [ ] Fase 3: pacote `.exe`, instalador e testes nos PCs da equipe

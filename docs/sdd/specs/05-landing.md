@@ -94,3 +94,18 @@ do dedo). O que mudou:
 - O `Dockerfile` tem dois estágios: um Python que roda `ferramentas/gerar_site.py` e um nginx que
   serve `site/publico`. Por isso `site/publico` não vai para o git (`.gitignore`).
 - `.dockerignore` deixa de fora `docs/`, `.claude/`, `.git` e arquivos gerados.
+
+## Piloto Windows (15/10/2026)
+
+- Página não divulgada `/piloto/` (`site/fonte/piloto/index.html`, com `noindex`): download do
+  teste de viabilidade para Windows e o passo a passo. A página principal não tem link para ela.
+- O `.exe` é montado pelo GitHub Actions (`.github/workflows/piloto-windows.yml`), numa máquina
+  Windows. Ele confere que o programa abre (`--verificar`) e guarda o
+  `site/piloto-windows/naview-piloto-windows.zip` no `main`. O Coolify publica no deploy seguinte.
+- O Dockerfile não muda: `gerar_site.py` copia o zip para `download/` e preenche tamanho, data e
+  SHA-256. Sem o zip, a página mostra "O pacote ainda está sendo preparado".
+- O fluxo roda quando `ferramentas/teste_windows.py`, `ferramentas/icone.ico` ou o próprio fluxo
+  mudam, ou à mão (aba Actions do GitHub). Cada montagem soma ~20–40 MB ao histórico do git; ok
+  para o piloto.
+- Depois de cada montagem, o `main` remoto tem um commit do robô: rodar `git pull` antes de
+  continuar.

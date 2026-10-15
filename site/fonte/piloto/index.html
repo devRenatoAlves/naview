@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Página não divulgada: só quem recebe o link chega aqui. -->
+<meta name="robots" content="noindex, nofollow">
+<title>NaView: piloto Windows</title>
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<style>
+  @font-face { font-family: "Fredoka"; src: url("../fonts/Fredoka[wdth,wght].ttf") format("truetype"); font-weight: 300 700; font-display: swap; }
+  :root {
+    --mar: #0e1638; --casco: #1e1b4b; --anil: #6366f1; --celeste: #38bdf8; --bandeira: #f59e0b;
+    --espuma: #eef6ff; --tinta: #16204f; --tinta-suave: #44507f; --branco: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Fredoka", system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.55;
+    color: var(--tinta); background: var(--espuma);
+  }
+  header {
+    background: linear-gradient(160deg, var(--mar), var(--casco) 60%, #312e81); color: var(--branco);
+    padding: 40px 16px 56px; text-align: center;
+  }
+  header img { width: 64px; height: 64px; }
+  h1 { margin: 10px 0 6px; font-size: clamp(1.7rem, 5vw, 2.4rem); line-height: 1.15; }
+  header p { margin: 0 auto; max-width: 560px; color: #c7d2fe; }
+  .selo {
+    display: inline-block; margin-bottom: 8px; padding: 2px 12px; border-radius: 999px;
+    background: var(--bandeira); color: #3a2400; font-weight: 600; font-size: 0.85rem;
+  }
+  main { max-width: 720px; margin: -32px auto 48px; padding: 0 16px; }
+  .cartao {
+    background: var(--branco); border-radius: 18px; padding: 24px; margin-bottom: 16px;
+    box-shadow: 0 6px 24px rgba(22, 32, 79, 0.10);
+  }
+  h2 { margin: 0 0 10px; font-size: 1.25rem; }
+  .botao {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px;
+    background: var(--anil); color: var(--branco); font-weight: 600; text-decoration: none;
+  }
+  .botao:hover { background: #4f46e5; }
+  .botao:focus-visible { outline: 3px solid var(--celeste); outline-offset: 2px; }
+  .meta { color: var(--tinta-suave); font-size: 0.9rem; margin: 10px 0 0; overflow-wrap: anywhere; }
+  ol { margin: 0; padding-left: 1.3em; }
+  li { margin-bottom: 8px; }
+  .aviso { border-left: 4px solid var(--bandeira); background: #fff8e8; }
+  code { background: #eef0ff; padding: 1px 6px; border-radius: 6px; font-size: 0.9em; overflow-wrap: anywhere; }
+  /* Sem pacote no build (o GitHub Actions ainda não gerou): mostra só o aviso. */
+  body[data-disponivel="nao"] .com-pacote, body[data-disponivel="sim"] .sem-pacote { display: none; }
+</style>
+</head>
+<body data-disponivel="{{WIN_DISPONIVEL}}">
+<header>
+  <img src="../icone.svg" alt="">
+  <div><span class="selo">Piloto · teste</span></div>
+  <h1>NaView no Windows</h1>
+  <p>Antes de levar o NaView para o Windows, precisamos saber se as sessões do AnyDesk funcionam
+    encaixadas em abas. Este programa de teste responde isso em uns 15 minutos.</p>
+</header>
+<main>
+  <section class="cartao">
+    <h2>Baixar</h2>
+    <div class="com-pacote">
+      <a class="botao" href="../download/{{WIN_ARQUIVO}}" download>Baixar o piloto para Windows</a>
+      <p class="meta">Arquivo <code>{{WIN_ARQUIVO}}</code>, {{WIN_TAMANHO}}, gerado em {{WIN_DATA}}.
+        Windows 10 ou 11.<br>SHA-256: <code>{{WIN_SHA256}}</code></p>
+    </div>
+    <p class="sem-pacote">O pacote ainda está sendo preparado. Volte em alguns minutos.</p>
+  </section>
+
+  <section class="cartao aviso">
+    <h2>Antes de começar</h2>
+    <ol>
+      <li><strong>Conecte só num computador de teste</strong> (outro PC seu ou da equipe), nunca no de
+        um cliente.</li>
+      <li>O Windows pode mostrar <em>"O Windows protegeu o computador"</em>, porque o programa ainda não
+        tem assinatura digital. Clique em <strong>Mais informações</strong> e depois em
+        <strong>Executar assim mesmo</strong>.</li>
+      <li>Se o antivírus bloquear, avise quem te mandou o link antes de liberar qualquer coisa.</li>
+    </ol>
+  </section>
+
+  <section class="cartao">
+    <h2>Como testar</h2>
+    <ol>
+      <li>Clique com o botão direito no arquivo baixado, escolha <strong>Extrair tudo</strong> e abra a
+        pasta extraída.</li>
+      <li>Abra o <code>NaView-piloto.exe</code>. O AnyDesk precisa estar instalado.</li>
+      <li>Digite o ID do computador de teste e clique em <strong>Conectar</strong>. A sessão deve abrir
+        numa aba. Se o AnyDesk já tiver uma sessão aberta, escolha-a na lista e clique em
+        <strong>Encaixar</strong>.</li>
+      <li>Use a sessão normalmente: digite, use atalhos, mexa o mouse, redimensione e maximize a
+        janela. Abra uma segunda sessão e troque entre as abas.</li>
+      <li>Repita com a opção <strong>Forçar foco do teclado na sessão</strong> marcada.</li>
+      <li>Marque na lista o que funcionou e escreva nas observações o que travou ou ficou estranho.</li>
+      <li>Clique em <strong>Salvar relatório</strong>. A pasta abre sozinha: envie o arquivo
+        <code>relatorio-windows.txt</code> para quem te mandou o link.</li>
+    </ol>
+  </section>
+</main>
+</body>
+</html>

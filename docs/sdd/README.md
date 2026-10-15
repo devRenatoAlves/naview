@@ -18,6 +18,7 @@ pasta.
 | [specs/03-jogo.md](specs/03-jogo.md) | Jogo: cartas, baús, pet, loja, níveis e a economia (números) |
 | [specs/04-servidor.md](specs/04-servidor.md) | Servidor da equipe: login, ranking, prêmios (**em planejamento**) |
 | [specs/05-landing.md](specs/05-landing.md) | Página de apresentação com download (**pronta, falta publicar**) |
+| [specs/06-windows.md](specs/06-windows.md) | NaView no Windows, idêntico ao do Linux (**em planejamento**, fase 0) |
 | [decisoes.md](decisoes.md) | Registro de decisões e o porquê de cada uma |
 | [tarefas.md](tarefas.md) | Lista de tarefas com situação |
 | [testes.md](testes.md) | Como testar sem mexer nos dados e na tela do usuário |
@@ -29,3 +30,5 @@ pasta.
 - **Próximo passo:** servidor da equipe na VPS do usuário (login, progresso no servidor, sorteios
   no servidor, ranking e prêmios). Aguardando: confirmação do plano do AnyDesk e dados da VPS.
   Ver [specs/04-servidor.md](specs/04-servidor.md).
+- **Windows:** o usuário quer o programa idêntico. Falta rodar o teste de viabilidade
+  (`ferramentas/teste_windows.py`) num PC com Windows. Ver [specs/06-windows.md](specs/06-windows.md).
