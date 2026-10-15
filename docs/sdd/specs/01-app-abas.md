@@ -19,12 +19,22 @@
 - **Soltar a aba não é possível:** o AnyDesk fecha sozinho quando a janela sai do socket. Por
   isso, fechar uma aba envia SIGTERM ao PID da conexão.
 - **Teclado:** o AnyDesk não usa XEMBED, então o `Gtk.Socket` não repassa bem as teclas.
-  - O app manda o foco do X11 direto para a janela do AnyDesk, com `XSetInputFocus` a cada 80 ms
-    (`manter_foco`).
-  - Clicar num campo do app devolve o teclado ao app. Clicar na sessão (`clicked_inside`) devolve
-    ao AnyDesk.
-- **Contatos:** `contatos.py` lê `ad.roster.items` de `~/.anydesk/user.conf`. Os apelidos ficam em
-  `~/.config/naview/contatos.json`.
+  - O app manda o foco do X11 direto para a janela do AnyDesk, com `XSetInputFocus` (`manter_foco`,
+    a cada 120 ms). Se o foco não mudou desde a última conferência, não sobe a árvore do X11.
+  - Clicar num campo ou na lista de contatos devolve o teclado ao app (`usa_teclado`). Clicar na
+    sessão (`clicked_inside`) devolve ao AnyDesk.
+- **Contatos:** `contatos.py` lê `ad.roster.items` de `~/.anydesk/user.conf`, e só relê quando a
+  data do arquivo muda (o nome das abas é consultado a cada 2 s). Os apelidos e as 5 últimas
+  conexões (`recentes`) ficam em `~/.config/naview/contatos.json`.
+  - Lista ordenada: conectados, depois recentes, depois a ordem do AnyDesk.
+  - Tela inicial: botões "Recentes" abaixo do campo de ID.
+  - Enter na busca: um contato achado (ou ID igual a um contato) conecta; ID ou `nome@ad` conecta
+    direto; vários contatos achados selecionam o primeiro na lista, sem conectar.
+- **Fechar aba:** sessão aberta há mais de 5 min (`CONFIRMAR_FECHAR_S`) pede confirmação. Sair do
+  app também confirma, com os botões "Cancelar" e "Encerrar e sair".
+- **Procura da janela nova:** a cada 250 ms nos primeiros 3 s, depois a cada 1 s (até 60 s).
+- **Troca de tela:** a sessão é uma janela nativa e não entra no esmaecimento; com ela, a troca é
+  direta (`mostrar_tela`).
 - **Barra lateral:** um `Gtk.Revealer` num `Overlay` desliza por cima do conteúdo. A margem do
   conteúdo (`pilha.set_margin_start`) muda uma vez só, por desempenho. Ela acompanha a largura
   real da barra pelo sinal `size-allocate` (`_sincronizar_margem`), o que corrige a tela do jogo

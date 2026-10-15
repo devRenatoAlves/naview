@@ -56,10 +56,14 @@ from x11 import X11  # noqa: E402
 
 ANYDESK_CLASS = "anydesk"
 DETECT_TIMEOUT_MS = 60_000
-POLL_MS = 500
+POLL_RAPIDO_MS = 250  # procura a janela nova da conexão rápido no começo...
+POLL_LENTO_MS = 1_000  # ...e devagar depois (cada procura varre as janelas do X11)
+POLL_RAPIDO_ATE_MS = 3_000
 TITULO_MS = 2_000
-FOCO_MS = 80
+FOCO_MS = 120
 AVISO_MS = 4_000
+CONFIRMAR_FECHAR_S = 300  # sessão aberta há mais tempo que isso pede confirmação para fechar
+JOGO_LIBERAR_S = 600  # jogo fechado há 10 min: libera a memória do WebKit
 N_CORES_AVATAR = 6
 
 ALINHAMENTO = {"start": Gtk.Align.START, "end": Gtk.Align.END, "center": Gtk.Align.CENTER}
@@ -131,10 +135,11 @@ class Aba:
 
 
 class LinhaContato(Gtk.ListBoxRow):
-    def __init__(self, cid, nome, ao_renomear):
-        super().__init__()
+    def __init__(self, cid, nome, ao_renomear, ordem):
+        super().__init__(tooltip_text="Clique duas vezes (ou Enter) para conectar")
         self.cid = cid
         self.nome = nome
+        self.ordem = ordem  # posição na lista do AnyDesk (desempate da ordenação)
 
         caixa = Gtk.Box(spacing=10)
         avatar = classes(Gtk.Label(label=iniciais(nome, cid)), "avatar", f"avatar-{cor_avatar(cid)}")
@@ -185,7 +190,7 @@ class App(Gtk.Window):
         self._decor = []
         self._regiao_vidro = ()  # () = ainda não enviada; None = desfoque desligado
         self.cfg = temas.carregar()
-        self.progresso = Progresso(tema_atual=self.cfg["tema"])
+        self.progresso = Progresso(tema_atual=self.cfg["tema"], liberar_tudo=self.cfg["liberar_tudo"])
         self.sons = Sons()
         self.notificacoes = Notificacoes()
         self.tela_jogo = None  # criada só na primeira vez que o jogo abre (o WebKit é pesado)
@@ -193,6 +198,9 @@ class App(Gtk.Window):
         self._sincronizando_jogo = False
         self._baus_prontos = set()
         self._diario_avisado = None
+        self._foco_ok = None  # (sessão, janela com foco) já conferido: evita subir a árvore do X11
+        self._conectados = set()
+        self._liberar_jogo_timer = None
 
         tela = Gdk.Screen.get_default()
         fixo = Gtk.CssProvider()
@@ -244,6 +252,7 @@ class App(Gtk.Window):
 
         self.aplicar_tema()
         self.carregar_contatos()
+        self.atualizar_recentes()
         self.atualizar_pet_mini()
         self.atualizar_selo()
         self.connect("focus-in-event", lambda *_a: self.carregar_contatos())
@@ -254,6 +263,9 @@ class App(Gtk.Window):
         GLib.timeout_add(TITULO_MS, self.atualizar_titulos)
         GLib.timeout_add(FOCO_MS, self.manter_foco)
         GLib.timeout_add_seconds(60, self.batimento)
+        if self.progresso.equipados().get("som"):
+            # Carrega o som antes da primeira conexão (senão a sessão nova trava um instante).
+            GLib.timeout_add_seconds(3, self.sons.preparar)
 
     # ---- montagem da interface -------------------------------------------------
 
@@ -275,11 +287,7 @@ class App(Gtk.Window):
         itens.show_all()
         menu.add(itens)
         self.cabecalho.pack_end(Gtk.MenuButton(image=icone("ph-dots-three-vertical-symbolic"), popover=menu,
-                                               tooltip_text="Menu"))
-
-        aparencia = Gtk.Button(image=icone("ph-palette-symbolic"), tooltip_text="Aparência e temas")
-        aparencia.connect("clicked", lambda _b: self.abrir_aparencia())
-        self.cabecalho.pack_end(aparencia)
+                                               tooltip_text="Mais opções"))
 
         self.bt_jogo = Gtk.ToggleButton(image=icone("ph-gift-symbolic"), tooltip_text="Baús, coleção e pet")
         self.bt_jogo.connect("toggled", self.on_alternar_jogo)
@@ -306,6 +314,7 @@ class App(Gtk.Window):
 
         self.lista = Gtk.ListBox(activate_on_single_click=False)
         self.lista.set_filter_func(lambda linha: linha.combina(self.busca.get_text()))
+        self.lista.set_sort_func(self._comparar_contatos)
         self.lista.connect("row-activated", lambda _l, linha: self.abrir(linha.cid))
         vazio = classes(Gtk.Label(label="Nenhum contato encontrado.\n"
                                         "Aperte Enter para conectar no ID digitado.",
@@ -369,8 +378,30 @@ class App(Gtk.Window):
         self.cartao.pack_start(linha_titulo, False, False, 0)
         self.cartao.pack_start(self.sub_inicio, False, False, 0)
         self.cartao.pack_start(linha, False, False, 0)
+
+        self.titulo_recentes = classes(Gtk.Label(label="Recentes", xalign=0, margin_top=12,
+                                                 no_show_all=True), "recentes-titulo")
+        self.recentes = classes(Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=5,
+                                            column_spacing=6, row_spacing=6, no_show_all=True), "recentes")
+        self.cartao.pack_start(self.titulo_recentes, False, False, 0)
+        self.cartao.pack_start(self.recentes, False, False, 0)
         self.inicio.add_overlay(self.cartao)
         return self.inicio
+
+    def atualizar_recentes(self):
+        """Botões com as últimas conexões no cartão da tela inicial."""
+        for filho in self.recentes.get_children():
+            filho.destroy()
+        for cid in self.contatos.recentes:
+            botao = classes(Gtk.Button(tooltip_text=f"Conectar em {formatar_id(cid)}"), "recente")
+            botao.add(Gtk.Label(label=self.contatos.nome(cid) or formatar_id(cid),
+                                ellipsize=Pango.EllipsizeMode.END, max_width_chars=16))
+            botao.connect("clicked", lambda _b, c=cid: self.abrir(c))
+            self.recentes.add(botao)
+            botao.show_all()
+        tem = bool(self.contatos.recentes)
+        self.titulo_recentes.set_visible(tem)
+        self.recentes.set_visible(tem)
 
     def montar_aviso(self):
         self.aviso = Gtk.Revealer(transition_type=Gtk.RevealerTransitionType.SLIDE_UP,
@@ -509,7 +540,18 @@ class App(Gtk.Window):
         self.bt_jogo.set_active(ativo)
         self._sincronizando_jogo = False
 
+    def mostrar_tela(self, nome):
+        """A sessão do AnyDesk é uma janela nativa e não entra no esmaecimento da troca de tela
+        (piscava). Com ela, a troca é direta; entre a tela inicial e o jogo, suave."""
+        suave = "abas" not in (self.pilha.get_visible_child_name(), nome)
+        self.pilha.set_transition_type(Gtk.StackTransitionType.CROSSFADE if suave
+                                       else Gtk.StackTransitionType.NONE)
+        self.pilha.set_visible_child_name(nome)
+
     def abrir_jogo(self, tela=None):
+        if self._liberar_jogo_timer:
+            GLib.source_remove(self._liberar_jogo_timer)
+            self._liberar_jogo_timer = None
         if self.tela_jogo is None:
             from jogo.tela import TelaJogo  # WebKit só é carregado quando precisa
             self.tela_jogo = TelaJogo(self.progresso, lambda: self.cfg["tema"], self.ao_mudar_jogo,
@@ -522,7 +564,7 @@ class App(Gtk.Window):
         if visivel != "jogo":
             self._antes_do_jogo = visivel
         self.tela_jogo.atualizar()
-        self.pilha.set_visible_child_name("jogo")
+        self.mostrar_tela("jogo")
         self._marcar_botao_jogo(True)
         if self.get_window():
             self.x.set_focus(self.get_window().get_xid())  # teclado sai da sessão e vem para o jogo
@@ -531,17 +573,29 @@ class App(Gtk.Window):
 
     def fechar_jogo(self):
         if self.pilha.get_visible_child_name() == "jogo":
-            self.pilha.set_visible_child_name("abas" if self.abas else "inicio")
+            self.mostrar_tela("abas" if self.abas else "inicio")
         self._marcar_botao_jogo(False)
         self.set_focus(None)
+        if self.tela_jogo and self._liberar_jogo_timer is None:
+            self._liberar_jogo_timer = GLib.timeout_add_seconds(JOGO_LIBERAR_S, self._liberar_jogo)
+
+    def _liberar_jogo(self):
+        """Jogo fechado há um tempo: destrói o WebKit (100 MB ou mais). Reabrir recria."""
+        self._liberar_jogo_timer = None
+        if self.tela_jogo and self.pilha.get_visible_child_name() != "jogo":
+            self.pilha.remove(self.tela_jogo)
+            self.tela_jogo.destroy()
+            self.tela_jogo = None
+        return False
 
     def ao_mudar_jogo(self, acao, resultado):
         """A tela do jogo mudou algo que o app mostra (tema, moldura, pet, moedas...)."""
         if acao == "equipar" and resultado and resultado["tipo"] == "tema":
             self.cfg["tema"] = resultado["alvo"]
             self.cfg["ajustes"] = {k: None for k in temas.AJUSTES}
-            self.cfg["imagem"] = None
             temas.salvar(self.cfg)
+        if acao == "equipar" and resultado and resultado["tipo"] == "som":
+            GLib.idle_add(self.sons.preparar)
         if acao in ("equipar", "melhorar_carta"):
             self.aplicar_tema()
         self.atualizar_pet_mini()
@@ -573,14 +627,14 @@ class App(Gtk.Window):
         if self.tela_jogo:
             self.tela_jogo.atualizar()
 
-    def atualizar_selo(self):
-        n = self.progresso.novidades()
+    def atualizar_selo(self, estado=None):
+        n = self.progresso.novidades(estado)
         self.selo_jogo.set_text(str(n))
         self.selo_jogo.set_visible(n > 0)
 
     def atualizar_pet_mini(self, pet=None):
         pet = pet or self.progresso.pet()
-        self.pet_imagem.set_from_pixbuf(compor_pet(pet["especie"], pet["acessorio"], 3))
+        self.pet_imagem.set_from_pixbuf(compor_pet(pet["especie"], pet["acessorio"]))
         humor = {"feliz": "smiley", "normal": "smiley-meh", "triste": "smiley-sad", "dormindo": "moon-stars"}
         icone = humor.get(pet["humor"], "smiley") if pet["chocado"] else "egg"
         self.pet_nome.set_text(pet["nome"])
@@ -611,7 +665,7 @@ class App(Gtk.Window):
         if estado["diario"]["disponivel"] and self._diario_avisado != hoje:
             self._diario_avisado = hoje
             self.notificacoes.mostrar("Recompensa diária", "Sua recompensa de hoje está esperando!")
-        self.atualizar_selo()
+        self.atualizar_selo(estado)
         self.atualizar_pet_mini(estado["pet"])
         if self.tela_jogo and self.pilha.get_visible_child_name() == "jogo":
             self.tela_jogo.atualizar()
@@ -629,12 +683,16 @@ class App(Gtk.Window):
         pagina = self.notebook.get_nth_page(self.notebook.get_current_page())
         return next((a for a in self.abas if a.socket is pagina and a.xid), None)
 
+    def usa_teclado(self, widget):
+        """Campo de texto ou lista de contatos (setas e Enter): o teclado precisa ficar no app."""
+        return isinstance(widget, Gtk.Entry) or bool(widget and widget.is_ancestor(self.lateral))
+
     def digitando_no_app(self):
-        return isinstance(self.get_focus(), Gtk.Entry)
+        return self.usa_teclado(self.get_focus())
 
     def on_foco_widget(self, _janela, widget):
-        # Clicou num campo de texto do app: o teclado volta para o app.
-        if isinstance(widget, Gtk.Entry) and self.get_window():
+        # Clicou num campo de texto ou na lista do app: o teclado volta para o app.
+        if self.usa_teclado(widget) and self.get_window():
             self.x.set_focus(self.get_window().get_xid())
 
     def manter_foco(self):
@@ -646,7 +704,13 @@ class App(Gtk.Window):
             if not self.x.clicked_inside(aba.xid):
                 return True
             self.set_focus(None)
-        if not self.x.contains(aba.xid, self.x.focused()):
+        foco = self.x.focused()
+        if (aba.xid, foco) == self._foco_ok:
+            return True
+        if self.x.contains(aba.xid, foco):
+            self._foco_ok = (aba.xid, foco)
+        else:
+            self._foco_ok = None
             self.x.set_focus(aba.xid)
         return True
 
@@ -692,17 +756,29 @@ class App(Gtk.Window):
         self._lista_atual = itens
         for linha in self.lista.get_children():
             self.lista.remove(linha)
-        for cid, nome in itens:
-            self.lista.add(LinhaContato(cid, nome, self.on_renomear))
+        for ordem, (cid, nome) in enumerate(itens):
+            self.lista.add(LinhaContato(cid, nome, self.on_renomear, ordem))
         self.lista.show_all()
         self.contagem.set_text(str(len(itens)))
         self.marcar_conectados()
         return False
 
     def marcar_conectados(self):
-        conectados = {a.cid for a in self.abas}
+        self._conectados = {a.cid for a in self.abas}
         for linha in self.lista.get_children():
-            linha.ponto.set_visible(linha.cid in conectados)
+            linha.ponto.set_visible(linha.cid in self._conectados)
+        self.lista.invalidate_sort()
+
+    def _comparar_contatos(self, a, b):
+        """Conectados primeiro, depois os usados recentemente, depois a ordem do AnyDesk."""
+        recentes = self.contatos.recentes
+
+        def chave(linha):
+            recente = recentes.index(linha.cid) if linha.cid in recentes else len(recentes)
+            return (linha.cid not in self._conectados, recente, linha.ordem)
+
+        ca, cb = chave(a), chave(b)
+        return (ca > cb) - (ca < cb)
 
     def on_renomear(self, cid, botao):
         balao = Gtk.Popover(relative_to=botao, position=Gtk.PositionType.RIGHT)
@@ -724,6 +800,7 @@ class App(Gtk.Window):
             balao.popdown()
             self.carregar_contatos()
             self.atualizar_titulos()
+            self.atualizar_recentes()
 
         salvar.connect("clicked", lambda _b: gravar(entrada.get_text().strip()))
         entrada.connect("activate", lambda _e: gravar(entrada.get_text().strip()))
@@ -734,11 +811,25 @@ class App(Gtk.Window):
 
     def on_busca_enter(self, _entrada):
         texto = self.busca.get_text().strip()
+        if not texto:
+            return
+        sem_espacos = texto.replace(" ", "")
         visiveis = [linha for linha in self.lista.get_children() if linha.combina(texto)]
-        if texto and len(visiveis) == 1:
-            self.abrir(visiveis[0].cid)
-        elif texto:
+        exato = next((linha for linha in visiveis if linha.cid == sem_espacos), None)
+        if exato or len(visiveis) == 1:
+            self.abrir((exato or visiveis[0]).cid)
+        elif sem_espacos.isdigit() or "@" in texto:  # ID ou endereço (ex.: nome@ad)
             self.abrir_texto(texto)
+        elif visiveis:
+            # Vários contatos com esse nome: escolhe com as setas e Enter, sem conectar às cegas.
+            primeira = min(visiveis, key=lambda linha: linha.get_index())
+            self.lista.select_row(primeira)
+            primeira.grab_focus()
+            self.avisar(f"{len(visiveis)} contatos encontrados: escolha com as setas e Enter.")
+            return
+        else:
+            self.avisar("Nenhum contato com esse nome. Para conectar, digite o ID.")
+            return
         self.busca.set_text("")
 
     def on_conectar_rapido(self, _widget):
@@ -776,6 +867,7 @@ class App(Gtk.Window):
         def procurar():
             if aba not in self.abas:
                 return False  # aba fechada enquanto conectava
+            passou_ms = (GLib.get_monotonic_time() - inicio) / 1000
             livres = self.janelas_livres()
             # Cada "anydesk <ID>" sobe um processo próprio; se não achar pelo PID,
             # cai para "qualquer janela do AnyDesk que surgiu depois do clique".
@@ -783,14 +875,15 @@ class App(Gtk.Window):
                      or [w for w in livres if w not in antes])
             if novas:
                 self.encaixar(aba, novas[0])
-                return False
-            if (GLib.get_monotonic_time() - inicio) / 1000 > DETECT_TIMEOUT_MS:
+            elif passou_ms > DETECT_TIMEOUT_MS:
                 self.fechar(aba)
                 self.avisar(f"A janela de {formatar_id(cid)} não apareceu.")
-                return False
-            return True
+            else:
+                intervalo = POLL_RAPIDO_MS if passou_ms < POLL_RAPIDO_ATE_MS else POLL_LENTO_MS
+                GLib.timeout_add(intervalo, procurar)
+            return False
 
-        GLib.timeout_add(POLL_MS, procurar)
+        GLib.timeout_add(POLL_RAPIDO_MS, procurar)
 
     def on_capturar(self):
         livres = self.janelas_livres()
@@ -829,12 +922,12 @@ class App(Gtk.Window):
         rotulo.pack_start(aba.rotulo, False, False, 0)
         fechar = Gtk.Button(image=icone("ph-x-symbolic", Gtk.IconSize.MENU),
                             tooltip_text="Encerrar esta conexão", relief=Gtk.ReliefStyle.NONE)
-        fechar.connect("clicked", lambda _b: self.fechar(aba))
+        fechar.connect("clicked", lambda _b: self.pedir_fechar(aba))
         rotulo.pack_start(fechar, False, False, 0)
         aba.cabeca.add(rotulo)
         # Botão do meio do mouse na aba fecha a conexão, como no navegador.
         aba.cabeca.connect("button-press-event",
-                           lambda _w, e: e.button == 2 and (self.fechar(aba) or True))
+                           lambda _w, e: e.button == 2 and (self.pedir_fechar(aba) or True))
         aba.cabeca.show_all()
 
         aba.rotulo.set_text(f"Conectando {self.nome_aba(aba)}…")
@@ -856,6 +949,10 @@ class App(Gtk.Window):
         # Disparado quando a janela do AnyDesk some (conexão encerrada do outro lado, etc.).
         aba.socket.connect("plug-removed", lambda _s: self.remover_aba(aba) or True)
         aba.inicio = time.monotonic()
+        if aba.cid:
+            self.contatos.usar(aba.cid)
+            self.atualizar_recentes()
+            self.marcar_conectados()  # reordena a lista (recentes)
         self.sons.tocar(self.progresso.equipados().get("som"))
         self.atualizar_titulos()
         self.atualizar_pet_mini()  # com sessão aberta o pet do rodapé para de animar
@@ -889,7 +986,7 @@ class App(Gtk.Window):
         if self.pilha.get_visible_child_name() == "jogo":
             self._antes_do_jogo = destino  # não tira a pessoa do jogo
         else:
-            self.pilha.set_visible_child_name(destino)
+            self.mostrar_tela(destino)
         n = len(self.abas)
         self.cabecalho.set_subtitle(f"{n} conexão aberta" if n == 1 else
                                     f"{n} conexões abertas" if n else None)
@@ -906,6 +1003,25 @@ class App(Gtk.Window):
         self.marcar_conectados()
         self.atualizar_pet_mini()
 
+    def confirmar(self, titulo, texto, acao):
+        """Pergunta antes de algo que não dá para desfazer. acao: texto do botão de confirmar."""
+        dialogo = Gtk.MessageDialog(transient_for=self, modal=True, message_type=Gtk.MessageType.QUESTION,
+                                    text=titulo, secondary_text=texto)
+        dialogo.add_button("Cancelar", Gtk.ResponseType.CANCEL)
+        classes(dialogo.add_button(acao, Gtk.ResponseType.OK), "destructive-action")
+        dialogo.set_default_response(Gtk.ResponseType.CANCEL)
+        resposta = dialogo.run()
+        dialogo.destroy()
+        return resposta == Gtk.ResponseType.OK
+
+    def pedir_fechar(self, aba):
+        """Fechar pela aba (X ou botão do meio). Sessão longa pede confirmação: derruba o cliente."""
+        if aba.inicio and time.monotonic() - aba.inicio > CONFIRMAR_FECHAR_S:
+            if not self.confirmar(f"Encerrar a conexão com {self.nome_aba(aba)}?",
+                                  "O cliente será desconectado.", "Encerrar"):
+                return
+        self.fechar(aba)
+
     def fechar(self, aba):
         # Não dá para devolver a janela à área de trabalho: o AnyDesk fecha sozinho quando
         # ela sai do socket. Então fechar a aba = encerrar o processo daquela conexão.
@@ -918,13 +1034,10 @@ class App(Gtk.Window):
 
     def on_sair(self, *_args):
         if self.abas:
-            dialogo = Gtk.MessageDialog(
-                transient_for=self, modal=True, message_type=Gtk.MessageType.QUESTION,
-                buttons=Gtk.ButtonsType.YES_NO,
-                text=f"Fechar o app encerra {len(self.abas)} conexão(ões). Continuar?")
-            resposta = dialogo.run()
-            dialogo.destroy()
-            if resposta != Gtk.ResponseType.YES:
+            n = len(self.abas)
+            texto = ("A conexão aberta será encerrada." if n == 1 else
+                     f"As {n} conexões abertas serão encerradas.")
+            if not self.confirmar("Fechar o NaView?", texto, "Encerrar e sair"):
                 return True  # cancela o fechamento da janela
         for aba in list(self.abas):
             self.fechar(aba)

@@ -17,11 +17,27 @@ def formatar_id(anydesk_id):
     return " ".join(grupos)
 
 
+MAX_RECENTES = 5
+_cache_anydesk = (None, [])  # (data de modificação do user.conf, itens lidos)
+
+
 def ler_anydesk():
     """Lista de (id, apelido) do catálogo do AnyDesk.
 
-    Formato da chave ad.roster.items: 'id,endereço,apelido,...;id,endereço,apelido,...'
+    Só relê o arquivo quando ele muda: o nome das abas é consultado a cada 2 s.
     """
+    global _cache_anydesk
+    try:
+        mtime = ANYDESK_CONF.stat().st_mtime_ns
+    except OSError:
+        return []
+    if _cache_anydesk[0] != mtime:
+        _cache_anydesk = (mtime, _ler_arquivo())
+    return _cache_anydesk[1]
+
+
+def _ler_arquivo():
+    """Formato da chave ad.roster.items: 'id,endereço,apelido,...;id,endereço,apelido,...'"""
     try:
         linhas = ANYDESK_CONF.read_text(errors="replace").splitlines()
     except OSError:
@@ -41,8 +57,11 @@ def ler_anydesk():
 class Contatos:
     def __init__(self):
         self.apelidos = {}  # id -> apelido definido no app
+        self.recentes = []  # IDs das últimas conexões, o mais recente primeiro
         try:
-            self.apelidos = json.loads(ARQUIVO.read_text()).get("apelidos", {})
+            dados = json.loads(ARQUIVO.read_text())
+            self.apelidos = dados.get("apelidos", {})
+            self.recentes = dados.get("recentes", [])[:MAX_RECENTES]
         except (OSError, ValueError):
             pass
 
@@ -67,5 +86,14 @@ class Contatos:
             self.apelidos[cid] = apelido
         else:
             self.apelidos.pop(cid, None)
+        self._salvar()
+
+    def usar(self, cid):
+        """Marca o contato como conectado agora (lista de recentes da tela inicial)."""
+        self.recentes = [cid] + [r for r in self.recentes if r != cid][:MAX_RECENTES - 1]
+        self._salvar()
+
+    def _salvar(self):
         ARQUIVO.parent.mkdir(parents=True, exist_ok=True)
-        ARQUIVO.write_text(json.dumps({"apelidos": self.apelidos}, ensure_ascii=False, indent=2))
+        ARQUIVO.write_text(json.dumps({"apelidos": self.apelidos, "recentes": self.recentes},
+                                      ensure_ascii=False, indent=2))

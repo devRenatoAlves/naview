@@ -200,18 +200,16 @@ main { flex: 1; overflow: hidden auto; position: relative; }
               linear-gradient(115deg, #ff4d6d, #ffb84d, #f9f871, #4dffb8, #4dd2ff, #b44dff, #ff4d6d) border-box;
   background-size: 100% 100%, 300% 300%; animation: arco-iris 4s linear infinite; }
 .carta.r-mitica .carta-arte { background: linear-gradient(160deg, rgba(255, 77, 109, 0.35), rgba(77, 210, 255, 0.25)); }
-.carta.r-mitica::before {
-  content: ""; position: absolute; inset: 0; border-radius: 9px; pointer-events: none;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.5) 45%, transparent 60%);
-  background-size: 250% 100%; animation: brilho 2.2s linear infinite;
-}
 @keyframes arco-iris { to { background-position: 0 0, 300% 0; } }
-.carta.r-lendaria::before {
-  content: ""; position: absolute; inset: 0; border-radius: 9px; pointer-events: none;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, transparent 60%);
-  background-size: 250% 100%; animation: brilho 2.8s linear infinite;
+/* Brilho que passa sobre a arte das cartas lendárias e míticas. Anda com transform (barato para o
+ * navegador) em vez de background-position (que repinta a carta inteira a cada quadro). */
+.carta.r-lendaria .carta-arte::after, .carta.r-mitica .carta-arte::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 60%; pointer-events: none;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.5) 50%, transparent);
+  animation: brilho 2.8s linear infinite;
 }
-@keyframes brilho { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+.carta.r-mitica .carta-arte::after { animation-duration: 2.2s; }
+@keyframes brilho { from { transform: translateX(0); } to { transform: translateX(280%); } }
 .carta-arte {
   flex: 1; border-radius: 8px; background: rgba(10, 15, 34, 0.55); display: grid; place-items: center;
   overflow: hidden; position: relative;

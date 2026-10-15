@@ -343,7 +343,9 @@ ORDEM = ["padrao", "grafite", "claro", "oceano", "vidro", "pixel", "hq", "espaco
 
 def carregar():
     cfg = {"tema": "padrao", "ajustes": {k: None for k in AJUSTES}, "imagem": None,
-           "intensidade_vidro": 0.5, "decoracoes": True, "animacoes": True, "lateral_visivel": True}
+           "intensidade_vidro": 0.5, "decoracoes": True, "animacoes": True, "lateral_visivel": True,
+           # Só para testes: entrega todas as cartas do jogo ao abrir (ligado à mão no config.json).
+           "liberar_tudo": False}
     try:
         dados = json.loads(ARQUIVO.read_text())
     except (OSError, ValueError):
@@ -475,6 +477,14 @@ $avatares
   transition: background-color 150ms ease;
 }
 .janela-principal button.conectar:hover { background-color: shade($destaque, 1.08); }
+.janela-principal .recentes-titulo { color: alpha($texto, 0.55); font-size: 0.85em; font-weight: bold; }
+.janela-principal .recentes flowboxchild { padding: 0; background: none; }
+.janela-principal button.recente {
+  background-image: none; background-color: alpha($destaque, 0.12); color: $texto; border: none;
+  box-shadow: none; border-radius: $raio_peq; padding: 2px 12px; min-height: 28px; text-shadow: none;
+  transition: background-color 150ms ease;
+}
+.janela-principal button.recente:hover { background-color: alpha($destaque, 0.24); }
 .decor-texto { color: alpha($texto, 0.6); }
 
 /* abas */

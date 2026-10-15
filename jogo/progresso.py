@@ -26,7 +26,7 @@ class ErroJogo(Exception):
 
 class Progresso:
     def __init__(self, caminho=None, agora=time.time, hoje=datetime.date.today, rnd=None,
-                 tema_atual=None):
+                 tema_atual=None, liberar_tudo=False):
         self.agora = agora
         self.hoje = hoje
         self.rnd = rnd or random.Random()
@@ -44,6 +44,10 @@ class Progresso:
         """)
         if self._kv("perfil") is None:
             self._comecar(tema_atual)
+        if liberar_tudo:  # modo de teste: todas as cartas, inclusive as que entrarem depois
+            with self.db:
+                self.db.executemany("INSERT OR IGNORE INTO cartas VALUES (?, 1, 0)",
+                                    [(c["id"],) for c in cat.CARTAS])
 
     # ---- armazenamento --------------------------------------------------------
 
@@ -139,9 +143,11 @@ class Progresso:
             "equipados": self.equipados(),
         }
 
-    def novidades(self):
-        """Quantas coisas esperam o usuário (para a bolinha no botão do jogo)."""
-        estado = self.estado()
+    def novidades(self, estado=None):
+        """Quantas coisas esperam o usuário (para a bolinha no botão do jogo).
+
+        estado: o de estado(), se já foi calculado (evita calcular tudo duas vezes)."""
+        estado = estado or self.estado()
         prontos = sum(1 for b in estado["baus"] if b and b["situacao"] == "pronto")
         pet = estado["pet"]
         return (prontos + estado["gratis"]["qtd"] + int(estado["diario"]["disponivel"])
@@ -496,8 +502,8 @@ class Progresso:
             "humor": humor, "fala": fala, "dormindo": dormindo,
             "dormindo_s": max(0, int(pet["dormindo_ate"] - agora)) if dormindo else 0,
             "brincar_em_s": max(0, espera),
-            "deslocamentos": {a: cat.deslocamento_acessorio(pet["especie"], a)
-                              for a in cat.ENCAIXE_ACESSORIO} if pet["especie"] else {},
+            "encaixes": {a: cat.encaixe_acessorio(pet["especie"], a)
+                         for a in cat.ENCAIXE_ACESSORIO} if pet["especie"] else {},
         }
 
     def pet(self):

@@ -121,7 +121,23 @@ function podeMelhorar(id) {
 function irPara(tela) {
   $$(".tela").forEach((t) => t.classList.toggle("ativa", t.id === "tela-" + tela));
   $$(".menu-bt").forEach((b) => b.classList.toggle("ativo", b.dataset.tela === tela));
+  desenharTela(tela);
   if (tela === "pet") animarPetParado();
+}
+
+// Só a tela visível é redesenhada quando o estado muda; as outras ficam marcadas e são
+// desenhadas quando a pessoa for até elas.
+const DESENHAR = { baus: () => desenharBaus(), colecao: () => desenharColecao(),
+                   pet: () => desenharPet(), loja: () => desenharLoja() };
+let sujas = new Set();
+function telaAtiva() {
+  const t = $(".tela.ativa");
+  return t ? t.id.replace("tela-", "") : null;
+}
+function desenharTela(tela) {
+  if (!EST || !sujas.has(tela)) return;
+  sujas.delete(tela);
+  DESENHAR[tela]();
 }
 $$(".menu-bt").forEach((b) => b.addEventListener("click", () => { tocar("clique"); irPara(b.dataset.tela); }));
 $("#bt-fechar").addEventListener("click", () => chamar("fechar").catch(() => {}));
@@ -144,16 +160,15 @@ function aplicarEstado(e) {
   }
   recebidoEm = Date.now();
   desenharTopo();
-  desenharBaus();
-  desenharColecao();
-  desenharPet();
-  desenharLoja();
   desenharPontos();
+  sujas = new Set(Object.keys(DESENHAR));
+  desenharTela(telaAtiva());
 }
 
 // Relógios andam sozinhos; quando algo fica pronto, pede o estado de novo ao Python.
+// Com o jogo escondido (document.hidden) não faz nada: o app atualiza o estado ao reabrir.
 setInterval(() => {
-  if (!EST || animando) return;
+  if (!EST || animando || document.hidden) return;
   const pronto = EST.baus.some((b) => b && b.situacao === "destravando" && b.falta_s - passou() <= 0)
     || (EST.gratis.proximo_s !== null && EST.gratis.proximo_s - passou() <= 0);
   if (pronto) { chamar("estado").then(aplicarEstado).catch(() => {}); return; }
@@ -445,10 +460,13 @@ function arteDe(c) {
     a.innerHTML = `<img src="${ARTE}${c.arte}" alt="">`;
   } else if (c.tipo === "acessorio") {
     a.className = "arte-acc";
-    const desl = CAT.deslocamentos.slime[c.alvo];
-    a.style.aspectRatio = "16 / 24";
-    a.innerHTML = `<img class="sombra-pet" style="top:${(8 / 24) * 100}%" src="${ARTE}pets/slime.svg" alt="">`
-      + `<img style="top:${((8 + desl) / 24) * 100}%" src="${ARTE}${c.arte}" alt="">`;
+    const { lado, acima } = CAT.pet;
+    const e = CAT.encaixes.slime[c.alvo];
+    const alto = lado + acima;
+    a.style.aspectRatio = `${lado} / ${alto}`;
+    a.innerHTML = `<img class="sombra-pet" style="top:${(acima / alto) * 100}%" src="${ARTE}pets/slime.svg" alt="">`
+      + `<img style="left:${(e.x / lado) * 100}%;top:${(e.y / alto) * 100}%;width:${(e.w / lado) * 100}%"`
+      + ` src="${ARTE}${c.arte}" alt="">`;
   } else if (c.tipo === "moldura") {
     a.innerHTML = `<div class="amostra-avatar mold-${c.alvo}">AB</div>`;
     a.style.cssText = "width:100%;height:100%;display:grid;place-items:center";
@@ -581,14 +599,16 @@ $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") fech
 let toquesOvo = 0;
 
 function petEl(especie, acessorio, largura) {
-  const u = largura / 16;
+  const { lado, acima } = CAT.pet;
+  const u = largura / lado;
   const p = el("div", "pet");
   p.style.width = `${largura}px`;
-  p.style.height = `${24 * u}px`;
-  p.innerHTML = `<img style="top:${8 * u}px" src="${ARTE}pets/${especie}.svg" alt="">`;
+  p.style.height = `${(lado + acima) * u}px`;
+  p.innerHTML = `<img style="top:${acima * u}px" src="${ARTE}pets/${especie}.svg" alt="">`;
   if (acessorio) {
-    const desl = CAT.deslocamentos[especie][acessorio];
-    p.innerHTML += `<img style="top:${(8 + desl) * u}px" src="${ARTE}acessorios/${acessorio}.svg" alt="">`;
+    const e = CAT.encaixes[especie][acessorio];
+    p.innerHTML += `<img style="left:${e.x * u}px;top:${e.y * u}px;width:${e.w * u}px"`
+      + ` src="${ARTE}acessorios/${acessorio}.svg" alt="">`;
   }
   return p;
 }
@@ -596,16 +616,26 @@ function petEl(especie, acessorio, largura) {
 function desenharPet() {
   const pet = EST.pet;
   const area = $("#pet-area");
-  gsap.killTweensOf(area);
-  gsap.set(area, { clearProps: "transform" });
-  area.innerHTML = "";
+  // Só refaz o desenho (e reinicia a animação) quando a aparência do pet mudou; senão o pet
+  // daria um tranco a cada atualização do estado.
+  const chave = [pet.chocado, pet.especie, pet.acessorio, pet.tamanho, pet.humor, pet.dormindo].join("|");
+  const mudou = area.dataset.chave !== chave;
+  if (mudou) {
+    area.dataset.chave = chave;
+    gsap.killTweensOf(area);
+    gsap.set(area, { clearProps: "transform" });
+    area.innerHTML = "";
+    // Cada pixel do desenho vira 4 a 5 px na tela (múltiplos de 0,5 para a pixel art não deformar).
+    const lado = CAT.pet.lado;
+    if (!pet.chocado) {
+      area.appendChild(petEl("ovo", null, lado * 4));
+    } else {
+      const px = Math.round(10 * pet.tamanho) / 2;  // bebê 4, jovem 4,5, adulto 5
+      area.appendChild(petEl(pet.especie, pet.acessorio, lado * px));
+    }
+  }
   $("#palco").classList.toggle("noite", pet.dormindo);
   $("#pet-fala").textContent = pet.fala;
-  if (!pet.chocado) {
-    area.appendChild(petEl("ovo", null, 150));
-  } else {
-    area.appendChild(petEl(pet.especie, pet.acessorio, Math.round(220 * pet.tamanho)));
-  }
   $("#pet-nome").textContent = pet.nome;
   $("#pet-estagio").textContent = pet.chocado ? `${pet.estagio} · ${pet.xp} XP` : "Ovo";
   const ate = pet.xp_proximo;
@@ -671,7 +701,7 @@ function desenharPet() {
       destino.appendChild(r);
     });
   }
-  if ($("#tela-pet").classList.contains("ativa")) animarPetParado();
+  if (mudou && $("#tela-pet").classList.contains("ativa")) animarPetParado();
 }
 
 function animarPetParado() {

@@ -1,5 +1,5 @@
 """Janela "Aparência": galeria de temas e ajustes finos. Tudo é aplicado e salvo na hora."""
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 import fontes
 import temas
@@ -17,6 +17,17 @@ CSS = b"""
 .janela-aparencia .bloqueado { opacity: 0.4; }
 .janela-aparencia .mensagem { color: @warning_color; }
 """
+ESPERA_MS = 150  # o controle deslizante só aplica depois de parar de mexer (aplicar refaz o CSS todo)
+_estilo = None  # registrado uma vez só: cada provedor a mais deixa todo o GTK mais lento
+
+
+def _registrar_estilo():
+    global _estilo
+    if _estilo is None:
+        _estilo = Gtk.CssProvider()
+        _estilo.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), _estilo, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 class JanelaAparencia(Gtk.Window):
@@ -28,10 +39,8 @@ class JanelaAparencia(Gtk.Window):
         self.possui = possui  # temas são cartas do jogo: só dá para usar os que você tem
         self.set_default_size(700, 680)
         self.get_style_context().add_class("janela-aparencia")
-        estilo = Gtk.CssProvider()
-        estilo.load_from_data(CSS)
-        Gtk.StyleContext.add_provider_for_screen(
-            Gdk.Screen.get_default(), estilo, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        _registrar_estilo()
+        self._espera = None
 
         cabecalho = Gtk.HeaderBar(show_close_button=True, title="Aparência")
         self.set_titlebar(cabecalho)
@@ -91,8 +100,7 @@ class JanelaAparencia(Gtk.Window):
 
         self.intensidade = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, 0.05)
         self.intensidade.set_draw_value(False)
-        self.intensidade.connect("value-changed",
-                                 lambda s: self.mudar("intensidade_vidro", round(s.get_value(), 2)))
+        self.intensidade.connect("value-changed", self.on_intensidade)
         self.rotulo_intensidade = Gtk.Label(label="Intensidade do vidro", xalign=0)
         grade.attach(self.rotulo_intensidade, 0, linha, 1, 1)
         grade.attach(self.intensidade, 1, linha, 2, 1)
@@ -192,6 +200,19 @@ class JanelaAparencia(Gtk.Window):
         self.cfg[chave] = valor
         self.ao_mudar()
 
+    def on_intensidade(self, escala):
+        if self._carregando:
+            return
+        if self._espera:
+            GLib.source_remove(self._espera)
+
+        def aplicar():
+            self._espera = None
+            self.mudar("intensidade_vidro", round(escala.get_value(), 2))
+            return False
+
+        self._espera = GLib.timeout_add(ESPERA_MS, aplicar)
+
     def ajustar(self, chave, valor):
         if self._carregando:
             return
@@ -209,11 +230,12 @@ class JanelaAparencia(Gtk.Window):
                                    "(botão do jogo na barra de título).")
             self.galeria.select_child(self.cartoes[self.cfg["tema"]])
             return
-        self.mensagem.set_text("")
-        # Tema novo = visual completo: descarta os ajustes de cor do tema anterior.
+        # Tema novo = cores do tema: descarta os ajustes de cor do anterior. A imagem de fundo é
+        # escolha da pessoa e fica (antes sumia sem aviso).
+        self.mensagem.set_text("Sua imagem de fundo continua por cima do tema. Use o botão ao lado dela "
+                               "para ver o fundo do tema." if self.cfg.get("imagem") else "")
         self.cfg["tema"] = filho.chave
         self.cfg["ajustes"] = {k: None for k in temas.AJUSTES}
-        self.cfg["imagem"] = None
         self.ao_mudar()
         self.sincronizar()
 

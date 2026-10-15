@@ -21,6 +21,9 @@
     1920x1080.
 - **`janela_aparencia.py`:** galeria de temas, ajustes de cor, imagem, intensidade do vidro e
   interruptores.
+  - O estilo da janela é registrado uma vez só. O controle da intensidade aplica 150 ms depois de
+    parar de mexer (aplicar refaz o CSS do app todo e grava o config).
+  - Trocar de tema descarta os ajustes de cor, mas mantém a imagem de fundo, com um aviso.
 - **Vidro:** a propriedade X `_KDE_NET_WM_BLUR_BEHIND_REGION` recebe os retângulos arredondados.
   A força do desfoque é uma configuração global do KDE, que o app não altera.
 - **Desempenho:** sem `radial-gradient` e sem sombras com desfoque grande no CSS do GTK. Desenhos

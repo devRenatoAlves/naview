@@ -8,15 +8,19 @@ Junta várias conexões do AnyDesk em abas, numa única janela (Linux / KDE Wayl
   AnyDesk dentro de uma aba (`Gtk.Socket`).
 - **Contatos** (barra lateral): importados do catálogo do AnyDesk (`ad.roster.items` em
   `~/.anydesk/user.conf`), com busca e avatar colorido. O lápis renomeia num balão; o nome fica
-  salvo em `~/.config/naview/contatos.json` (o arquivo do AnyDesk não é alterado).
-- **Conectar**: dois cliques no contato, ID na busca + Enter, ou o campo da tela inicial. Roda
-  `anydesk <ID>` e encaixa a janela que esse processo abrir. Contato já conectado: só troca de aba.
+  salvo em `~/.config/naview/contatos.json` (o arquivo do AnyDesk não é alterado). A lista mostra
+  primeiro os conectados, depois os usados recentemente.
+- **Conectar**: dois cliques (ou Enter) no contato, ID na busca + Enter, o campo da tela inicial ou
+  um dos **Recentes** (as 5 últimas conexões, abaixo do campo). Roda `anydesk <ID>` e encaixa a
+  janela que esse processo abrir. Contato já conectado: só troca de aba. Se a busca achar vários
+  contatos, o Enter seleciona o primeiro na lista em vez de conectar.
 - **Abas**: bolinha com a cor do contato, nome atualizado a cada 2 s (apelido > nome do
   computador no título da janela > ID), arrastar para reordenar, **×** ou botão do meio do mouse
-  encerra a conexão, **+** abre a busca para uma nova conexão.
+  encerra a conexão (sessão aberta há mais de 5 min pede confirmação), **+** abre a busca para uma
+  nova conexão.
 - **Teclado**: com uma sessão na tela, o foco do teclado do X11 vai direto para a janela do
   AnyDesk (o `Gtk.Socket` não repassa bem as teclas, porque o AnyDesk não usa XEMBED). Clicar num
-  campo do app devolve o teclado ao app; clicar na tela da sessão devolve ao AnyDesk.
+  campo ou na lista de contatos devolve o teclado ao app; clicar na tela da sessão devolve ao AnyDesk.
 - **Atalhos** (quando o teclado está no app): F9 mostra/esconde contatos, Ctrl+F vai para a busca.
 - **Menu > Capturar janela do AnyDesk…**: encaixa uma janela do AnyDesk já aberta (precisa ter
   sido aberta com `GDK_BACKEND=x11`).
@@ -24,8 +28,8 @@ Junta várias conexões do AnyDesk em abas, numa única janela (Linux / KDE Wayl
 
 ## Temas
 
-Botão de aparência na barra de título (ou Menu > Aparência e temas…). Tudo aplica na hora e fica
-salvo em `~/.config/naview/config.json`.
+Menu ⋮ da barra de título > Aparência e temas…. Tudo aplica na hora e fica salvo em
+`~/.config/naview/config.json`. Trocar de tema mantém a imagem de fundo escolhida.
 
 | Tema | O que muda |
 |---|---|
@@ -55,7 +59,8 @@ imagem de fundo da tela inicial, desenhos e animações (podem ser desligados).
 ## Jogo: baús, coleção e pet
 
 Botão de presente na barra de título (a bolinha vermelha conta as novidades). Abre dentro da
-janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.db`.
+janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.db`. Fechado há
+10 min, o jogo sai da memória (reabrir leva um instante a mais).
 
 - **Cartas** (31): temas, pets, acessórios do pet, molduras dos avatares e sons de conexão, em 4
   raridades (Comum, Rara, Épica, Lendária) e a Mítica, só para os temas mais elaborados
@@ -84,7 +89,8 @@ servidor da equipe, basta trocar `Progresso` por uma classe com os mesmos métod
 - `janela_aparencia.py`: galeria de temas e ajustes.
 - `contatos.py`: leitura dos contatos do AnyDesk e apelidos.
 - `x11.py`: acesso à libX11 (listar janelas, PID, foco, desfoque).
-- `fontes.py`, `fonts/`, `arte/`, `ferramentas/gerar_arte.py`: fontes e desenhos dos temas.
+- `fontes.py`, `fonts/`, `arte/`, `ferramentas/gerar_arte.py`: fontes e desenhos dos temas e do jogo
+  (pets em `ferramentas/desenhos_pets.py`; sprites dos Pokémon por `ferramentas/baixar_sprites.py`).
 - `jogo/catalogo.py` (cartas, baús, regras), `jogo/progresso.py` (motor e banco),
   `jogo/tela.py` (página do jogo no WebKitGTK), `jogo/gtk.py` (pet no rodapé, sons, notificações).
 - `web/`: página do jogo; `web/vendor/`: GSAP 3.12.5 e canvas-confetti 1.9.3.
