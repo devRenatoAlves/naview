@@ -73,7 +73,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Levantar o que serve, o que quebra e o caminho (Qt nos dois sistemas)
 - [x] Script do teste de viabilidade (`ferramentas/teste_windows.py`)
 - [x] Piloto para a equipe: `.exe` montado pelo GitHub Actions e página `/piloto/` no site
-- [ ] Confirmar a primeira montagem no GitHub Actions e o download no site
+- [x] Primeira montagem no GitHub Actions (15/10/2026): `.exe` abre, zip de 40 MB publicado em `/piloto/`
 - [~] Usuário (e 2 ou 3 colegas) rodar o piloto e trazer o `relatorio-windows.txt`
 - [ ] Fase 1: módulo `janelas` (X11 e Windows) e app reescrito em Qt (PySide6)
 - [ ] Fase 2: jogo no `QWebEngineView` com `QWebChannel`
