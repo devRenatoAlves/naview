@@ -1584,6 +1584,10 @@ def main():
     temas_qt.carregar_fontes()
     janela = App()
     janela.show()
+    if "--verificar" in sys.argv:
+        # Usado pelo GitHub Actions: abre, abre o jogo (confere o navegador embutido) e fecha.
+        QTimer.singleShot(1500, janela.abrir_jogo)
+        QTimer.singleShot(6000, app.quit)
     sys.exit(app.exec())
 
 

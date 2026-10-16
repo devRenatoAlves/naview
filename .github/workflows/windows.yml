@@ -1,0 +1,73 @@
+# Monta o NaView para Windows (versão Qt, ver docs/sdd/specs/06-windows.md).
+#
+# Numa máquina Windows do GitHub: empacota app_qt.py com o PyInstaller, confere que o .exe abre
+# (inclusive o jogo, que usa o navegador embutido do Qt) e monta o instalador com o Inno Setup.
+# O instalador fica como "artifact" da execução (aba Actions do GitHub). Ele passa de 100 MB, o
+# limite de arquivo do GitHub, então não é guardado no repositório como o piloto.
+name: Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "*.py"
+      - "janelas/**"
+      - "jogo/**"
+      - "web/**"
+      - "arte/**"
+      - "sons/**"
+      - "fonts/**"
+      - "icones/**"
+      - VERSAO
+      - ferramentas/instalador.iss
+      - .github/workflows/windows.yml
+
+concurrency:
+  group: windows
+  cancel-in-progress: true
+
+jobs:
+  montar:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # PySide6 completo: o jogo precisa do QtWebEngine, que não vem no PySide6-Essentials.
+      - name: Instalar dependências
+        run: python -m pip install "PySide6~=6.8.0" "pyinstaller~=6.11"
+
+      - name: Empacotar
+        run: >
+          pyinstaller --noconfirm --windowed --name NaView
+          --icon ferramentas/icone.ico
+          --add-data "arte;arte" --add-data "sons;sons" --add-data "fonts;fonts"
+          --add-data "icones;icones" --add-data "web;web" --add-data "icone.svg;."
+          --exclude-module tkinter --exclude-module gi
+          app_qt.py
+
+      - name: Conferir se abre
+        shell: pwsh
+        timeout-minutes: 3
+        run: |
+          $p = Start-Process -FilePath dist/NaView/NaView.exe -ArgumentList '--verificar' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { Write-Error "O .exe saiu com código $($p.ExitCode)"; exit 1 }
+
+      - name: Montar o instalador
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          $versao = (Get-Content VERSAO -Raw).Trim()
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DVersao=$versao" ferramentas/instalador.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NaView-instalador
+          path: saida/NaView-instalador.exe
+          retention-days: 30

@@ -91,4 +91,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Usuário testar `python3 app_qt.py` no dia a dia (Linux) e apontar diferenças
 - [ ] Trocar o atalho do menu e o `instalar.sh` para a versão Qt; depois apagar `app.py`,
   `janela_aparencia.py`, `jogo/gtk.py`, `jogo/tela.py`, `fontes.py` e o CSS do GTK em `temas.py`
-- [ ] Fase 3: pacote `.exe`, instalador e testes nos PCs da equipe
+- [x] Fase 3 (montagem): PyInstaller + Inno Setup no GitHub Actions (`windows.yml`)
+- [ ] Decidir onde publicar o instalador (passa de 100 MB: não cabe no repositório)
+- [ ] Testar o instalador nos PCs da equipe: com e sem administrador, escala 125%/150%, antivírus,
+  contatos do AnyDesk no Windows (`%APPDATA%\AnyDesk\user.conf`)

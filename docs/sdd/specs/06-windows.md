@@ -153,3 +153,10 @@ Modos de encaixe do piloto:
 - No Linux, a versão Qt usa os pacotes do Ubuntu (não o `pip`):
   `python3-pyside6.qtwidgets python3-pyside6.qtsvg python3-pyside6.qtwebenginewidgets
   python3-pyside6.qtwebchannel python3-pyside6.qtmultimedia python3-pyside6.qtdbus`.
+- 16/10/2026: fase 3 preparada. `.github/workflows/windows.yml` empacota o `app_qt.py` com o
+  PyInstaller (PySide6 completo, por causa do QtWebEngine), confere que o `.exe` abre e abre o
+  jogo (`--verificar`) e monta `NaView-instalador.exe` com o Inno Setup
+  (`ferramentas/instalador.iss`): instala só para o usuário, sem senha de administrador, em
+  `%LOCALAPPDATA%\Programs\NaView`, com atalho no menu Iniciar. O instalador passa de 100 MB (limite
+  de arquivo do GitHub), então fica como artifact da execução, não no repositório. Falta decidir como
+  distribuir para a equipe (ver tarefas).
