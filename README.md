@@ -1,11 +1,10 @@
 # NaView
 
-Junta várias conexões do AnyDesk em abas, numa única janela (Linux: KDE, GNOME e outros ambientes, em Wayland ou X11).
+Junta várias conexões do AnyDesk em abas, numa única janela (Linux).
 
 ## Como funciona
 
-- O app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`), que existe no KDE, no GNOME
-  e nos outros ambientes. Isso permite encaixar a janela do
+- O app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`). Isso permite encaixar a janela do
   AnyDesk dentro de uma aba (`Gtk.Socket`).
 - **Contatos** (barra lateral): importados do catálogo do AnyDesk (`ad.roster.items` em
   `~/.anydesk/user.conf`), com busca e avatar colorido. O lápis renomeia num balão; o nome fica
@@ -35,7 +34,7 @@ Menu ⋮ da barra de título > Aparência e temas…. Tudo aplica na hora e fica
 | Tema | O que muda |
 |---|---|
 | Padrão, Grafite, Claro, Oceano | Cores |
-| Vidro líquido | Janela transparente com o desfoque do KWin (`_KDE_NET_WM_BLUR_BEHIND_REGION`), painéis com brilho e borda clara; intensidade ajustável |
+| Vidro líquido | Janela transparente com desfoque (quando o sistema oferece), painéis com brilho e borda clara; intensidade ajustável |
 | Aventura Pixel | Fonte Press Start 2P, bordas grossas, monstrinhos em pixel art, grama e nuvens |
 | Heróis HQ | Fonte Bangers, retícula de pontos, explosões "POW!"/"ZAP!", cidade e emblema |
 | Espaço | Fonte Orbitron, estrelas, planeta e foguete |
@@ -54,10 +53,9 @@ imagem de fundo da tela inicial, desenhos e animações (podem ser desligados).
 - Toda a arte é original e gerada por `ferramentas/gerar_arte.py` (saída em `arte/`).
 - Fontes em `fonts/` (licença OFL, arquivos `OFL-*.txt`), carregadas só para o app por
   `fontes.py`, sem instalar no sistema.
-- A força do desfoque é uma configuração global do KDE (Configurações do sistema > Efeitos da
-  área de trabalho > Desfoque). Só o KDE desfoca o que fica atrás da janela: no GNOME e nos
-  outros ambientes, o vidro fica sem desfoque e com o fundo mais escuro, para o texto continuar
-  legível.
+- O desfoque do vidro usa `_KDE_NET_WM_BLUR_BEHIND_REGION`, e a força dele é uma configuração
+  do sistema. Onde o sistema não desfoca, o vidro fica com o fundo mais escuro, para o texto
+  continuar legível.
 
 ## Jogo: baús, coleção e pet
 
@@ -112,7 +110,7 @@ servidor da equipe, basta trocar `Progresso` por uma classe com os mesmos métod
 python3 app.py
 ```
 
-Para criar o atalho no menu de aplicativos (KDE, GNOME e outros, com ícone), rode uma vez:
+Para criar o atalho no menu de aplicativos (com ícone), rode uma vez:
 
 ```bash
 ./instalar.sh
@@ -120,11 +118,11 @@ Para criar o atalho no menu de aplicativos (KDE, GNOME e outros, com ícone), ro
 
 O script também avisa se falta alguma biblioteca e mostra o pacote para instalar.
 
-Depois é só procurar "NaView" no menu. Para fixar: no KDE, botão direito no ícone > "Fixar no
-Gerenciador de tarefas"; no GNOME, botão direito no ícone da dock > "Fixar no Dash".
+Depois é só procurar "NaView" no menu. Para fixar na barra de tarefas, clique com o botão
+direito no ícone e escolha a opção de fixar.
 
 Requisitos: Python 3, PyGObject (GTK 3), libX11 e AnyDesk. O jogo usa também WebKit2GTK 4.1,
-libnotify e GStreamer. No Ubuntu com GNOME:
+libnotify e GStreamer. No Ubuntu e derivados:
 
 ```bash
 sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-notify-0.7 \

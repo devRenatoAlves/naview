@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala o atalho do "NaView" no menu de aplicativos (KDE, GNOME e outros; só para o usuário atual)
+# Instala o atalho do "NaView" no menu de aplicativos (só para o usuário atual)
 # e avisa se falta alguma biblioteca do sistema. Não instala nada sozinho.
 set -euo pipefail
 
@@ -25,7 +25,7 @@ Categories=Network;RemoteAccess;
 StartupWMClass=naview
 EOF
 
-# Atualiza o cache de atalhos para o menu enxergar o novo atalho (KDE e GNOME/outros).
+# Atualiza o cache de atalhos para o menu enxergar o novo atalho.
 command -v kbuildsycoca6 >/dev/null && kbuildsycoca6 >/dev/null 2>&1 || true
 command -v update-desktop-database >/dev/null && update-desktop-database "$ATALHOS" >/dev/null 2>&1 || true
 command -v gtk-update-icon-cache >/dev/null \

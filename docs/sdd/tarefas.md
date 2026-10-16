@@ -17,7 +17,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Pets redesenhados em pixel art 64 x 64 (sprites oficiais para os Pokémon) e Gengar
 - [x] Barra de contatos retrátil
 - [x] Corrigir a tela do jogo cortada quando o app abre com a barra lateral aberta
-- [x] Atalho no menu do KDE (`.desktop`) e ícone próprio
+- [x] Atalho no menu de aplicativos (`.desktop`) e ícone próprio
 - [x] Revisão da interface: ícones, cartão de conexão rápida, avatares, avisos, abas
 - [x] Revisão de fluidez e usabilidade (15/10/2026): leitura do AnyDesk em cache, recentes na tela
   inicial, lista ordenada, Enter da busca corrigido, confirmação ao fechar sessão longa, jogo mais
@@ -28,8 +28,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Atalhos para trocar de aba (Ctrl+Tab, Ctrl+1..9)
 - [x] Funcionar fora do KDE (GNOME e outros): vidro sem desfoque e mais opaco, instalador
   genérico que confere as bibliotecas, jogo com aviso se faltar o WebKit
-- [~] Testar no GNOME (um amigo do usuário vai testar): encaixe, foco do teclado, atalho no menu,
-  avisos e tema vidro
+- [x] Testado no GNOME por um amigo do usuário (15/10/2026): funcionou
 
 ## Temas ([spec](specs/02-temas.md))
 
@@ -74,7 +73,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] (15/10/2026) Revisão do topo: trocar de tema não move mais título, botões, janela nem cartas;
   fontes dos temas carregadas no início; abas da demonstração encolhem com reticências
 - [x] Publicar a revisão do topo (no ar em 15/10/2026; CSS e JS com `?v=` contra cache antigo)
-- [x] Página não divulgada `/gnome/` para o teste no GNOME (download do pacote Linux e roteiro)
+- [x] Página de teste `/gnome/` usada e removida; a página principal agora fala só "Linux"
 
 ## Windows ([spec](specs/06-windows.md))
 

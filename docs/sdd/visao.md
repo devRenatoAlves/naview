@@ -21,7 +21,7 @@ separada, e alternar entre elas é lento e confuso.
 
 ## Ambiente
 
-- Linux com KDE Plasma em Wayland (máquina do usuário). Também deve rodar no GNOME e nos outros
+- Linux com KDE Plasma em Wayland (máquina do usuário). Também roda no GNOME (testado) e nos outros
   ambientes, em Wayland ou X11: o app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`).
   Só o desfoque do tema vidro é do KDE.
 - AnyDesk 8.1.0 (GTK3).

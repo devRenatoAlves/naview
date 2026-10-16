@@ -104,8 +104,8 @@ class JanelaAparencia(Gtk.Window):
         self.rotulo_intensidade = Gtk.Label(label="Intensidade do vidro", xalign=0)
         if not temas.TEM_DESFOQUE:
             self.rotulo_intensidade.set_tooltip_text(
-                "O desfoque atrás da janela só existe no KDE. Aqui o vidro fica mais escuro para "
-                "o texto continuar legível.")
+                "Este sistema não desfoca o que fica atrás da janela. Por isso o vidro fica mais "
+                "escuro, para o texto continuar legível.")
         grade.attach(self.rotulo_intensidade, 0, linha, 1, 1)
         grade.attach(self.intensidade, 1, linha, 2, 1)
         linha += 1

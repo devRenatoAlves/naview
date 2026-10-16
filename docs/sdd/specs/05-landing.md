@@ -110,9 +110,7 @@ do dedo). O que mudou:
 - Depois de cada montagem, o `main` remoto tem um commit do robô: rodar `git pull` antes de
   continuar.
 
-## Teste no GNOME (15/10/2026)
+## Linux em geral (15/10/2026)
 
-- Página não divulgada `/gnome/` (`site/fonte/gnome/index.html`, com `noindex`): download do mesmo
-  pacote Linux da página principal, com instalação e roteiro de teste no GNOME. A página principal
-  não tem link para ela.
-- `gerar_site.py` preenche nela versão, arquivo, tamanho e SHA-256, como na página principal.
+- A página fala só "Linux", sem citar KDE ou GNOME: o app foi testado nos dois. Houve uma página
+  de teste `/gnome/`, removida depois que o teste deu certo.

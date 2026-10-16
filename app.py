@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """NaView: várias conexões do AnyDesk em abas numa única janela.
 
-Funciona no KDE, no GNOME e nos outros ambientes Linux (Wayland ou X11) porque tanto este app
+Funciona em qualquer ambiente Linux (Wayland ou X11) porque tanto este app
 quanto o AnyDesk rodam pelo X11/XWayland (GDK_BACKEND=x11), o que permite encaixar a janela do
 AnyDesk dentro de uma aba.
 """
@@ -26,7 +26,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GLib  # noqa: E402
 
-# Nome da janela para o KDE e o GNOME: liga ela ao atalho naview.desktop (StartupWMClass)
+# Nome da janela para o sistema: liga ela ao atalho naview.desktop (StartupWMClass)
 # e faz a barra de tarefas mostrar o ícone certo. Precisa vir antes de importar o Gtk,
 # que fixa esse nome ao ser importado.
 GLib.set_prgname("naview")
@@ -557,7 +557,7 @@ class App(Gtk.Window):
         if self.tela_jogo is None:
             try:
                 from jogo.tela import TelaJogo  # WebKit só é carregado quando precisa
-            except (ValueError, ImportError):  # WebKit2 4.1 não instalado (comum fora do KDE)
+            except (ValueError, ImportError):  # WebKit2 4.1 não instalado
                 self._marcar_botao_jogo(False)
                 self.avisar("O jogo precisa do WebKit2GTK 4.1 (pacote gir1.2-webkit2-4.1 no Ubuntu).")
                 return True
