@@ -1,6 +1,6 @@
 # NaView
 
-Junta várias conexões do AnyDesk em abas, numa única janela (Linux).
+Junta várias conexões do AnyDesk em abas, numa única janela (Linux; versão para Windows em teste).
 
 ## Como funciona
 
@@ -117,6 +117,18 @@ Para criar o atalho no menu de aplicativos (com ícone), rode uma vez:
 ```
 
 O script também avisa se falta alguma biblioteca e mostra o pacote para instalar.
+
+### Versão nova (Qt, Linux e Windows), em teste
+
+```bash
+sudo apt install python3-pyside6.qtwidgets python3-pyside6.qtsvg python3-pyside6.qtwebenginewidgets \
+  python3-pyside6.qtwebchannel python3-pyside6.qtmultimedia python3-pyside6.qtdbus
+python3 app_qt.py
+```
+
+Usa os mesmos contatos, temas e progresso do `app.py`; não abra os dois ao mesmo tempo. No
+Windows, o instalador `NaView-instalador.exe` é montado pelo GitHub Actions
+(`.github/workflows/windows.yml`) e baixado pela página, na aba Windows da seção de instalação.
 
 Depois é só procurar "NaView" no menu. Para fixar na barra de tarefas, clique com o botão
 direito no ícone e escolha a opção de fixar.

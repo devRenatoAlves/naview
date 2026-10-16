@@ -225,4 +225,52 @@
       setTimeout(() => { botao.textContent = "Copiar"; botao.classList.remove("copiado"); }, 1800);
     });
   });
+  // ---------- Linux ou Windows ----------
+  //
+  // O instalador do Windows não fica no repositório (passa de 100 MB): o GitHub Actions envia para a
+  // VPS, junto com windows.json (versão, tamanho e SHA-256). Sem esse arquivo, a página diz "em breve".
+
+  const abasSistema = [document.getElementById("aba-linux"), document.getElementById("aba-windows")];
+  const escolherSistema = (aba, focar) => {
+    abasSistema.forEach((a) => {
+      const sim = a === aba;
+      a.setAttribute("aria-selected", String(sim));
+      a.tabIndex = sim ? 0 : -1;
+      document.getElementById(a.getAttribute("aria-controls")).hidden = !sim;
+    });
+    if (focar) aba.focus();
+  };
+  abasSistema.forEach((aba, i) => {
+    aba.addEventListener("click", () => escolherSistema(aba, false));
+    aba.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      e.preventDefault();
+      escolherSistema(abasSistema[(i + 1) % abasSistema.length], true);
+    });
+  });
+
+  const noWindows = /Windows/i.test(navigator.userAgent);
+  if (noWindows) escolherSistema(abasSistema[1], false);
+
+  fetch("download/windows/windows.json", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((info) => {
+      document.getElementById("win-em-breve").hidden = true;
+      document.getElementById("win-baixar").hidden = false;
+      document.getElementById("win-rotulo").textContent = `Baixar o NaView ${info.versao} para Windows`;
+      const meta = document.getElementById("win-meta");
+      const codigo = document.createElement("code");
+      codigo.textContent = info.arquivo;
+      meta.replaceChildren("Instalador ", codigo, `, ${info.tamanho}. Para Windows 10 e 11 com o AnyDesk instalado.`);
+      document.getElementById("win-sha").textContent = info.sha256;
+      if (noWindows) {
+        const hero = document.getElementById("hero-baixar");
+        hero.href = "download/windows/NaView-instalador.exe";
+        hero.querySelector("span").textContent = "Baixar para Windows";
+        document.getElementById("hero-nota").textContent = `Versão ${info.versao} para Windows, em teste. Também para Linux.`;
+      } else {
+        document.getElementById("hero-nota").textContent += " Também para Windows, em teste.";
+      }
+    })
+    .catch(() => {});
 })();

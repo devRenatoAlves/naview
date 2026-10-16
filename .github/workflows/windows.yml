@@ -2,8 +2,10 @@
 #
 # Numa máquina Windows do GitHub: empacota app_qt.py com o PyInstaller, confere que o .exe abre
 # (inclusive o jogo, que usa o navegador embutido do Qt) e monta o instalador com o Inno Setup.
-# O instalador fica como "artifact" da execução (aba Actions do GitHub). Ele passa de 100 MB, o
-# limite de arquivo do GitHub, então não é guardado no repositório como o piloto.
+# O instalador passa de 100 MB (limite de arquivo do GitHub), então não fica no repositório como o
+# piloto: vai por SSH para uma pasta da VPS que o site serve em /download/windows/, junto com
+# windows.json (versão, tamanho, SHA-256), que a página lê. Sem os segredos VPS_* cadastrados no
+# GitHub, o envio é pulado e o instalador fica só como "artifact" da execução (aba Actions).
 name: Windows
 
 on:
@@ -31,6 +33,8 @@ jobs:
   montar:
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
     steps:
       - uses: actions/checkout@v4
 
@@ -71,3 +75,32 @@ jobs:
           name: NaView-instalador
           path: saida/NaView-instalador.exe
           retention-days: 30
+
+      # Segredos: VPS_HOST, VPS_USUARIO, VPS_PASTA, VPS_CHAVE (chave SSH privada só deste envio) e
+      # VPS_HOST_KEY (linha do known_hosts da VPS, para não aceitar um servidor falso).
+      - name: Enviar para a VPS
+        if: env.VPS_HOST != ''
+        shell: bash
+        env:
+          VPS_USUARIO: ${{ secrets.VPS_USUARIO }}
+          VPS_PASTA: ${{ secrets.VPS_PASTA }}
+          VPS_CHAVE: ${{ secrets.VPS_CHAVE }}
+          VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_CHAVE" > ~/.ssh/naview && chmod 600 ~/.ssh/naview
+          printf '%s\n' "$VPS_HOST_KEY" > ~/.ssh/known_hosts_naview
+          arquivo=saida/NaView-instalador.exe
+          versao=$(tr -d '\r\n' < VERSAO)
+          bytes=$(stat -c %s "$arquivo")
+          tamanho=$(python -c "print(f'{$bytes / 1048576:.1f} MB'.replace('.', ','))")
+          sha=$(sha256sum "$arquivo" | cut -d' ' -f1)
+          printf '{"versao": "%s", "arquivo": "NaView-instalador.exe", "tamanho": "%s", "sha256": "%s"}\n' \
+            "$versao" "$tamanho" "$sha" > saida/windows.json
+          opcoes=(-i ~/.ssh/naview -o UserKnownHostsFile=~/.ssh/known_hosts_naview -o StrictHostKeyChecking=yes)
+          destino="$VPS_USUARIO@$VPS_HOST"
+          # Envia com nome provisório e só depois troca: quem baixar no meio do envio não pega meio arquivo.
+          scp "${opcoes[@]}" "$arquivo" "$destino:$VPS_PASTA/NaView-instalador.exe.novo"
+          scp "${opcoes[@]}" saida/windows.json "$destino:$VPS_PASTA/windows.json.novo"
+          ssh "${opcoes[@]}" "$destino" "cd '$VPS_PASTA' && mv -f NaView-instalador.exe.novo NaView-instalador.exe && mv -f windows.json.novo windows.json"

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NaView: seus clientes do AnyDesk em abas</title>
-<meta name="description" content="O NaView junta as conexões do AnyDesk em abas, numa única janela, com a lista de contatos ao lado. Para Linux.">
+<meta name="description" content="O NaView junta as conexões do AnyDesk em abas, numa única janela, com a lista de contatos ao lado. Para Linux e Windows.">
 <meta property="og:title" content="NaView">
 <meta property="og:description" content="Seus clientes do AnyDesk, todos numa janela só.">
 <meta property="og:type" content="website">
@@ -64,13 +64,13 @@
       <div class="titulo-caixa"><h1>Seus clientes do AnyDesk, todos numa janela só.</h1></div>
       <p class="hero-sub">O NaView junta as conexões em abas, com a lista de contatos ao lado. Menos janelas para caçar, mais tempo para resolver o problema do cliente.</p>
       <div class="hero-acoes">
-        <a class="botao botao-principal" href="download/{{ARQUIVO}}" download>
+        <a class="botao botao-principal" id="hero-baixar" href="download/{{ARQUIVO}}" download>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
-          Baixar para Linux
+          <span>Baixar para Linux</span>
         </a>
         <a class="botao botao-leve" href="#dia-a-dia">Ver como funciona</a>
       </div>
-      <p class="hero-nota">Versão {{VERSAO}}, para Linux.</p>
+      <p class="hero-nota" id="hero-nota">Versão {{VERSAO}}, para Linux.</p>
     </div>
 
     <div class="demo">
@@ -199,37 +199,77 @@
 <section class="instalar" id="instalar" aria-labelledby="instalar-titulo">
   <div class="largura">
     <h2 id="instalar-titulo">Instale em três passos</h2>
-    <div class="baixar-caixa">
-      <a class="botao botao-principal botao-grande" href="download/{{ARQUIVO}}" download>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
-        Baixar o NaView {{VERSAO}}
-      </a>
-      <p class="baixar-meta">Pacote <code>{{ARQUIVO}}</code>, {{TAMANHO}}. Para Linux com o AnyDesk instalado.</p>
-      <details class="soma">
-        <summary>Conferir se o arquivo chegou inteiro</summary>
-        <p>Rode o comando abaixo na pasta do download. O resultado deve ser igual a este código:</p>
-        <pre><code>{{SHA256}}</code></pre>
-        <div class="comando"><pre><code>sha256sum {{ARQUIVO}}</code></pre><button class="copiar" type="button">Copiar</button></div>
-      </details>
+
+    <div class="sistemas" role="tablist" aria-label="Sistema do seu computador">
+      <button class="sistema" id="aba-linux" type="button" role="tab" aria-selected="true" aria-controls="painel-linux">Linux</button>
+      <button class="sistema" id="aba-windows" type="button" role="tab" aria-selected="false" aria-controls="painel-windows" tabindex="-1">Windows <span class="selo-teste">em teste</span></button>
     </div>
 
-    <ol class="passos">
-      <li>
-        <h3>Instale o que o NaView precisa</h3>
-        <p>No Ubuntu e derivados, abra o terminal e rode:</p>
-        <div class="comando"><pre><code>sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good gir1.2-notify-0.7</code></pre><button class="copiar" type="button">Copiar</button></div>
-      </li>
-      <li>
-        <h3>Extraia o pacote na sua pasta pessoal</h3>
-        <div class="comando"><pre><code>tar -xzf ~/Downloads/{{ARQUIVO}} -C ~</code></pre><button class="copiar" type="button">Copiar</button></div>
-        <p>Isso cria a pasta <code>~/naview</code>.</p>
-      </li>
-      <li>
-        <h3>Crie o atalho no menu</h3>
-        <div class="comando"><pre><code>~/naview/instalar.sh</code></pre><button class="copiar" type="button">Copiar</button></div>
-        <p>Pronto: procure por NaView no menu de aplicativos. Se faltar alguma biblioteca, o script avisa qual instalar.</p>
-      </li>
-    </ol>
+    <div class="painel-sistema" id="painel-linux" role="tabpanel" aria-labelledby="aba-linux">
+      <div class="baixar-caixa">
+        <a class="botao botao-principal botao-grande" href="download/{{ARQUIVO}}" download>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
+          Baixar o NaView {{VERSAO}}
+        </a>
+        <p class="baixar-meta">Pacote <code>{{ARQUIVO}}</code>, {{TAMANHO}}. Para Linux com o AnyDesk instalado.</p>
+        <details class="soma">
+          <summary>Conferir se o arquivo chegou inteiro</summary>
+          <p>Rode o comando abaixo na pasta do download. O resultado deve ser igual a este código:</p>
+          <pre><code>{{SHA256}}</code></pre>
+          <div class="comando"><pre><code>sha256sum {{ARQUIVO}}</code></pre><button class="copiar" type="button">Copiar</button></div>
+        </details>
+      </div>
+
+      <ol class="passos">
+        <li>
+          <h3>Instale o que o NaView precisa</h3>
+          <p>No Ubuntu e derivados, abra o terminal e rode:</p>
+          <div class="comando"><pre><code>sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good gir1.2-notify-0.7</code></pre><button class="copiar" type="button">Copiar</button></div>
+        </li>
+        <li>
+          <h3>Extraia o pacote na sua pasta pessoal</h3>
+          <div class="comando"><pre><code>tar -xzf ~/Downloads/{{ARQUIVO}} -C ~</code></pre><button class="copiar" type="button">Copiar</button></div>
+          <p>Isso cria a pasta <code>~/naview</code>.</p>
+        </li>
+        <li>
+          <h3>Crie o atalho no menu</h3>
+          <div class="comando"><pre><code>~/naview/instalar.sh</code></pre><button class="copiar" type="button">Copiar</button></div>
+          <p>Pronto: procure por NaView no menu de aplicativos. Se faltar alguma biblioteca, o script avisa qual instalar.</p>
+        </li>
+      </ol>
+    </div>
+
+    <div class="painel-sistema" id="painel-windows" role="tabpanel" aria-labelledby="aba-windows" hidden>
+      <div class="baixar-caixa" id="win-baixar" hidden>
+        <a class="botao botao-principal botao-grande" id="win-link" href="download/windows/NaView-instalador.exe" download>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" /></svg>
+          <span id="win-rotulo">Baixar o NaView para Windows</span>
+        </a>
+        <p class="baixar-meta" id="win-meta">Instalador <code>NaView-instalador.exe</code>. Para Windows 10 e 11 com o AnyDesk instalado.</p>
+        <details class="soma">
+          <summary>Conferir se o arquivo chegou inteiro</summary>
+          <p>No PowerShell, na pasta do download, rode o comando abaixo. O resultado deve ser igual a este código:</p>
+          <pre><code id="win-sha"></code></pre>
+          <div class="comando"><pre><code>Get-FileHash NaView-instalador.exe</code></pre><button class="copiar" type="button">Copiar</button></div>
+        </details>
+      </div>
+      <p class="win-em-breve" id="win-em-breve">O instalador para Windows ainda não está disponível aqui. Volte em breve.</p>
+
+      <ol class="passos">
+        <li>
+          <h3>Baixe e abra o instalador</h3>
+          <p>Abra o <code>NaView-instalador.exe</code> da pasta Downloads. O AnyDesk precisa estar instalado.</p>
+        </li>
+        <li>
+          <h3>Libere o aviso do Windows</h3>
+          <p>Se aparecer <strong>O Windows protegeu o computador</strong>, clique em <strong>Mais informações</strong> e depois em <strong>Executar assim mesmo</strong>. O aviso aparece porque o NaView ainda não tem assinatura digital.</p>
+        </li>
+        <li>
+          <h3>Siga o instalador</h3>
+          <p>Não pede senha de administrador. No fim, o NaView abre sozinho e fica no menu Iniciar.</p>
+        </li>
+      </ol>
+    </div>
   </div>
 </section>
 

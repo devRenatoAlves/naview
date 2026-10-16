@@ -364,6 +364,16 @@ code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: .92e
 
 .instalar { padding: clamp(64px, 9vw, 120px) 0; background: var(--mar-fundo); color: #e6eeff; }
 .instalar h2 { color: #ffffff; }
+.sistemas { margin-top: 28px; display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.08); }
+.sistema {
+  min-height: 44px; padding: 8px 22px; border: 0; border-radius: 999px; cursor: pointer;
+  background: transparent; color: #e6eeff; font: 600 1rem var(--fonte); display: inline-flex; align-items: center; gap: 8px;
+}
+.sistema:hover { background: rgba(255,255,255,.1); }
+.sistema[aria-selected="true"] { background: var(--celeste); color: var(--casco); }
+.sistema:focus-visible { outline: 2px solid var(--bandeira); outline-offset: 2px; }
+.selo-teste { font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--bandeira); color: var(--casco); }
+.win-em-breve { margin-top: 32px; padding: 14px 18px; border-radius: var(--raio-m); background: rgba(255,255,255,.06); color: #e6eeff; max-width: 60ch; }
 .baixar-caixa { margin-top: 32px; display: grid; justify-items: start; gap: 14px; }
 .baixar-meta { color: #b9c6ec; }
 .baixar-meta code { color: #ffffff; }
