@@ -1,9 +1,10 @@
-"""Contatos: importados do AnyDesk (~/.anydesk/user.conf) + apelidos salvos pelo app."""
+"""Contatos: importados do AnyDesk (user.conf, ver plataforma.py) + apelidos salvos pelo app."""
 import json
-from pathlib import Path
 
-ANYDESK_CONF = Path.home() / ".anydesk" / "user.conf"
-ARQUIVO = Path.home() / ".config" / "naview" / "contatos.json"
+import plataforma
+
+ANYDESK_CONF = plataforma.ANYDESK_CONF
+ARQUIVO = plataforma.CONFIG / "contatos.json"
 
 
 def formatar_id(anydesk_id):

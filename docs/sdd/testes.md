@@ -59,3 +59,20 @@ gerar a página de teste:
 ```bash
 python3 -m py_compile app.py jogo/*.py && node --check web/jogo.js
 ```
+
+## Versão Qt (`app_qt.py`)
+
+- **Fora da tela:** `QT_QPA_PLATFORM=offscreen` e `janela.grab().save(...)`. Antes de importar
+  `app_qt`, aponte `plataforma.CONFIG/CACHE/DADOS`, `temas.ARQUIVO`, `contatos.ARQUIVO`,
+  `contatos.ANYDESK_CONF` e `jogo.progresso.ARQUIVO` para uma pasta temporária. `app_qt` força
+  `QT_QPA_PLATFORM=xcb` ao ser importado: troque para `offscreen` depois do import.
+- **Jogo fora da tela:** precisa de `QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu`, senão a imagem sai
+  vazia.
+- **Encaixe sem AnyDesk:** uma janela GTK qualquer com `GDK_BACKEND=x11` e
+  `set_wmclass("testealvo", "testealvo")`; troque `janelas.linux.CLASSE_ANYDESK` para `testealvo` e
+  `App.j.abrir` por uma função que abre essa janela. O app aparece na tela por alguns segundos.
+- O KDE não deixa uma janela aberta por script tomar o foco enquanto o usuário usa outra
+  (proteção contra roubo de foco). Por isso o teclado entre a busca e a sessão só dá para conferir
+  usando o app.
+- Ao sair com abas abertas, o app pergunta "Fechar o NaView?": num teste, esvazie `App.abas` antes
+  de `app.quit()`.

@@ -85,6 +85,10 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
   separado do encaixe, três modos de encaixe, registro em arquivo e aviso de travamento
 - [x] Usuário rodou o piloto (16/10/2026): passou em tudo (ver spec, Situação)
 - [ ] 2 ou 3 colegas rodarem o piloto: NaView sem administrador, escala 125%/150%, antivírus
-- [ ] Fase 1: módulo `janelas` (X11 e Windows) e app reescrito em Qt (PySide6)
-- [ ] Fase 2: jogo no `QWebEngineView` com `QWebChannel`
+- [x] Fase 1: `plataforma.py`, módulo `janelas` (X11 e Windows) e `app_qt.py` com abas, contatos,
+  recentes, temas, Aparência, pet, avisos e teclado (16/10/2026)
+- [x] Fase 2: jogo no `QWebEngineView` com `QWebChannel`, sem mudar `web/jogo.js` (16/10/2026)
+- [ ] Usuário testar `python3 app_qt.py` no dia a dia (Linux) e apontar diferenças
+- [ ] Trocar o atalho do menu e o `instalar.sh` para a versão Qt; depois apagar `app.py`,
+  `janela_aparencia.py`, `jogo/gtk.py`, `jogo/tela.py`, `fontes.py` e o CSS do GTK em `temas.py`
 - [ ] Fase 3: pacote `.exe`, instalador e testes nos PCs da equipe

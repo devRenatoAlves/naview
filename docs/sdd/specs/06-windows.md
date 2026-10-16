@@ -1,4 +1,4 @@
-# 06: NaView no Windows (em planejamento)
+# 06: NaView no Windows (fase 1 em andamento)
 
 ## Objetivo
 
@@ -124,3 +124,32 @@ Modos de encaixe do piloto:
   notebooks (risco 2); (c) antivírus (risco 5); (d) o travamento do primeiro teste, que não se
   repetiu. A versão nova do piloto (modos de encaixe e registro em arquivo) serve para os colegas
   testarem esses pontos.
+- 16/10/2026: **fase 1 começou.** Versão Qt do app em `app_qt.py`, ao lado do `app.py` (GTK), que
+  continua sendo o usado até a versão Qt chegar ao mesmo nível. Feito e testado no Linux:
+  - `plataforma.py`: pastas e AnyDesk de cada sistema. No Linux os caminhos são os mesmos de antes;
+    no Windows, `%APPDATA%\NaView` (configuração), `%LOCALAPPDATA%\NaView` (progresso e cache) e
+    `%APPDATA%\AnyDesk\user.conf` (contatos, formato ainda a confirmar).
+  - `janelas/`: mesma interface nos dois sistemas (`linux.py` usa o `x11.py`; `win32.py` usa a API
+    do Windows, com o que o piloto confirmou).
+  - `temas_qt.py`: as cores de `temas.py` viram QSS; o fundo da tela inicial e os desenhos são
+    pintados à mão, com as mesmas animações (flutuar, balançar, pular, pulsar, navegar, piscar).
+  - `aparencia_qt.py`: janela de Aparência.
+  - `jogo/tela_qt.py`: o jogo no `QWebEngineView`. Um script injetado cria o mesmo
+    `window.webkit.messageHandlers` do WebKit em cima do `QWebChannel`, então `web/jogo.js` não
+    mudou. A parte comum às duas telas foi para `jogo/pagina.py`.
+  - `jogo/qt.py`: pet do rodapé, sons (`QSoundEffect`) e notificações (D-Bus no Linux, balão da
+    bandeja no Windows).
+  - Janela sem moldura do sistema, com barra de título própria (arrastar, maximizar, fechar) e
+    uma faixa de 6 px em volta para redimensionar. No Linux a janela é transparente (tema vidro
+    com desfoque do KWin); no Windows não, porque uma janela transparente não mostra a sessão
+    encaixada.
+  - Testes: todos os temas e a janela de Aparência renderizados fora da tela; o jogo pela ponte
+    (ação "resgatar_diario" respondida); e, com uma janela de teste no lugar do AnyDesk, o app de
+    verdade: encaixe, tamanho, teclado na sessão, jogo escondendo e devolvendo a sessão, fechar a
+    aba encerrando o processo.
+  - Falta: o usuário testar a versão Qt no dia a dia (teclado entre a busca e a sessão, que o KDE
+    não deixa testar por script), montar o `.exe` (fase 3) e trocar o atalho do menu para
+    `app_qt.py`.
+- No Linux, a versão Qt usa os pacotes do Ubuntu (não o `pip`):
+  `python3-pyside6.qtwidgets python3-pyside6.qtsvg python3-pyside6.qtwebenginewidgets
+  python3-pyside6.qtwebchannel python3-pyside6.qtmultimedia python3-pyside6.qtdbus`.

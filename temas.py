@@ -9,16 +9,12 @@ import os
 from pathlib import Path
 from string import Template
 
-import gi
-
-gi.require_version("Gdk", "3.0")
-gi.require_version("GdkPixbuf", "2.0")
-from gi.repository import Gdk, GdkPixbuf, GLib  # noqa: E402
+import plataforma
 
 PASTA = Path(__file__).resolve().parent
 ARTE = PASTA / "arte"
-ARQUIVO = Path.home() / ".config" / "naview" / "config.json"
-CACHE = Path.home() / ".cache" / "naview"
+ARQUIVO = plataforma.CONFIG / "config.json"
+CACHE = plataforma.CACHE
 MAX_FUNDO = (1920, 1080)
 
 AJUSTES = ("destaque", "fundo", "lateral", "barra")
@@ -390,6 +386,11 @@ def imagem_reduzida(caminho):
     destino = CACHE / f"fundo-{chave}.png"
     if destino.exists():
         return destino
+    import gi  # só a versão GTK usa; a do Qt reduz a imagem em temas_qt.py
+
+    gi.require_version("GdkPixbuf", "2.0")
+    from gi.repository import GdkPixbuf, GLib
+
     try:
         _, largura, altura = GdkPixbuf.Pixbuf.get_file_info(str(origem))
         if largura <= MAX_FUNDO[0] and altura <= MAX_FUNDO[1]:
@@ -404,12 +405,36 @@ def imagem_reduzida(caminho):
         return origem
 
 
+def ler_cor(cor):
+    """(r, g, b, a) de 0 a 1 para "#rgb", "#rrggbb", "#rrggbbaa", "rgb(...)" e "rgba(...)"; ou None."""
+    cor = (cor or "").strip().lower()
+    if cor.startswith("#"):
+        h = cor[1:]
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        if len(h) not in (6, 8):
+            return None
+        try:
+            valores = [int(h[i:i + 2], 16) / 255 for i in range(0, len(h), 2)]
+        except ValueError:
+            return None
+        return tuple(valores) if len(valores) == 4 else (*valores, 1.0)
+    if cor.startswith(("rgb(", "rgba(")) and cor.endswith(")"):
+        try:
+            partes = [float(v) for v in cor[cor.index("(") + 1:-1].split(",")]
+        except ValueError:
+            return None
+        if len(partes) in (3, 4):
+            return (partes[0] / 255, partes[1] / 255, partes[2] / 255, partes[3] if len(partes) == 4 else 1.0)
+    return None
+
+
 def cor_texto(cor):
     """Preto ou branco, o que tiver mais contraste com a cor (só para cores #hex/rgb)."""
-    rgba = Gdk.RGBA()
-    if not cor or not rgba.parse(cor):
+    rgba = ler_cor(cor)
+    if not rgba:
         return None
-    luminancia = 0.2126 * rgba.red + 0.7152 * rgba.green + 0.0722 * rgba.blue
+    luminancia = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
     return "#1a1a1a" if luminancia > 0.55 else "#f2f2f2"
 
 

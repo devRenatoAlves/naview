@@ -13,9 +13,11 @@ import time
 from collections import Counter
 from pathlib import Path
 
+import plataforma
+
 from . import catalogo as cat
 
-ARQUIVO = Path.home() / ".local" / "share" / "naview" / "progresso.db"
+ARQUIVO = plataforma.DADOS / "progresso.db"
 HORA = 3600
 APP_FECHADO_S = 600  # sem "batimento" do app por mais que isso = app fechado (pet dormindo)
 
