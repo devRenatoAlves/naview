@@ -73,7 +73,10 @@ jobs:
           }
           $depois = (Get-ChildItem dist/NaView -Recurse -File | Measure-Object Length -Sum).Sum
           "Pasta do app: {0:N0} MB -> {1:N0} MB" -f ($antes / 1MB), ($depois / 1MB)
-          Get-ChildItem "$pyside" -File | Sort-Object Length -Descending | Select-Object -First 15 Name, @{n="MB"; e={[math]::Round($_.Length / 1MB, 1)}} | Format-Table
+          Get-ChildItem dist/NaView -Recurse -File | Sort-Object Length -Descending | Select-Object -First 40 |
+            ForEach-Object { "{0,8:N1} MB  {1}" -f ($_.Length / 1MB), $_.FullName.Substring((Resolve-Path dist/NaView).Path.Length) }
+          Get-ChildItem dist/NaView/_internal -Directory | ForEach-Object {
+            "{0,8:N1} MB  pasta {1}" -f ((Get-ChildItem $_.FullName -Recurse -File | Measure-Object Length -Sum).Sum / 1MB), $_.Name }
 
       - name: Conferir se abre
         shell: pwsh
