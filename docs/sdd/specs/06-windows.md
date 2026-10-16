@@ -72,12 +72,23 @@ No PC com Windows:
 
 1. Instalar o Python 3 (python.org) e rodar `py -m pip install PySide6`.
 2. Copiar `ferramentas/teste_windows.py` e rodar `py teste_windows.py`.
-3. Digitar o ID de um PC de teste (nunca de um cliente) e clicar em Conectar. Também dá para
-   encaixar uma janela já aberta pela lista.
+3. Digitar o ID de um PC de teste (nunca de um cliente) e clicar em Conectar. Esperar a sessão
+   abrir, escolher a janela dela na lista e clicar em Encaixar (ou marcar "Encaixar sozinho").
 4. Testar e marcar a lista: teclado, atalhos, mouse, redimensionar, nitidez, duas sessões,
-   trocar de aba, fechar aba, e tudo de novo com "Forçar foco" ligado e desligado.
+   trocar de aba, fechar aba, e tudo de novo com "Forçar foco" ligado e desligado, em cada um dos
+   três modos de encaixe.
 5. Testar também com o AnyDesk aberto como administrador, se for assim nos PCs da equipe.
-6. Clicar em "Salvar relatório" e trazer o `relatorio-windows.txt`.
+6. Clicar em "Salvar relatório" e trazer o `relatorio-windows.txt` e o `naview-piloto-log.txt`.
+   Se travar, o `naview-piloto-log.txt` sozinho já mostra onde.
+
+Modos de encaixe do piloto:
+
+- **qt**: `QWindow.fromWinId` + `createWindowContainer` (o planejado para o app).
+- **setparent**: `SetParent` direto, com tamanho ajustado por `SetWindowPos(SWP_ASYNCWINDOWPOS)`,
+  que não espera o AnyDesk responder.
+- **sobrepor**: não prende a janela. Tira a moldura e a mantém por cima da área da aba, logo acima
+  do NaView na ordem das janelas. Se os outros travarem, este não junta a fila de teclado e mouse
+  dos dois programas.
 
 ## Situação
 
@@ -88,3 +99,28 @@ No PC com Windows:
   `NaView-piloto.exe` (PyInstaller e PySide6-Essentials) e a página `/piloto/` do site serve o
   `.zip` (ver [05-landing.md](05-landing.md)). O relatório é salvo ao lado do `.exe` e a pasta
   abre sozinha.
+- 16/10/2026: primeiro teste do usuário: o piloto não conectou e a janela travou, sem deixar
+  relatório. Causas prováveis: (1) o "Conectar" encaixava a primeira janela nova do AnyDesk, em
+  geral o aviso de "conectando" ou de senha, e atrapalhava a conexão; (2) prender a janela de
+  outro programa junta a fila de teclado e mouse dos dois, e o NaView congela quando o AnyDesk
+  fica ocupado. Correção: Conectar só abre a sessão (encaixe manual ou "Encaixar sozinho" depois
+  de a janela ficar 3 s aberta), três modos de encaixe para comparar, registro gravado linha a
+  linha em `naview-piloto-log.txt` e um vigia que grava onde o programa parou quando a janela
+  fica 3 s sem responder.
+- 16/10/2026: **fase 0 aprovada.** O usuário rodou o piloto (versão do dia 15, modo Qt) no
+  Windows 11 (26200), escala 100% (96 dpi), NaView como administrador. Passaram todos os itens da
+  lista, sem "Forçar foco": sessão sem moldura dentro da aba, teclado, atalhos, mouse,
+  redimensionar, nitidez, duas e três sessões ao mesmo tempo, troca de aba, digitar no campo de
+  ID, fechar só a aba certa. Sessões ficaram abertas até 50 min sem travar.
+  O que o relatório mostrou (os IDs dos PCs ficaram de fora desta spec):
+  - Cada `AnyDesk.exe <ID>` abre um **processo próprio** com uma janela só, classe `ad_win#2`,
+    em 1 a 2 s. O risco 4 não aconteceu.
+  - A janela da sessão é a primeira janela nova; o título vira `<ID com espaços> - AnyDesk`.
+  - `WM_CLOSE` fecha a sessão e o processo some; as outras abas continuam (risco de fechar
+    tudo não aconteceu).
+  - As sessões abertas pelo NaView herdam o administrador dele (`admin=True`); as janelas do
+    AnyDesk abertas antes, fora do NaView, rodam sem administrador.
+  Ainda em aberto: (a) NaView **sem** administrador; (b) escala de tela 125% ou 150%, comum em
+  notebooks (risco 2); (c) antivírus (risco 5); (d) o travamento do primeiro teste, que não se
+  repetiu. A versão nova do piloto (modos de encaixe e registro em arquivo) serve para os colegas
+  testarem esses pontos.
