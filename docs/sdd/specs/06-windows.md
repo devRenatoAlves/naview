@@ -157,6 +157,5 @@ Modos de encaixe do piloto:
   PyInstaller (PySide6 completo, por causa do QtWebEngine), confere que o `.exe` abre e abre o
   jogo (`--verificar`) e monta `NaView-instalador.exe` com o Inno Setup
   (`ferramentas/instalador.iss`): instala só para o usuário, sem senha de administrador, em
-  `%LOCALAPPDATA%\Programs\NaView`, com atalho no menu Iniciar. O instalador passa de 100 MB (limite
-  de arquivo do GitHub), então fica como artifact da execução, não no repositório. Falta decidir como
-  distribuir para a equipe (ver tarefas).
+  `%LOCALAPPDATA%\Programs\NaView`, com atalho no menu Iniciar. Enxugado para 92,7 MB, fica em
+  `site/windows/` e sai na página principal, aba Windows (ver spec 05 e D35).

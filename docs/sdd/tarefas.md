@@ -92,9 +92,8 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Trocar o atalho do menu e o `instalar.sh` para a versão Qt; depois apagar `app.py`,
   `janela_aparencia.py`, `jogo/gtk.py`, `jogo/tela.py`, `fontes.py` e o CSS do GTK em `temas.py`
 - [x] Fase 3 (montagem): PyInstaller + Inno Setup no GitHub Actions (`windows.yml`)
-- [x] Decidir onde publicar o instalador: VPS, fora do repositório (D35)
+- [x] Decidir onde publicar o instalador: no repositório, enxugado para 92,7 MB (D35)
 - [x] Página com a escolha Linux | Windows, lendo `download/windows/windows.json` (16/10/2026)
-- [ ] Na VPS: pasta de downloads, usuário só para o envio e chave SSH; no Coolify, a pasta montada
-  em `/usr/share/nginx/html/download/windows`; no GitHub, os segredos `VPS_*` (ver spec 05)
+- [ ] Se o instalador passar de 100 MB: plano B pela VPS (ver spec 05)
 - [ ] Testar o instalador nos PCs da equipe: com e sem administrador, escala 125%/150%, antivírus,
   contatos do AnyDesk no Windows (`%APPDATA%\AnyDesk\user.conf`)

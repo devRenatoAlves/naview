@@ -8,8 +8,11 @@ Uso: python3 ferramentas/gerar_site.py
 - Preenche no HTML a versão, o nome do arquivo, o tamanho e o SHA-256.
 - Piloto Windows: se o GitHub Actions já guardou site/piloto-windows/naview-piloto-windows.zip,
   copia para download/ e preenche a página piloto/ (não divulgada, ver specs/06-windows.md).
+- Windows: se o GitHub Actions já guardou site/windows/NaView-instalador.exe, copia para
+  download/windows/ com o windows.json (versão, tamanho, SHA-256) que a página lê.
 """
 import hashlib
+import json
 import shutil
 import tarfile
 import zipfile
@@ -21,12 +24,16 @@ SAIDA = RAIZ / "site" / "publico"
 
 # O que vai no pacote do app (o resto, como docs/ e site/, fica de fora).
 ARQUIVOS_APP = [
-    "app.py", "contatos.py", "fontes.py", "janela_aparencia.py", "temas.py", "x11.py",
+    "app.py", "contatos.py", "fontes.py", "janela_aparencia.py", "plataforma.py", "temas.py", "x11.py",
+    "app_qt.py", "aparencia_qt.py", "temas_qt.py",
     "icone.svg", "instalar.sh", "README.md", "VERSAO",
 ]
-PASTAS_APP = ["arte", "fonts", "icones", "jogo", "sons", "web"]
+PASTAS_APP = ["arte", "fonts", "icones", "janelas", "jogo", "sons", "web"]
 
 PILOTO_WINDOWS = RAIZ / "site" / "piloto-windows" / "naview-piloto-windows.zip"
+# Guardados pelo GitHub Actions (.github/workflows/windows.yml).
+INSTALADOR_WINDOWS = RAIZ / "site" / "windows" / "NaView-instalador.exe"
+VERSAO_WINDOWS = RAIZ / "site" / "windows" / "VERSAO"
 
 PASTAS_ARTE_SITE = ["mar", "neon", "espaco", "pixel", "hq", "pets", "acessorios", "baus"]
 ICONES_SITE = ["sparkle.svg", "speaker-high.svg"]
@@ -89,6 +96,22 @@ def preencher_piloto():
     return valores["{{WIN_DISPONIVEL}}"] == "sim"
 
 
+def preencher_windows():
+    """Instalador do Windows em download/windows/, com o windows.json que a página lê."""
+    if not INSTALADOR_WINDOWS.is_file():
+        return None
+    pasta = SAIDA / "download" / "windows"
+    pasta.mkdir(parents=True)
+    destino = pasta / INSTALADOR_WINDOWS.name
+    shutil.copy2(INSTALADOR_WINDOWS, destino)
+    dados = destino.read_bytes()
+    versao = VERSAO_WINDOWS.read_text().strip() if VERSAO_WINDOWS.is_file() else ""
+    info = {"versao": versao, "arquivo": destino.name, "tamanho": tamanho_legivel(len(dados)),
+            "sha256": hashlib.sha256(dados).hexdigest()}
+    (pasta / "windows.json").write_text(json.dumps(info, ensure_ascii=False))
+    return info
+
+
 def main():
     versao = (RAIZ / "VERSAO").read_text().strip()
 
@@ -128,11 +151,13 @@ def main():
         html = html.replace(f'"{arquivo}"', f'"{arquivo}?v={codigo}"')
     (SAIDA / "index.html").write_text(html)
     piloto = preencher_piloto()
+    windows = preencher_windows()
 
     print(f"Site gerado em {SAIDA}")
     print(f"Pacote: {pacote.name} ({tamanho_legivel(len(dados))})")
     print(f"SHA-256: {sha256}")
     print("Piloto Windows: " + ("incluído" if piloto else "sem pacote ainda"))
+    print("Windows: " + (f"{windows['versao']} ({windows['tamanho']})" if windows else "sem instalador ainda"))
 
 
 if __name__ == "__main__":

@@ -120,18 +120,22 @@ do dedo). O que mudou:
 - Seção "Instale em três passos" com a escolha **Linux | Windows** (abas acessíveis, setas do
   teclado). Quem abre a página no Windows já cai na aba Windows, e o botão do topo vira
   "Baixar para Windows". A aba Windows leva o selo "em teste".
-- O instalador (123 MB) não cabe no repositório (limite de 100 MB por arquivo do GitHub). O
-  `windows.yml` envia por SSH para uma pasta da VPS (`NaView-instalador.exe` e `windows.json` com
-  versão, tamanho e SHA-256), trocando os arquivos só no fim do envio.
+- O instalador fica em `site/windows/` no repositório, como o piloto: o `windows.yml` monta,
+  confere e faz o commit; o `gerar_site.py` copia para `download/windows/` e escreve o
+  `windows.json` (versão, tamanho, SHA-256).
+- Tamanho: 123 MB na primeira montagem, acima do limite de 100 MB por arquivo do GitHub. A etapa
+  "Enxugar" do `windows.yml` tira o que o NaView não usa (idiomas do navegador embutido menos
+  português e inglês, traduções do Qt, ferramentas de desenvolvedor do navegador, componentes QML
+  e as bibliotecas que vêm só por causa deles). Resultado: 92,7 MB, com o teste automático (abrir o
+  app e o jogo) passando.
 - A página lê `download/windows/windows.json`. Sem ele, mostra "ainda não está disponível" e
   esconde o botão. O nginx serve esse JSON com `Cache-Control: no-store`.
 - Testado com o Playwright (1366 px e 375 px): sem o JSON ("em breve") e com um JSON falso
   (botão, tamanho e SHA-256 preenchidos), sem rolagem lateral.
-- **Falta (precisa dos dados da VPS):**
-  1. Na VPS: uma pasta para os downloads (ex.: `/srv/naview/downloads/windows`) e um usuário só
-     para o envio, que só escreve nela, com uma chave SSH própria.
-  2. No Coolify: armazenamento persistente do tipo "bind mount", da pasta da VPS para
-     `/usr/share/nginx/html/download/windows` (só leitura).
-  3. No GitHub: os segredos `VPS_HOST`, `VPS_USUARIO`, `VPS_PASTA`, `VPS_CHAVE` (chave privada
-     do envio) e `VPS_HOST_KEY` (linha do `known_hosts` da VPS). A chave é gerada neste computador e
-     cadastrada direto com `gh secret set`, sem passar pelo chat.
+- Cada versão nova soma ~93 MB ao histórico do Git. **Plano B**, se o instalador passar de 100 MB
+  ou o repositório ficar grande: servir pela VPS. O `windows.yml` envia por SSH para uma pasta da
+  VPS (usuário só para isso, chave própria nos segredos do GitHub) e o Coolify monta essa pasta em
+  `/usr/share/nginx/html/download/windows`. A página não muda.
+- Correção (16/10/2026): o pacote do Linux não levava `plataforma.py` (agora usado por `temas.py`
+  e `contatos.py`), e o app baixado não abriria. Entraram também `janelas/` e os arquivos da
+  versão Qt. Testado extraindo o pacote numa pasta temporária.
