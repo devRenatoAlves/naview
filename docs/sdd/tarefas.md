@@ -136,3 +136,8 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Versão `2026.10.22.2` (correções do teste no Windows + ID do AnyDesk) enviada em 22/10/2026; falta provar a atualização no Windows
 - [ ] Mais tarde, se a equipe crescer: assinar o manifesto
 
+- [x] Windows: colar na sessão parava de funcionar depois de sair e voltar ao NaView. Diagnóstico
+  (`ferramentas/diagnostico_colar_windows.py`, 22/10/2026): ao reativar, o foco ficava na janela do Qt e
+  não na do AnyDesk. Correção: `restaurar_foco` (`janelas/win32.py`), chamado ao reativar a janela
+  (`app_qt.py`). **Falta reconferir no Windows** (sair para outro programa, voltar e colar).
+- [x] Versão `2026.10.22.4` (correção do colar/foco no Windows) enviada em 22/10/2026; falta reconferir no Windows

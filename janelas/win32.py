@@ -25,6 +25,12 @@ user32.IsWindow.argtypes = [wintypes.HWND]
 user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
 user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
 user32.GetWindowThreadProcessId.restype = wintypes.DWORD
+user32.SetFocus.argtypes = [wintypes.HWND]
+user32.SetFocus.restype = wintypes.HWND
+user32.GetFocus.restype = wintypes.HWND
+user32.GetForegroundWindow.restype = wintypes.HWND
+user32.AttachThreadInput.argtypes = [wintypes.DWORD, wintypes.DWORD, wintypes.BOOL]
+kernel32.GetCurrentThreadId.restype = wintypes.DWORD
 user32.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
 kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
 kernel32.OpenProcess.restype = wintypes.HANDLE
@@ -93,7 +99,27 @@ class Janelas:
         if janela:
             user32.PostMessageW(janela, WM_CLOSE, 0, 0)
 
-    # ---- teclado (não usado no Windows: FORCAR_FOCO é False) ----
+    def restaurar_foco(self, janela):
+        """Devolve o teclado à sessão depois que o NaView é reativado.
+
+        Ao voltar de outro programa (Alt+Tab, clique na barra de tarefas) o Windows põe o foco na janela
+        principal do NaView, não na do AnyDesk dentro dela; aí o Ctrl+V cai no NaView e o AnyDesk não
+        recebe o texto. Teste de 22/10/2026: o foco ficava em "Qt683QWindowIcon" em vez de "ad_win".
+        """
+        if not janela or not user32.IsWindow(janela):
+            return
+        if user32.GetFocus() == janela:
+            return
+        eu = kernel32.GetCurrentThreadId()
+        dele = user32.GetWindowThreadProcessId(janela, None)
+        juntou = bool(dele and dele != eu and user32.AttachThreadInput(eu, dele, True))
+        try:
+            user32.SetFocus(janela)
+        finally:
+            if juntou:
+                user32.AttachThreadInput(eu, dele, False)
+
+    # ---- teclado (FORCAR_FOCO é False: só restaurar_foco é usado no Windows) ----
 
     def foco(self):
         return None

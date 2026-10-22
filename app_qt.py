@@ -994,6 +994,7 @@ class App(QWidget):
             self.inicio.atualizar_relogio()
         elif evento.type() == QEvent.ActivationChange and self.isActiveWindow():
             self.carregar_contatos()  # o AnyDesk pode ter ganhado contatos novos
+            QTimer.singleShot(50, self.restaurar_foco_sessao)  # depois do Windows terminar de ativar
         super().changeEvent(evento)
 
     def resizeEvent(self, evento):
@@ -1274,6 +1275,12 @@ class App(QWidget):
             return True
         # O foco do X11 dentro da sessão encaixada também conta como janela ativa.
         return self.j.contem(int(self.winId()), self.j.foco())
+
+    def restaurar_foco_sessao(self):
+        """Voltou de outro programa: o Windows deixa o foco na janela do NaView, e o colar não chega à sessão."""
+        aba = self.aba_atual()
+        if aba and self.isActiveWindow() and not self.usa_teclado(self.focusWidget()):
+            self.j.restaurar_foco(aba.janela)
 
     def manter_foco(self):
         aba = self.aba_atual()

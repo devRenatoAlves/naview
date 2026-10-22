@@ -57,6 +57,9 @@ class Janelas:
     def dar_foco(self, janela):
         self.x.set_focus(janela)
 
+    def restaurar_foco(self, _janela):
+        pass  # no Linux o manter_foco já devolve o teclado à sessão
+
     def contem(self, ancestral, janela):
         return self.x.contains(ancestral, janela)
 
