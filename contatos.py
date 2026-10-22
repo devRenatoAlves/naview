@@ -1,5 +1,6 @@
 """Contatos: importados do AnyDesk (user.conf, ver plataforma.py) + apelidos salvos pelo app."""
 import json
+import subprocess
 
 import plataforma
 
@@ -53,6 +54,35 @@ def _ler_arquivo():
                     itens.append((campos[0].strip(), apelido))
             return itens
     return []
+
+
+def meu_id():
+    """ID do AnyDesk deste computador (chave ad.anynet.id dos arquivos de configuração), ou ''."""
+    for arquivo in plataforma.ANYDESK_CONFS_ID:
+        try:
+            linhas = arquivo.read_text(errors="replace").splitlines()
+        except OSError:
+            continue
+        for linha in linhas:
+            if linha.startswith("ad.anynet.id="):
+                valor = linha.split("=", 1)[1].strip()
+                if valor.isdigit():
+                    return valor
+    return ""
+
+
+def meu_id_pelo_programa():
+    """Pergunta o ID ao próprio AnyDesk (anydesk --get-id). Lento: chamar fora da interface."""
+    exe = plataforma.anydesk()
+    if not exe:
+        return ""
+    extra = {"creationflags": subprocess.CREATE_NO_WINDOW} if plataforma.WINDOWS else {}
+    try:
+        saida = subprocess.run([exe, "--get-id"], capture_output=True, text=True, timeout=8,
+                               **extra).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return saida if saida.isdigit() else ""
 
 
 class Contatos:

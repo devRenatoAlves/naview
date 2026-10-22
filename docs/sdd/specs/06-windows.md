@@ -159,3 +159,14 @@ Modos de encaixe do piloto:
   (`ferramentas/instalador.iss`): instala só para o usuário, sem senha de administrador, em
   `%LOCALAPPDATA%\Programs\NaView`, com atalho no menu Iniciar. Enxugado para 92,7 MB, fica em
   `site/windows/` e sai na página principal, aba Windows (ver spec 05 e D35).
+
+### Ajustes do primeiro teste no Windows (22/10/2026)
+
+- Barra: o botão dos contatos ficava no meio da lateral porque a margem esquerda do layout era
+  usada para centralizar o título. Agora o título é um widget solto, posicionado no centro.
+- Contatos: o `sizeHint` da linha era medido antes do estilo valer e cortava o avatar. Avatar com
+  34x34 fixo e altura mínima da linha (`ALTURA_LINHA`).
+- ID do próprio AnyDesk: `contatos.meu_id()` lê `ad.anynet.id` de `%ProgramData%\AnyDesk\system.conf`
+  e `%APPDATA%\AnyDesk\*.conf` (Linux: `/etc/anydesk/system.conf`, `~/.anydesk/*.conf`); se não achar,
+  `anydesk --get-id` numa thread. Caminhos do Windows ainda não confirmados no PC real.
+

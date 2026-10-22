@@ -18,11 +18,16 @@ if WINDOWS:
     CACHE = _local / "NaView" / "cache"
     DADOS = _local / "NaView"
     ANYDESK_CONF = _roaming / "AnyDesk" / "user.conf"
+    _dados_comuns = Path(os.environ.get("ProgramData") or "C:/ProgramData")
+    ANYDESK_CONFS_ID = [_dados_comuns / "AnyDesk" / "system.conf", _roaming / "AnyDesk" / "system.conf",
+                        _roaming / "AnyDesk" / "user.conf"]
 else:
     CONFIG = Path.home() / ".config" / "naview"
     CACHE = Path.home() / ".cache" / "naview"
     DADOS = Path.home() / ".local" / "share" / "naview"
     ANYDESK_CONF = Path.home() / ".anydesk" / "user.conf"
+    ANYDESK_CONFS_ID = [Path("/etc/anydesk/system.conf"), Path.home() / ".anydesk" / "system.conf",
+                        Path.home() / ".anydesk" / "service.conf", ANYDESK_CONF]
 
 
 def anydesk():

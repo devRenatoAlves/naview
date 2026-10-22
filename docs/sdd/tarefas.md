@@ -125,9 +125,13 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] `ferramentas/nova_versao.py` (formato `AAAA.MM.DD.N`)
 - [x] Teste de ponta a ponta no Linux (pacote local) e de interpretação do manifesto
 - [ ] Testar o Qt com PySide6 (botão na barra, thread, fechamento) no Linux e no Windows
+- [x] Correções do teste no Windows (22/10/2026), falta reconferir no Windows: botão dos contatos
+  voltou ao canto esquerdo da barra (título fora do layout); linhas de contato com altura fixa
+  mínima (avatares cortados); "Meu AnyDesk: ID" no topo dos contatos (clique copia), lido de
+  `ad.anynet.id` (`system.conf`) ou de `anydesk --get-id`
 - [ ] Testar a atualização no Windows: instalar uma versão, publicar outra, clicar em Atualizar
 - [x] Versão `2026.10.22.1` (primeira com o atualizador, junto com a reformulação dos pets) enviada em 22/10/2026
 - [ ] Avisar a equipe para baixar o NaView de novo uma vez (versões antigas não têm o atualizador)
-- [ ] Publicar `2026.10.22.2` (mudança pequena) para provar a atualização no Windows e no Linux
+- [x] Versão `2026.10.22.2` (correções do teste no Windows + ID do AnyDesk) enviada em 22/10/2026; falta provar a atualização no Windows
 - [ ] Mais tarde, se a equipe crescer: assinar o manifesto
 

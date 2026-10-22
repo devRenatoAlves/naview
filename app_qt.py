@@ -45,6 +45,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QDialogButtonBox, QFrame, 
 import atualizador  # noqa: E402
 import temas  # noqa: E402
 import temas_qt  # noqa: E402
+import contatos  # noqa: E402
 from contatos import Contatos, formatar_id  # noqa: E402
 from janelas import Janelas  # noqa: E402
 from jogo import catalogo as cat_jogo  # noqa: E402
@@ -462,6 +463,9 @@ class Aba:
         self.rotulo.setText(metricas.elidedText(texto, Qt.ElideRight, self.rotulo.maximumWidth()))
 
 
+ALTURA_LINHA = 50  # avatar de 34 px + margens + folga para nome e ID em duas linhas
+
+
 class LinhaContato(QWidget):
     def __init__(self, cid, nome, ao_renomear, ordem):
         super().__init__()
@@ -475,6 +479,9 @@ class LinhaContato(QWidget):
         caixa.setSpacing(10)
         avatar = QLabel(iniciais(nome, cid), alignment=Qt.AlignCenter)
         avatar.setProperty("avatar", str(cor_avatar(cid)))
+        # Mesmo tamanho do QSS: o sizeHint da linha é medido antes do estilo valer (no Windows a
+        # linha saía baixa e cortava o avatar).
+        avatar.setFixedSize(34, 34)
         caixa.addWidget(avatar)
 
         textos = QVBoxLayout()
@@ -493,6 +500,9 @@ class LinhaContato(QWidget):
         self.editar.clicked.connect(lambda: ao_renomear(cid, self.editar))
         self.editar.setVisible(False)  # aparece ao passar o mouse
         caixa.addWidget(self.editar)
+
+    def altura(self):
+        return max(self.sizeHint().height(), ALTURA_LINHA)
 
     def enterEvent(self, evento):
         self.editar.setVisible(True)
@@ -652,6 +662,8 @@ class App(QWidget):
         self._ponte = PonteAtualizacao(self)
         self._ponte.consultou.connect(self.on_atualizacao)
         self._ponte.preparou.connect(self.on_atualizacao_pronta)
+        self._ponte.achou_id.connect(self.mostrar_meu_id)
+        self.descobrir_meu_id()
         QTimer.singleShot(30_000, self.primeira_verificacao)
         if self.progresso.equipados().get("som"):
             QTimer.singleShot(3000, self.sons.preparar)
@@ -670,7 +682,12 @@ class App(QWidget):
         linha.addWidget(self.bt_lateral)
         linha.addStretch(1)
 
-        titulos = QVBoxLayout()
+        # Título fora do layout, sempre no meio da janela (o layout deixava o botão dos contatos
+        # fora do canto esquerdo). Não pega o mouse: arrastar a barra continua funcionando.
+        self.caixa_titulo = QWidget(self.barra)
+        self.caixa_titulo.setAttribute(Qt.WA_TransparentForMouseEvents)
+        titulos = QVBoxLayout(self.caixa_titulo)
+        titulos.setContentsMargins(0, 0, 0, 0)
         titulos.setSpacing(0)
         self.titulo = QLabel("NaView", objectName="titulo", alignment=Qt.AlignCenter)
         self.subtitulo = QLabel(objectName="subtitulo", alignment=Qt.AlignCenter)
@@ -679,7 +696,6 @@ class App(QWidget):
         titulos.addWidget(self.titulo)
         titulos.addWidget(self.subtitulo)
         titulos.addStretch(1)
-        linha.addLayout(titulos)
         linha.addStretch(1)
 
         self.bt_jogo = QToolButton(checkable=True, toolTip="Baús, coleção e pet")
@@ -728,6 +744,16 @@ class App(QWidget):
         cabeca.addWidget(self.contagem)
         coluna.addLayout(cabeca)
 
+        self.meu_id = ""
+        self.meu_id_rotulo = QLabel(objectName="meuId", toolTip="Seu ID do AnyDesk (clique para copiar)")
+        self.meu_id_rotulo.setCursor(Qt.PointingHandCursor)
+        self.meu_id_rotulo.mousePressEvent = lambda _e: self.copiar_meu_id()
+        self.meu_id_rotulo.hide()
+        linha_id = QHBoxLayout()
+        linha_id.setContentsMargins(16, 0, 16, 8)
+        linha_id.addWidget(self.meu_id_rotulo)
+        coluna.addLayout(linha_id)
+
         self.busca = QLineEdit(placeholderText="Buscar ou digitar um ID", clearButtonEnabled=True)
         self.busca.textChanged.connect(self.filtrar_contatos)
         self.busca.returnPressed.connect(self.on_busca_enter)
@@ -747,6 +773,24 @@ class App(QWidget):
         coluna.addWidget(self.vazio, 1)
         coluna.addWidget(self.montar_pet_mini())
         return lateral
+
+    def mostrar_meu_id(self, cid):
+        if cid:
+            self.meu_id = cid
+            self.meu_id_rotulo.setText(f"Meu AnyDesk: {formatar_id(cid)}")
+            self.meu_id_rotulo.show()
+
+    def descobrir_meu_id(self):
+        """Lê o ID dos arquivos do AnyDesk; se não achar, pergunta ao programa numa thread."""
+        self.mostrar_meu_id(contatos.meu_id())
+        if not self.meu_id:
+            threading.Thread(target=lambda: self._ponte.achou_id.emit(contatos.meu_id_pelo_programa()),
+                             daemon=True).start()
+
+    def copiar_meu_id(self):
+        if self.meu_id:
+            QApplication.clipboard().setText(self.meu_id)
+            self.avisar("ID copiado.")
 
     def montar_pet_mini(self):
         """Pet no rodapé da barra de contatos; clicar abre a aba do pet no jogo."""
@@ -1029,8 +1073,8 @@ class App(QWidget):
         tipo = evento.type()
         if tipo == QEvent.MouseButtonPress and objeto in (self.busca, self.entrada_rapida, self.lista.viewport()):
             self.trazer_teclado_ao_app()
-        elif objeto is self.barra and tipo == QEvent.Resize:
-            self._centralizar_titulo()
+        elif objeto is self.barra and tipo in (QEvent.Resize, QEvent.LayoutRequest):
+            QTimer.singleShot(0, self._centralizar_titulo)  # depois do layout acomodar os botões
         elif objeto is self.notebook.tabBar() and tipo == QEvent.MouseButtonRelease \
                 and evento.button() == Qt.MiddleButton:
             indice = self.notebook.tabBar().tabAt(evento.position().toPoint())
@@ -1041,14 +1085,13 @@ class App(QWidget):
         return super().eventFilter(objeto, evento)
 
     def _centralizar_titulo(self):
-        """Mantém o título no centro da barra, com espaços iguais dos dois lados."""
-        linha = self.barra.layout()
-        esquerda = self.bt_lateral.sizeHint().width()
-        direita = sum(b.sizeHint().width() for b in (self.bt_atualizar, self.bt_jogo, self.bt_menu,
-                                                     self.bt_minimizar, self.bt_maximizar,
-                                                     self.bt_fechar_janela) if not b.isHidden()) + 8
-        diferenca = direita - esquerda
-        linha.setContentsMargins(8 + max(0, diferenca), 0, 8 + max(0, -diferenca), 0)
+        """Mantém o título no centro da barra, com espaço livre entre os botões dos dois lados."""
+        esquerda = self.bt_lateral.geometry().right() + 8
+        direita = min((b.geometry().left() for b in (self.bt_atualizar, self.bt_jogo, self.bt_menu)
+                       if not b.isHidden()), default=self.barra.width()) - 8
+        largura = max(0, min(2 * (self.barra.width() // 2 - esquerda),
+                             2 * (direita - self.barra.width() // 2)))
+        self.caixa_titulo.setGeometry((self.barra.width() - largura) // 2, 0, largura, self.barra.height())
 
     # ---- jogo (baús, coleção e pet) ----------------------------------------------
 
@@ -1333,7 +1376,7 @@ class App(QWidget):
             linha.editar.setIcon(temas_qt.icone("pencil-simple", self._cor_icones_lateral
                                                 if hasattr(self, "_cor_icones_lateral") else "#888888", 14))
             item = QListWidgetItem()
-            item.setSizeHint(linha.sizeHint())
+            item.setSizeHint(QSize(0, linha.altura()))
             self.lista.addItem(item)
             self.lista.setItemWidget(item, linha)
         self.contagem.setText(str(len(itens)))
@@ -1369,7 +1412,7 @@ class App(QWidget):
             linha.editar.setIcon(temas_qt.icone("pencil-simple", self._cor_icones_lateral, 14))
             linha.ponto.setVisible(cid in self._conectados)
             item = QListWidgetItem()
-            item.setSizeHint(linha.sizeHint())
+            item.setSizeHint(QSize(0, linha.altura()))
             self.lista.addItem(item)
             self.lista.setItemWidget(item, linha)
             if cid == selecionado:
@@ -1658,6 +1701,7 @@ class PonteAtualizacao(QObject):
     """Leva o resultado das threads de rede para a thread da interface."""
     consultou = Signal(object)
     preparou = Signal(object)
+    achou_id = Signal(str)
 
 
 def main():

@@ -335,6 +335,7 @@ QWidget#janela, QWidget#raiz QLabel { color: $texto; }
 #lateral QLabel#contagem, #lateral QLabel#contatoId, #lateral QLabel#petFala { color: $texto_lateral_fraco;
   font-size: ${fonte_peq}pt; }
 #lateral QLabel#contatoNome, #lateral QLabel#petNome { font-weight: bold; }
+#lateral QLabel#meuId { color: $texto_lateral_fraco; font-size: ${fonte_peq}pt; }
 #lateral QLabel#vazio { color: $texto_lateral_fraco; padding: 24px 16px; }
 #lateral QLabel#pontoOnline { color: #22c55e; font-size: ${fonte_peq}pt; }
 #petRodape { border-top: 1px solid $linha_lateral; }
