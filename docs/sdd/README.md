@@ -33,6 +33,6 @@ pasta.
 - Jogo fase 1 (local): pronto. Economia ajustada para ritmo lento.
 - **Próximo passo:** servidor da equipe na VPS do usuário (login, progresso no servidor, sorteios
   no servidor, ranking e prêmios). Aguardando: confirmação do plano do AnyDesk e dados da VPS.
-  Ver [specs/04-servidor.md](specs/04-servidor.md).
+  Ver [specs/04-servidor.md](specs/04-servidor.md), que também planeja o perfil dos colegas (ver inventário uns dos outros).
 - **Windows:** o usuário quer o programa idêntico. Falta rodar o teste de viabilidade
   (`ferramentas/teste_windows.py`) num PC com Windows. Ver [specs/06-windows.md](specs/06-windows.md).

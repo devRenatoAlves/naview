@@ -57,8 +57,21 @@ class Janelas:
     def dar_foco(self, janela):
         self.x.set_focus(janela)
 
+    # No Linux o manter_foco (FORCAR_FOCO) já cuida do teclado: estes métodos só existem no Windows.
     def restaurar_foco(self, _janela):
-        pass  # no Linux o manter_foco já devolve o teclado à sessão
+        pass
+
+    def e_sessao(self, _hwnd, _janela):
+        return False
+
+    def devolver_ao_app(self, _janela_app):
+        pass
+
+    def observar_foco(self, _ao_mudar):
+        pass
+
+    def parar_observacao(self):
+        pass
 
     def contem(self, ancestral, janela):
         return self.x.contains(ancestral, janela)

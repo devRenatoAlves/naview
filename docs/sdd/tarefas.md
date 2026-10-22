@@ -141,3 +141,6 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
   não na do AnyDesk. Correção: `restaurar_foco` (`janelas/win32.py`), chamado ao reativar a janela
   (`app_qt.py`). **Falta reconferir no Windows** (sair para outro programa, voltar e colar).
 - [x] Versão `2026.10.22.4` (correção do colar/foco no Windows) enviada em 22/10/2026; falta reconferir no Windows
+- [ ] Perfil dos colegas (ver inventário uns dos outros, só leitura): planejado em `specs/04-servidor.md` (R10 a R14); começa depois do servidor e do login
+- [x] Windows: foco do teclado por eventos (`observar_foco`, `on_evento_foco`): Win+V e Ctrl+V voltavam a falhar depois de um tempo; agora a sessão tem prioridade e clique em campo de texto do NaView tem prioridade sobre ela. **Falta testar no Windows** e publicar (versão ainda não subida)
+- [x] Versão `2026.10.22.5` (foco do teclado por eventos no Windows + SDD do perfil dos colegas) enviada em 22/10/2026; falta reconferir no Windows

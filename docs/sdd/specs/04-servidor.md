@@ -61,3 +61,47 @@ formatar o computador. Com isso, a equipe passa a ter **ranking e prêmios reais
 2. Migração do progresso local do usuário.
 3. Conferência de atendimentos pela API do AnyDesk.
 4. Ranking, prêmios e painel do administrador.
+
+## Perfil dos colegas (ideia de 22/10/2026, ainda não iniciada)
+
+Cada colaborador pode ver o inventário dos outros, só leitura, no estilo do perfil de amigos da
+Steam (cartas, pet, nível, conquistas). Depende das fases 1 e 2 acima: sem o progresso no servidor
+não há de onde ler.
+
+### Requisitos
+
+- R10. Aba "Equipe" no jogo, com a lista de colegas (nome, nível, quantidade de cartas).
+- R11. Clicar num colega abre o perfil dele em modo só leitura: coleção, pet e conquistas.
+- R12. O servidor devolve só dados públicos. Nunca token, senha nem histórico de atendimentos.
+- R13. Cada pessoa pode esconder o próprio inventário (padrão: visível para a equipe).
+- R14. Leve (regra do CLAUDE.md): chamadas só em thread, com tempo limite curto; nada de timer
+  contínuo; lista buscada ao abrir a aba e guardada por alguns minutos; o servidor manda só IDs de
+  cartas (a arte já está no pacote, em `arte/`); sem servidor, o app funciona normalmente e a aba
+  mostra "indisponível".
+
+### Design proposto
+
+- Endpoints de leitura: `GET /equipe` (lista) e `GET /equipe/<usuario>` (perfil público).
+- Tela nova em `jogo/` com a mesma aparência das listas e cartas existentes (sem efeito caro).
+- Ranking e "quem tem a carta X" reaproveitam os mesmos dados.
+- Troca ou presente de cartas entre colegas: fora do primeiro corte; exige regras contra fraude.
+
+### Ordem
+
+1. Servidor, login e progresso no servidor (fases 1 e 2).
+2. Endpoint e tela de perfil, só leitura.
+3. Ranking.
+4. Troca, se o usuário quiser.
+
+### Decisões pendentes (do usuário)
+
+- Privacidade: inventário sempre visível ou opcional? (recomendado: visível, com opção de esconder)
+- O que mostrar: só cartas e pet, ou também atendimentos e estatísticas?
+- Troca entre pessoas: só ver, ou também trocar?
+- Dados da VPS (ver "Pendências" acima).
+
+### Peso
+
+Baixo: pedidos HTTP curtos (poucos KB de JSON) em thread; SQLite com ~10 pessoas é desprezível na
+VPS. Medir antes de entregar (CPU/memória com a aba aberta, fechada e o app parado), como em
+`testes.md`.

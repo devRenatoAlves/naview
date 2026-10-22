@@ -637,6 +637,7 @@ class App(QWidget):
         coluna.addLayout(corpo, 1)
         self.lateral.setVisible(self.cfg["lateral_visivel"])
 
+        self._foco_pendente = QTimer(self, singleShot=True, interval=50, timeout=self.restaurar_foco_sessao)
         self.aviso = Aviso(self)
         # Clique num campo de texto ou na lista: o teclado volta da sessão para o app. Precisa ser no
         # clique: com o teclado na sessão o Qt acha que a janela está inativa e não avisa a troca de foco.
@@ -655,6 +656,9 @@ class App(QWidget):
         QTimer(self, interval=EXISTE_MS, timeout=self.conferir_sessoes).start()
         if self.j.FORCAR_FOCO:
             QTimer(self, interval=FOCO_MS, timeout=self.manter_foco).start()
+        else:
+            # Windows: sem timer. O próprio Windows avisa quando o foco muda ou há clique (ver on_evento_foco).
+            self.j.observar_foco(self.on_evento_foco)
         QTimer(self, interval=60_000, timeout=self.batimento).start()
         # 30 s depois de abrir (não disputa com a abertura); depois, a cada 6 h. Só rede, em thread.
         self._atualizacao = None  # Atualizacao achada pelo site (ver atualizador.py)
@@ -994,7 +998,8 @@ class App(QWidget):
             self.inicio.atualizar_relogio()
         elif evento.type() == QEvent.ActivationChange and self.isActiveWindow():
             self.carregar_contatos()  # o AnyDesk pode ter ganhado contatos novos
-            QTimer.singleShot(50, self.restaurar_foco_sessao)  # depois do Windows terminar de ativar
+            if not self.j.FORCAR_FOCO and "_foco_pendente" in self.__dict__:
+                self._foco_pendente.start()  # Windows: depois de terminar de ativar
         super().changeEvent(evento)
 
     def resizeEvent(self, evento):
@@ -1263,6 +1268,8 @@ class App(QWidget):
         if self.j.FORCAR_FOCO:
             self.j.dar_foco(int(self.winId()))
             self._foco_ok = None
+        else:
+            self.j.devolver_ao_app(int(self.winId()))  # Windows: teclado sai da sessão para o campo
 
     def devolver_teclado_a_sessao(self):
         foco = self.focusWidget()
@@ -1276,10 +1283,28 @@ class App(QWidget):
         # O foco do X11 dentro da sessão encaixada também conta como janela ativa.
         return self.j.contem(int(self.winId()), self.j.foco())
 
-    def restaurar_foco_sessao(self):
-        """Voltou de outro programa: o Windows deixa o foco na janela do NaView, e o colar não chega à sessão."""
+    def on_evento_foco(self, hwnd, clique):
+        """Windows avisou que o foco mudou ou que um botão do mouse foi apertado (ver observar_foco).
+
+        Regra: a sessão tem prioridade. Clicou na sessão (ou o foco foi para ela): o teclado fica nela,
+        mesmo que a busca ainda esteja marcada. O foco caiu na janela do NaView sem ser num campo de
+        texto (Alt+Tab, Win+V, aviso, clique numa aba): volta para a sessão. Clicou num campo de texto
+        do NaView: o teclado fica com o campo."""
         aba = self.aba_atual()
-        if aba and self.isActiveWindow() and not self.usa_teclado(self.focusWidget()):
+        if not aba:
+            return  # jogo aberto ou sem sessão: o teclado fica no app
+        if self.j.e_sessao(hwnd, aba.janela):
+            if self.usa_teclado(self.focusWidget()):
+                self.devolver_teclado_a_sessao()
+            if clique:
+                self._foco_pendente.start()
+        elif hwnd == int(self.winId()):
+            self._foco_pendente.start()
+
+    def restaurar_foco_sessao(self):
+        # 50 ms depois do evento, para o Qt já ter marcado o campo de texto que recebeu o clique.
+        aba = self.aba_atual()
+        if aba and not self.usa_teclado(self.focusWidget()):
             self.j.restaurar_foco(aba.janela)
 
     def manter_foco(self):
@@ -1701,6 +1726,7 @@ class App(QWidget):
         for aba in list(self.abas):
             self.fechar(aba)
         self.aviso.hide()
+        self.j.parar_observacao()
         evento.accept()
 
 
