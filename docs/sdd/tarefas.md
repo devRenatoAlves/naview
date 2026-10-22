@@ -144,3 +144,6 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Perfil dos colegas (ver inventário uns dos outros, só leitura): planejado em `specs/04-servidor.md` (R10 a R14); começa depois do servidor e do login
 - [x] Windows: foco do teclado por eventos (`observar_foco`, `on_evento_foco`): Win+V e Ctrl+V voltavam a falhar depois de um tempo; agora a sessão tem prioridade e clique em campo de texto do NaView tem prioridade sobre ela. **Falta testar no Windows** e publicar (versão ainda não subida)
 - [x] Versão `2026.10.22.5` (foco do teclado por eventos no Windows + SDD do perfil dos colegas) enviada em 22/10/2026; falta reconferir no Windows
+
+- [ ] (22/10/2026) Sessão preta no GNOME com tema Vidro: janela sem alfa fora do KDE (D49). Falta o usuário confirmar com `python3 app.py` (e, se ainda ficar preta, `NAVIEW_JANELA_ALFA=0`/`1` para comparar)
+- [x] Versão `2026.10.22.6` (janela opaca fora do KDE no GTK, hipótese da sessão preta no GNOME) enviada em 22/10/2026

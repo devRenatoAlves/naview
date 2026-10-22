@@ -183,8 +183,13 @@ class App(Gtk.Window):
         self.set_icon_name("naview")
         classes(self, "janela-principal")
         # Visual com canal alfa: permite o tema "Vidro líquido" (janela transparente com desfoque).
+        # Só no KDE: lá o desfoque justifica a transparência. Fora dele (ex.: GNOME/Mutter) uma
+        # janela com canal alfa fazia a sessão encaixada do AnyDesk aparecer toda preta.
+        # NAVIEW_JANELA_ALFA=1/0 força ligado/desligado (para testar).
+        alfa = os.environ.get("NAVIEW_JANELA_ALFA")
+        alfa = temas.TEM_DESFOQUE if alfa is None else alfa == "1"
         visual = self.get_screen().get_rgba_visual()
-        if visual and self.get_screen().is_composited():
+        if alfa and visual and self.get_screen().is_composited():
             self.set_visual(visual)
 
         self.x = X11()
