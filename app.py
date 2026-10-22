@@ -51,6 +51,7 @@ migrar_pastas_antigas()  # antes de temas, contatos e progresso lerem os arquivo
 
 import atualizador  # noqa: E402
 import temas  # noqa: E402
+import contatos  # noqa: E402
 from contatos import Contatos, formatar_id  # noqa: E402
 from jogo import catalogo as cat_jogo  # noqa: E402
 from jogo.gtk import Notificacoes, Sons, pet_rodape  # noqa: E402
@@ -320,6 +321,14 @@ class App(Gtk.Window):
         self.contagem = classes(Gtk.Label(), "contagem")
         cabeca.pack_end(self.contagem, False, False, 0)
 
+        self.meu_id = ""
+        self.meu_id_rotulo = classes(Gtk.Label(xalign=0, no_show_all=True), "meu-id")
+        self.meu_id_caixa = Gtk.EventBox(margin_start=16, margin_end=16, margin_bottom=8, no_show_all=True,
+                                         tooltip_text="Seu ID do AnyDesk (clique para copiar)")
+        self.meu_id_caixa.add(self.meu_id_rotulo)
+        self.meu_id_caixa.connect("button-press-event", lambda *_a: self.copiar_meu_id())
+        self.descobrir_meu_id()
+
         self.busca = Gtk.SearchEntry(placeholder_text="Buscar ou digitar um ID",
                                      margin_start=12, margin_end=12, margin_bottom=8)
         self.busca.connect("search-changed", lambda _e: self.lista.invalidate_filter())
@@ -340,6 +349,7 @@ class App(Gtk.Window):
         lateral = classes(Gtk.Box(orientation=Gtk.Orientation.VERTICAL), "sidebar")
         lateral.set_size_request(290, -1)
         lateral.pack_start(cabeca, False, False, 0)
+        lateral.pack_start(self.meu_id_caixa, False, False, 0)
         lateral.pack_start(self.busca, False, False, 0)
         lateral.pack_start(rolagem, True, True, 0)
         lateral.pack_start(self.montar_pet_mini(), False, False, 0)
@@ -790,6 +800,27 @@ class App(Gtk.Window):
         self.verificar_atualizacao()
         GLib.timeout_add_seconds(6 * 3600, self.verificar_atualizacao)
         return False
+
+    def mostrar_meu_id(self, cid):
+        if cid:
+            self.meu_id = cid
+            self.meu_id_rotulo.set_text(f"Meu AnyDesk: {formatar_id(cid)}")
+            self.meu_id_rotulo.show()
+            self.meu_id_caixa.show()
+        return False
+
+    def descobrir_meu_id(self):
+        """Lê o ID dos arquivos do AnyDesk; se não achar, pergunta ao programa numa thread."""
+        self.mostrar_meu_id(contatos.meu_id())
+        if not self.meu_id:
+            threading.Thread(target=lambda: GLib.idle_add(self.mostrar_meu_id, contatos.meu_id_pelo_programa()),
+                             daemon=True).start()
+
+    def copiar_meu_id(self):
+        if self.meu_id:
+            Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD).set_text(self.meu_id, -1)
+            self.avisar("ID copiado.")
+        return True
 
     def verificar_atualizacao(self):
         if not self._atualizacao and not self._atualizando:

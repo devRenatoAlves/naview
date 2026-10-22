@@ -129,6 +129,7 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
   voltou ao canto esquerdo da barra (título fora do layout); linhas de contato com altura fixa
   mínima (avatares cortados); "Meu AnyDesk: ID" no topo dos contatos (clique copia), lido de
   `ad.anynet.id` (`system.conf`) ou de `anydesk --get-id`
+- [x] "Meu AnyDesk" também no GTK (`app.py`, usado no Linux), versão `2026.10.22.3` (22/10/2026)
 - [ ] Testar a atualização no Windows: instalar uma versão, publicar outra, clicar em Atualizar
 - [x] Versão `2026.10.22.1` (primeira com o atualizador, junto com a reformulação dos pets) enviada em 22/10/2026
 - [ ] Avisar a equipe para baixar o NaView de novo uma vez (versões antigas não têm o atualizador)

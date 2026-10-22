@@ -499,6 +499,7 @@ BASE = Template("""
 /* barra de contatos */
 .janela-principal .sidebar { background-color: $lateral; color: $texto_lateral; }
 .janela-principal .sidebar .titulo-lateral { font-weight: bold; font-size: 1.1em; }
+.janela-principal .sidebar .meu-id { color: alpha($texto_lateral, 0.55); font-size: 0.85em; }
 .janela-principal .sidebar .contagem { color: alpha($texto_lateral, 0.55); font-size: 0.85em; }
 .janela-principal entry {
   background-color: $superficie; color: $texto; caret-color: $destaque; background-image: none;
