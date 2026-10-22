@@ -3,6 +3,8 @@
 Só dados. As regras que usam esses dados ficam em progresso.py.
 """
 
+from pathlib import Path
+
 RARIDADES = {
     "comum": {"nome": "Comum", "cor": "#9aa5b1", "peso": 70},
     "rara": {"nome": "Rara", "cor": "#3b82f6", "peso": 22},
@@ -24,21 +26,41 @@ TIPOS = {
 # Pets em pixel art num quadro de PET_LADO x PET_LADO (1 unidade = 1 pixel do desenho). Acima dele
 # ficam PET_ACIMA linhas livres para os chapéus: o pet com acessório ocupa PET_LADO x (PET_LADO + PET_ACIMA).
 PET_LADO = 64
+ARTE_PETS = Path(__file__).resolve().parent.parent / "arte" / "pets"
 PET_ACIMA = 16
+# Pets desenhados mais altos que o quadro de PET_LADO: linhas a mais em cima (o desenho fica
+# encostado embaixo e invade o espaço dos chapéus). Vem de ferramentas/pixel_vetor.no_quadro e de
+# ferramentas/importar_pets.py.
+ALTURA_EXTRA = {"pinscher": 7, "galinha": 2, "dragao": 50}
+# O dragão é bem mais alto que os outros: o espaço de cima do quadro dele cabe o corpo extra e o chapéu.
+ACIMA_PET = {"dragao": 64}
+# Tamanho do pet na página do jogo, em relação aos outros (o dragão tem o dobro dos pixels).
+ESCALA_PAGINA = {"dragao": 0.5}
+# Pets próprios com outras caras desenhadas (arte/pets/<especie>_<cara>.svg): pisca (olhos fechados,
+# também no sono), feliz e triste. Os Pokémon e os pets sem olhos de grade ficam de fora.
+PETS_COM_EXPRESSAO = ["pinscher", "salsicha"]
+EXPRESSOES = ["pisca", "feliz", "triste"]
+# Pets que vieram como GIF: arte/pets/<pet>.svg é o quadro 0 e arte/pets/<pet>_q<i>.svg os outros.
+# Para cada quadro, quanto a cabeça se mexe (x, y) em relação ao quadro 0, para os acessórios acompanharem.
+QUADROS = {
+    "gato": [(0, 0), (0, -1), (0, -1), (0, 0), (0, 0), (0, -1), (0, 0), (0, 0)],
+    "jonatas": [(0, 0), (0, 1), (0, 2), (0, 0), (0, 0), (0, 1), (0, 2), (0, 0)],
+    "astronauta": [(0, 0), (0, 0), (0, 0), (0, -1), (0, 0), (0, 0), (0, 0), (0, -1)],
+    "dragao": [(0, 0), (-1, 1), (0, 3), (-1, 4), (-1, 4), (-2, 2), (-1, 1), (0, 0)],
+}
+QUADRO_MS = 130  # tempo de cada quadro dos GIFs
 
 # Pontos de encaixe de cada pet, (x, y) no quadro do pet: topo = alto da cabeça (onde o chapéu
 # assenta), olhos = meio entre os olhos, pescoco = meio do pescoço.
 ENCAIXE_PET = {
-    "slime": {"topo": (32, 38), "olhos": (32, 50), "pescoco": (32, 58)},
-    "fantasma": {"topo": (32, 26), "olhos": (32, 39), "pescoco": (32, 49)},
-    "pintinho": {"topo": (33, 35), "olhos": (33, 42), "pescoco": (33, 51)},
-    "gato": {"topo": (30, 31), "olhos": (30, 38), "pescoco": (30, 51)},
-    "robo": {"topo": (32, 28), "olhos": (32, 35), "pescoco": (32, 46)},
-    "dragao": {"topo": (32, 30), "olhos": (32, 36), "pescoco": (32, 48)},
-    "pinscher": {"topo": (32, 30), "olhos": (32, 37), "pescoco": (32, 49)},
-    "corgi": {"topo": (33, 31), "olhos": (33, 39), "pescoco": (33, 50)},
-    "salsicha": {"topo": (42, 34), "olhos": (45, 38), "pescoco": (38, 49)},
-    "passarinho": {"topo": (36, 36), "olhos": (39, 39), "pescoco": (34, 49)},
+    "slime": {"topo": (31, 30), "olhos": (31, 41), "pescoco": (31, 50)},
+    "galinha": {"topo": (17, 8), "olhos": (16, 12), "pescoco": (21, 24)},
+    "gato": {"topo": (26, 20), "olhos": (22, 32), "pescoco": (24, 40)},
+    "jonatas": {"topo": (32, 9), "olhos": (31, 24), "pescoco": (31, 33)},
+    "astronauta": {"topo": (32, 13), "olhos": (32, 22), "pescoco": (32, 36)},
+    "dragao": {"topo": (26, -36), "olhos": (21, -26), "pescoco": (38, -6)},
+    "pinscher": {"topo": (20, 9), "olhos": (18, 21), "pescoco": (25, 32)},
+    "salsicha": {"topo": (25, 20), "olhos": (25, 25), "pescoco": (24, 37)},
     "pikachu": {"topo": (23, 29), "olhos": (21, 33), "pescoco": (24, 45)},
     "eevee": {"topo": (24, 33), "olhos": (22, 40), "pescoco": (24, 46)},
     "jigglypuff": {"topo": (32, 32), "olhos": (31, 44), "pescoco": (31, 52)},
@@ -53,11 +75,40 @@ ENCAIXE_ACESSORIO = {
 }
 
 
+# Ajuste de um acessório num pet específico (quando o encaixe padrão não serve, como nos pets de lado):
+# (pet, acessório) -> (arquivo do desenho, (x, y) do ponto no quadro do pet, âncora x, âncora y, largura, altura).
+# "arquivo" é uma variante de arte/acessorios/ (oculos_lado, oculos_lado_dir, oculos_lado_mini, cachecol_estreito).
+AJUSTE_ACESSORIO = {
+    # Fredinho: cabeça de frente com olhos bem afastados (15 px), pescoço curto sob o queixo.
+    ("pinscher", "oculos"): ("oculos", (18, 21), 13, 4, 26, 9),
+    ("pinscher", "cachecol"): ("cachecol_estreito", (25, 32), 9, 2, 19, 15),
+    # Ronaldo: de lado, olhando para a esquerda; pescoço entre a cabeça e o peito.
+    ("salsicha", "oculos"): ("oculos_lado", (25, 25), 5, 3, 16, 8),
+    ("salsicha", "cachecol"): ("cachecol_estreito", (24, 37), 9, 2, 19, 15),
+    # Serpente de gelo: de perfil, olhando para a esquerda; o chapéu assenta na crina.
+    ("dragao", "oculos"): ("oculos_lado_mini", (21, -26), 3, 2, 12, 6),
+    ("dragao", "cachecol"): ("cachecol_estreito", (38, -6), 9, 2, 19, 15),
+    # Galinha: de lado, olhando para a esquerda.
+    ("galinha", "oculos"): ("oculos_lado", (16, 12), 5, 3, 16, 8),
+    ("galinha", "cachecol"): ("cachecol_estreito", (21, 24), 9, 2, 19, 15),
+}
+
+
+def acima_de(especie):
+    """Linhas livres em cima do quadro do pet (para chapéus e para o corpo que passa do quadro)."""
+    return ACIMA_PET.get(especie, PET_ACIMA)
+
+
 def encaixe_acessorio(especie, acessorio):
-    """Posição e tamanho do acessório no quadro do pet com o espaço de cima (x, y, w, h)."""
+    """Posição, tamanho e arquivo do acessório no quadro do pet com o espaço de cima (x, y, w, h, arquivo)."""
     ponto, ax, ay, w, h = ENCAIXE_ACESSORIO[acessorio]
-    px, py = ENCAIXE_PET[especie][ponto]
-    return {"x": px - ax, "y": PET_ACIMA + py - ay, "w": w, "h": h}
+    arquivo = acessorio
+    acima = acima_de(especie)
+    if (especie, acessorio) in AJUSTE_ACESSORIO:
+        arquivo, (px, py), ax, ay, w, h = AJUSTE_ACESSORIO[(especie, acessorio)]
+    else:
+        px, py = ENCAIXE_PET[especie][ponto]
+    return {"x": px - ax, "y": acima + py - ay, "w": w, "h": h, "arquivo": arquivo}
 
 
 def _c(cid, tipo, nome, raridade, descricao, arte=None, **extra):
@@ -85,32 +136,30 @@ CARTAS = [
        "mar/veleiro.svg", alvo="mar"),
     _c("tema-pixel", "tema", "Aventura Pixel", "mitica",
        "Monstrinhos animados, grama, nuvens e fonte de videogame.", "pixel/bola.svg", alvo="pixel"),
+    _c("tema-manga", "tema", "Mangá Noir", "mitica",
+       "Preto e branco de mangá: retrato em tinta e ícone próprio.", "manga/icone.png", alvo="manga"),
     _c("tema-hq", "tema", "Heróis HQ", "mitica",
        "Quadrinhos: retícula, explosões POW! e ZAP!, cidade e fonte de gibi.",
        "hq/emblema.svg", alvo="hq"),
     # pets (espécies)
     _c("pet-slime", "pet", "Slime", "comum", "Gosmento e muito carinhoso.", "pets/slime.svg", alvo="slime"),
-    _c("pet-pintinho", "pet", "Pintinho", "comum", "Piu! Acorda cedo todo dia.", "pets/pintinho.svg",
-       alvo="pintinho"),
-    _c("pet-fantasma", "pet", "Fantasminha", "rara", "Assusta os bugs dos clientes.", "pets/fantasma.svg",
-       alvo="fantasma"),
-    _c("pet-gato", "pet", "Gatinho", "rara", "Dorme em cima do teclado.", "pets/gato.svg", alvo="gato"),
-    _c("pet-robo", "pet", "Robô", "epica", "Bip bop. Reinicia o roteador por diversão.", "pets/robo.svg",
-       alvo="robo"),
-    _c("pet-dragao", "pet", "Dragãozinho", "lendaria", "Guarda as senhas num tesouro.", "pets/dragao.svg",
-       alvo="dragao"),
-    _c("pet-passarinho", "pet", "Passarinho", "comum", "Canta bom-dia para cada cliente.",
-       "pets/passarinho.svg", alvo="passarinho"),
+    _c("pet-galinha", "pet", "Galinha", "comum", "Cocoricó! Bota ovo e acorda a equipe cedo.",
+       "pets/galinha.svg", alvo="galinha"),
     _c("pet-pinscher", "pet", "Fredinho", "comum",
        "Pinscher caramelo: pequeno no tamanho, gigante na bravura.", "pets/pinscher.svg", alvo="pinscher"),
+    _c("pet-gato", "pet", "Gatinho preto", "rara", "Dorme em cima do teclado.", "pets/gato.svg", alvo="gato"),
+    _c("pet-jonatas", "pet", "Jonatas", "rara", "Sempre com pressa para o próximo atendimento.",
+       "pets/jonatas.svg", alvo="jonatas"),
     _c("pet-salsicha", "pet", "Ronaldo", "rara", "Salsicha comprido o bastante para alcançar o cabo de rede.",
        "pets/salsicha.svg", alvo="salsicha"),
-    _c("pet-corgi", "pet", "Corgi", "rara", "Patinhas curtas, coração enorme.", "pets/corgi.svg",
-       alvo="corgi"),
+    _c("pet-astronauta", "pet", "Astronauta", "epica", "Suporte remoto de verdade: atende de órbita.",
+       "pets/astronauta.svg", alvo="astronauta"),
     _c("pet-jigglypuff", "pet", "Jigglypuff", "epica", "Canta até o problema dormir.",
        "pets/jigglypuff.svg", alvo="jigglypuff"),
     _c("pet-eevee", "pet", "Eevee", "epica", "Pode evoluir para qualquer coisa. Até técnico.",
        "pets/eevee.svg", alvo="eevee"),
+    _c("pet-dragao", "pet", "Serpente de gelo", "lendaria", "Congela os bugs antes que eles se espalhem.",
+       "pets/dragao.svg", alvo="dragao"),
     _c("pet-pikachu", "pet", "Pikachu", "lendaria", "Pika! Reinicia o servidor no choque.",
        "pets/pikachu.svg", alvo="pikachu"),
     _c("pet-gengar", "pet", "Gengar", "lendaria", "Sorri no escuro e assombra os bugs.",

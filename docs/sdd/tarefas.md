@@ -34,6 +34,10 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 
 - [x] Temas completos (fonte, arte e animações) e vidro líquido
 - [x] Temas bloqueados na Aparência para quem não tem a carta
+- [x] (21/10/2026) Tema Mangá Noir (preto e branco, anime, dark) com ícone do app próprio por tema; arte do usuário aplicada em 22/10/2026
+- [x] (22/10/2026) Removidos ajustes de cor e imagem de fundo da janela Aparência; ícone do dock troca com o tema (reescreve o `naview.svg` do usuário)
+- [x] (22/10/2026) Cabeçalho sem duplicação: tema só no jogo; ⋮ = Opções de aparência + Capturar janela (D38)
+- [ ] Usuário abrir `python3 app.py` e `python3 app_qt.py`, escolher Mangá Noir e conferir visual e ícone (a parte Qt não foi rodada: sem PySide6 na máquina de desenvolvimento)
 
 ## Jogo ([spec](specs/03-jogo.md))
 
@@ -46,6 +50,21 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] Pet do rodapé sem o espaço vazio do quadro: todos os pets com o mesmo tamanho e centralizados
 - [ ] Fase 2: missões diárias e mais cartas (efeitos, fundos)
 - [ ] Dar uso às moedas que sobram; efeito de nível para todos os tipos de carta
+
+- [ ] Redesenho do jogo (pedido de 22/10/2026), por etapas, cada uma mostrada ao usuário:
+  1) cabeçalho (feito), 2) layout/organização da página do jogo (feito: pixel art, menu lateral, baús primeiro; aguardando aprovação do usuário), 3) baús e itens (feito e refeito em 32x28 com versão aberta), 4) pets próprios (feito: contorno seletivo, olhos novos, caras por humor e piscada; falta robô e salsicha com caras próprias)
+- [x] (22/10/2026) Fredinho refeito a partir das fotos; pintinho e passarinho refeitos
+- [x] (22/10/2026) Fredinho refeito como cópia do sprite-modelo do usuário, na cor do cachorro real
+- [x] (22/10/2026) Ronaldo refeito como cópia do sprite-modelo do usuário, na cor do cachorro real
+- [x] (22/10/2026) Acessórios reencaixados nos pets de lado (Fredinho, Ronaldo, passarinho) e conferidos nos 14 pets
+- [x] (22/10/2026) Reformulação dos pets: saíram corgi, passarinho, pintinho, fantasma e robô; entraram
+  gato preto, Jonatas, astronauta, serpente de gelo (GIFs animados), galinha e slime (PNGs); acessórios
+  encaixados; migração do progresso antigo (D46)
+- [x] (22/10/2026) Nome do pet fixo, o da espécie; renomear removido (D47)
+- [ ] Usuário abrir `python3 app.py`, conferir os pets novos (animação na tela do pet, rodapé, acessórios)
+  e a parte Qt (`app_qt.py`, só compilada: sem PySide6 aqui)
+- [ ] Caras por humor (pisca, feliz, triste) para o slime e a galinha, se o usuário quiser
+- [x] Usuário escolheu pixel art (22/10/2026). Só MIT/CC0, sem créditos na tela (game-icons.net, CC BY, fica de fora)
 
 ## Servidor da equipe ([spec](specs/04-servidor.md))
 
@@ -97,3 +116,18 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [ ] Se o instalador passar de 100 MB: plano B pela VPS (ver spec 05)
 - [ ] Testar o instalador nos PCs da equipe: com e sem administrador, escala 125%/150%, antivírus,
   contatos do AnyDesk no Windows (`%APPDATA%\AnyDesk\user.conf`)
+
+## Atualização automática ([spec](specs/07-atualizacao.md))
+
+- [x] Manifesto `download/versao.json` no `gerar_site.py` e no `nginx.conf` (22/10/2026)
+- [x] `atualizador.py` (consulta, baixa, confere o SHA-256, troca no Linux, instalador no Windows)
+- [x] Botão "Atualizar" no GTK (`app.py`) e no Qt (`app_qt.py`)
+- [x] `ferramentas/nova_versao.py` (formato `AAAA.MM.DD.N`)
+- [x] Teste de ponta a ponta no Linux (pacote local) e de interpretação do manifesto
+- [ ] Testar o Qt com PySide6 (botão na barra, thread, fechamento) no Linux e no Windows
+- [ ] Testar a atualização no Windows: instalar uma versão, publicar outra, clicar em Atualizar
+- [x] Versão `2026.10.22.1` (primeira com o atualizador, junto com a reformulação dos pets) enviada em 22/10/2026
+- [ ] Avisar a equipe para baixar o NaView de novo uma vez (versões antigas não têm o atualizador)
+- [ ] Publicar `2026.10.22.2` (mudança pequena) para provar a atualização no Windows e no Linux
+- [ ] Mais tarde, se a equipe crescer: assinar o manifesto
+

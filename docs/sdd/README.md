@@ -19,11 +19,15 @@ pasta.
 | [specs/04-servidor.md](specs/04-servidor.md) | Servidor da equipe: login, ranking, prêmios (**em planejamento**) |
 | [specs/05-landing.md](specs/05-landing.md) | Página de apresentação com download (**pronta, falta publicar**) |
 | [specs/06-windows.md](specs/06-windows.md) | NaView no Windows, idêntico ao do Linux (**em planejamento**, fase 0) |
+| [specs/07-atualizacao.md](specs/07-atualizacao.md) | Atualização automática do app (Linux e Windows), manifesto `versao.json` |
 | [decisoes.md](decisoes.md) | Registro de decisões e o porquê de cada uma |
 | [tarefas.md](tarefas.md) | Lista de tarefas com situação |
 | [testes.md](testes.md) | Como testar sem mexer nos dados e na tela do usuário |
 
-## Situação geral (atualizado em 14/10/2026)
+## Situação geral (atualizado em 22/10/2026)
+
+- **Atualização automática:** pronta e enviada na versão `2026.10.22.1`; falta testar no Windows e
+  no Qt. Ver [specs/07-atualizacao.md](specs/07-atualizacao.md).
 
 - App de abas e temas: prontos e em uso. Falta testar com sessões remotas reais.
 - Jogo fase 1 (local): pronto. Economia ajustada para ritmo lento.

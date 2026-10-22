@@ -51,7 +51,7 @@ jobs:
           pyinstaller --noconfirm --windowed --name NaView
           --icon ferramentas/icone.ico
           --add-data "arte;arte" --add-data "sons;sons" --add-data "fonts;fonts"
-          --add-data "icones;icones" --add-data "web;web" --add-data "icone.svg;."
+          --add-data "icones;icones" --add-data "web;web" --add-data "icone.svg;." --add-data "VERSAO;."
           --exclude-module tkinter --exclude-module gi
           app_qt.py
 

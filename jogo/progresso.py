@@ -22,6 +22,12 @@ HORA = 3600
 APP_FECHADO_S = 600  # sem "batimento" do app por mais que isso = app fechado (pet dormindo)
 
 
+def _nome_do_pet(pet):
+    """O nome do pet é sempre o da espécie (o nome da carta); não dá para mudar."""
+    carta = cat.CARTAS_POR_ID.get(f"pet-{pet['especie']}") if pet["especie"] else None
+    return carta["nome"] if carta else "Ovo"
+
+
 class ErroJogo(Exception):
     """Ação não permitida (sem moedas, baú trancado...). A mensagem vai direto para a tela."""
 
@@ -46,10 +52,24 @@ class Progresso:
         """)
         if self._kv("perfil") is None:
             self._comecar(tema_atual)
+        self._migrar_pets()
         if liberar_tudo:  # modo de teste: todas as cartas, inclusive as que entrarem depois
             with self.db:
                 self.db.executemany("INSERT OR IGNORE INTO cartas VALUES (?, 1, 0)",
                                     [(c["id"],) for c in cat.CARTAS])
+
+    def _migrar_pets(self):
+        """Tira do progresso as cartas que saíram do catálogo (pets antigos). Se o pet atual era um deles,
+        ele vira o Slime, mantendo nome, XP e acessório."""
+        with self.db:
+            for (cid,) in self.db.execute("SELECT id FROM cartas").fetchall():
+                if cid not in cat.CARTAS_POR_ID:
+                    self.db.execute("DELETE FROM cartas WHERE id = ?", (cid,))
+            pet = self._kv("pet")
+            if pet and pet["especie"] and f"pet-{pet['especie']}" not in cat.CARTAS_POR_ID:
+                pet["especie"] = "slime"
+                self._salvar_kv("pet", pet)
+                self.db.execute("INSERT OR IGNORE INTO cartas VALUES ('pet-slime', 1, 0)")
 
     # ---- armazenamento --------------------------------------------------------
 
@@ -69,7 +89,7 @@ class Progresso:
             self._salvar_kv("gratis", {"qtd": 1, "desde": agora})
             self._salvar_kv("diario", {"ultimo": None, "sequencia": 0})
             self._salvar_kv("equipados", {"moldura": "simples", "som": None})
-            self._salvar_kv("pet", {"nome": "Bolinha", "especie": None, "acessorio": None,
+            self._salvar_kv("pet", {"especie": None, "acessorio": None,
                                     "fome": 80, "alegria": 80, "energia": 80, "xp": 0,
                                     "atualizado": agora, "visto": agora, "dormindo_ate": None,
                                     "ultimo_brincar": 0})
@@ -497,7 +517,7 @@ class Progresso:
             fala = "Tudo tranquilo por aqui."
         espera = int(pet["ultimo_brincar"] + cat.PET_BRINCAR_ESPERA_MIN * 60 - agora)
         return {
-            "nome": pet["nome"], "especie": pet["especie"], "acessorio": pet["acessorio"],
+            "nome": _nome_do_pet(pet), "especie": pet["especie"], "acessorio": pet["acessorio"],
             "chocado": bool(pet["especie"]),
             "fome": round(pet["fome"]), "alegria": round(pet["alegria"]), "energia": round(pet["energia"]),
             "xp": pet["xp"], "estagio": estagio[1], "tamanho": estagio[2], "xp_proximo": proximo,
@@ -523,21 +543,12 @@ class Progresso:
         pet = self._pet_atualizado()
         if pet["especie"]:
             raise ErroJogo("O ovo já chocou!")
-        especie = self.rnd.choice(["slime", "pintinho"])
+        especie = self.rnd.choice(["slime", "galinha"])
         with self.db:
             pet.update(especie=especie, fome=80, alegria=90, energia=80, atualizado=self.agora())
             self._salvar_kv("pet", pet)
             self.db.execute("INSERT OR IGNORE INTO cartas VALUES (?, 1, 0)", (f"pet-{especie}",))
         return self._pet_publico(pet)
-
-    def pet_renomear(self, nome):
-        nome = (nome or "").strip()[:20]
-        if not nome:
-            raise ErroJogo("Dê um nome ao seu pet.")
-        with self.db:
-            pet = self._pet_atualizado()
-            pet["nome"] = nome
-            self._salvar_kv("pet", pet)
 
     def pet_acao(self, acao):
         pet = self._pet_atualizado()
@@ -548,7 +559,7 @@ class Progresso:
         if acao == "acordar":
             pet["dormindo_ate"] = None
         elif dormindo:
-            raise ErroJogo(f"{pet['nome']} está dormindo. Shhh!")
+            raise ErroJogo(f"{_nome_do_pet(pet)} está dormindo. Shhh!")
         elif acao == "soneca":
             pet["dormindo_ate"] = agora + cat.PET_SONECA_MIN * 60
         elif acao == "alimentar":
@@ -556,15 +567,15 @@ class Progresso:
             if perfil["petiscos"] <= 0:
                 raise ErroJogo("Sem petiscos! Compre na loja ou abra baús.")
             if pet["fome"] >= 98:
-                raise ErroJogo(f"{pet['nome']} está cheio!")
+                raise ErroJogo(f"{_nome_do_pet(pet)} está cheio!")
             perfil["petiscos"] -= 1
             self._salvar_kv("perfil", perfil)
             self._aplicar(pet, cat.PET_ACOES["alimentar"])
         elif acao == "brincar":
             if agora - pet["ultimo_brincar"] < cat.PET_BRINCAR_ESPERA_MIN * 60:
-                raise ErroJogo(f"{pet['nome']} ainda está cansado da última brincadeira.")
+                raise ErroJogo(f"{_nome_do_pet(pet)} ainda está cansado da última brincadeira.")
             if pet["energia"] < 15:
-                raise ErroJogo(f"{pet['nome']} está sem energia. Que tal uma soneca?")
+                raise ErroJogo(f"{_nome_do_pet(pet)} está sem energia. Que tal uma soneca?")
             pet["ultimo_brincar"] = agora
             self._aplicar(pet, cat.PET_ACOES["brincar"])
         else:

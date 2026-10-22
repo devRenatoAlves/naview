@@ -5,7 +5,25 @@ sprites oficiais, baixados por baixar_sprites.py.
 """
 import re
 
-from pixel_vetor import de_mapa, montar, sombreado as sb
+from pixel_vetor import Grade, Tela, de_mapa, montar as _montar, sombreado as sb
+
+
+def montar(*args, **kwargs):
+    """pixel_vetor.montar com os olhos que olhos() desenhou desde o último pet."""
+    grade = _montar(*args, olhos=tuple(_OLHOS), **kwargs)
+    _OLHOS.clear()
+    return grade
+
+
+def pronto(tela, detalhes=()):
+    """Fecha um desenho feito com Tela, levando os olhos que olhos() registrou."""
+    grade = tela.pronto(detalhes, olhos=tuple(_OLHOS))
+    _OLHOS.clear()
+    return grade
+
+
+def espelho_pontos(pontos, eixo=24):
+    return [(2 * eixo - x, y) for x, y in pontos]
 
 
 def espelho_x(d, lado=48):
@@ -22,14 +40,24 @@ def espelho_x(d, lado=48):
     return " ".join(saida)
 
 
-def olhos(x_esq, x_dir, y, cor="#1b1b1b", brilho="#ffffff", alto=4):
-    """Dois olhos de 3 x alto pixels (cantos arredondados) com brilho no alto à esquerda."""
+_OLHOS = []  # olhos desenhados no pet atual (montar() leva para o quadro de olhos fechados)
+
+
+def olhos(x_esq, x_dir, y, cor="#1b1b1b", brilho="#ffffff", alto=5, meia=1):
+    """Dois olhos grandes de (2*meia+1) x alto pixels, de cantos arredondados, com brilho duplo: um
+    grande no alto à esquerda e um pequeno embaixo à direita. meia=2 dá olhos redondos de 5 pixels."""
     pontos = []
     for cx in (x_esq, x_dir):
+        _OLHOS.append((cx, y, alto, meia))
         for dy in range(alto):
-            larg = (0,) if dy in (0, alto - 1) else (-1, 0, 1)
-            pontos += [(cx + dx, y + dy) for dx in larg]
-    return [(cor, pontos), (brilho, [(x_esq - 1, y + 1), (x_dir - 1, y + 1)])]
+            m = meia - 1 if dy in (0, alto - 1) else meia
+            pontos += [(cx + dx, y + dy) for dx in range(-m, m + 1)]
+    if meia == 1:
+        brilhos = [(x - 1, y + k) for x in (x_esq, x_dir) for k in (1, 2)]
+    else:
+        brilhos = [(x + dx, y + dy) for x in (x_esq, x_dir) for dx, dy in ((-1, 1), (0, 1), (-1, 2))]
+    brilhos += [(x + 1, y + alto - 2) for x in (x_esq, x_dir)]
+    return [(cor, pontos), (brilho, brilhos)]
 
 
 def bochechas(x_esq, x_dir, y, cor):
@@ -38,216 +66,233 @@ def bochechas(x_esq, x_dir, y, cor):
 
 # ---- cachorros ----------------------------------------------------------------
 
+# Fredinho: sprite de 57 x 71 pixels copiado do modelo que o usuário escolheu (chihuahua de lado, orelhas
+# enormes e cauda levantada) e recolorido com o caramelo do cachorro real: corpo caramelo, focinho,
+# sobrancelhas e peito cremes, patinhas claras, orelhas rosadas por dentro e contorno marrom-escuro.
+FREDINHO_PALETA = {
+    "A": "#2e1b0f",
+    "B": "#d58a3b",
+    "C": "#bd742f",
+    "D": "#e8a290",
+    "E": "#e6a459",
+    "F": "#f2b9a8",
+    "G": "#dfa662",
+    "H": "#cf8f4a",
+    "I": "#faead0",
+    "J": "#f1d4a4",
+    "K": "#e4bb82",
+    "L": "#fcf0d8",
+    "M": "#f6e0b8",
+    "N": "#ecbd80",
+    "O": "#ffffff",
+    "P": "#ecca98"
+}
+FREDINHO = """
+..................................AA.....................
+................................AAFA.....................
+AAAA...........................AFFFFA....................
+AFFBAA.......................AAFFFFFA....................
+AFFDFBA.....................AFFFFFDDA....................
+ADDDDDBA...................ADFFFFFDDA....................
+ADDDDDDBA.................ACDFFFFDDDA....................
+ADFFFDDDBA...............ACFFFFFFDDDA....................
+ADFFFDDDBA..............AAFFFFFFFDDDAA...................
+ADFDDDDDDBA............AAFDDDDDDDDDDCA...................
+ADFDDDDDDBBA..........AAFDDDDDDDDDDDCA...................
+ADFDDDDDDDBA..........ACDDDDDDDDDDFFCA...................
+AFFDDDDDDDBBA........ACDDDDDDDDDDDFFCA...................
+AFFDDDDDDDBBA.AAAAAA.AADDDDDDDDDDDDDCA...................
+AFFFDDDDDDACAAACACCAACCFFDDDDDDDDDDDAA...................
+AFFFDDDDDACCCCCBBCCCACAFFFFFFDDDDDDFCA...................
+AFFFFDDDACCCBBBBBBBBBCACFFFFFFFDDDFFCA...................
+AFFFFDDABBBBBBBBBBBBBBCCADFFFFFDDDFCCA...................
+ADDDDDABBBBBBBEEEEJKBBCCAAFFFFFFFFFBAA...................
+ADDDDAJJBBEEEBEEEJJJJBBCCAAFFFFFFFFBAA...................
+.ADDDJJJEEEEEBBEEJJJJJBBACCAFFFFFFBBA....................
+.ADDAJIIBEEEBBBBEJJIIIBBCCCCADDDDBBBA....................
+..ADABBBBEBBBBBBBBBBBBBBCCCCADDDBBBBA....................
+..AACBBEEEBBBBBBBBBAAABBBCACADDEBBBA.....................
+...ACAAEEEBBBBBBBCAAAAABBBCCAEEBBBBA.....................
+...AAOOAEBBBCCBBBKAAOOAABBBBBBBBBBA...........AAA........
+..AKAOOABBBBCCCCCKAAOOAABBBBABCCAA.............AAA.......
+..AKAAAABBBBBBBBBKAAAAAABBCCACAA................ACA......
+..AKAAAACCBBBBBBBKAAAAAABBCCAA...................ACA.....
+..AKKAAACCBBBBBBBKKAAAAABBCAAA...................ABBA....
+...AKKAABBBBBBBBBKKKAAABBACAAA....................ABA....
+...AKKKBBBBBBBBEEEKKKKBBBAKCAA....................ABBA...
+....ACBBBBBEEEEEEBBBBBBBJJJCA.....................ABBA...
+.....ABBBBBEIIIJJIBABABAKKCAA.....................ABBA...
+.....ABAAAAIIIIJJIIJJJKKKKAA......................ABBA...
+.....AIIAAIIIIIIIIIJJJKKKAAA.....................ABBBA...
+.....AIICAIIIIIIIAIJJJKKAAAA.....................ABBA....
+......AAIIAAAAAAAIJJJJKACCACAAAAAA..............AABKA....
+........AIIIIIIIIIJJKCCCCACACACACAAAAAAAAAAAAA.AAEEKA....
+.........AAAAAAIIJJJBBCCCCACACACACACACACACACACAAAEKA.....
+..............AIJJJBBBBCCCCCCCCCCCCCACCCACCCACCBBKA......
+..............AJJJJBCCCCCCCCCCCCCCCCCCCAACCAAACCCA.......
+..............AEKKBBCCCCCCCCCCCCCCCCCCCCCACCCCCCCCA......
+..............AEEKBBBBBBCCBBCCBBCCBBCCBBCBBBCCCCACCA.....
+..............AEEEEBBBBBCCBBBBBBBBBBBBBBBBBBCCCCACCA.....
+..............AEEEEBBBBBCCBBBBBBBBBBBBBBBBBBBCCCCCCCA....
+..............AEEEEEBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCA....
+.............AAEEBBEEBBBCBBBBBBBCCBBCCBBBBBBBBBCCCCCAA...
+.............AGGGBBEGGHHHBBBBBBBBBBBCCBBBBBBBBBCCCCCCA...
+.............AGGGGEGGGGHHHBBBBBBBBBBBBBBBBBBBBBBBBBBAA...
+.............AGGGNEGGGGGHHEEBBBBBBBBBBBBBBBBBBBBBBBBBA...
+..............AGNBEENNGGGHEEEEEBBBBBBBBBBBEEEEBBBBBBBA...
+..............ANBBEEEEGGGHEEEAEEEEEEEEAAAAAAEEEEEEBBAA...
+..............ABBAEEEEGAGEEEEAEEEEEEEAHHHHHHAEEEEEEEHA...
+...............ABEAEBBBBAEEEEHAEBBEAAHHHHHHHAHEEEEEEHA...
+...............ABEEAABBBBAEEEHAEBAA.AHHHHHHAAHHEEEBHHA...
+................AEEHHAABBAEEHHAAA...AHHHHHHAAAHHHGGGGGA..
+................AEHHHA.AAAEEHHA......AHHHHHHAAAHHHGGGGGA.
+................AHHHHA...AEHHHA.......AHHHHHHA.AAHGGGGGHA
+................AGGGGA...AGHHHA........AHHHHHA...AGGGGGGA
+................AGGGGA...AGGGHA.........AHHHHA....AHGGGGA
+................AANGGA...AGGGGA..........AHGGA.....AHGGGA
+.................ANGGA...AGGGGA..........AGGA.......AGGGA
+.................ANNA....ANNGGA.........AHGGA.......AGGGA
+.................ANNA....ANNGAA.........AGGGA.......ANGGA
+................ALLLA....ALLLA........AAMMMA........ALMMA
+..............AALLLLA....AMLLA.......APPAMLA......AAAMMMA
+.............ALLALLA...AAMMLLA......APPAMLLA.....ALLAMMPA
+.............ALALLLA..ALLALLLA......AAAAAAAA.....ALAMMPPA
+.............AAAAAA...ALALLLA....................AAAAAAAA
+.......................AAAAAA............................
+"""
+FREDINHO_ALTURA = 71  # mais alto que o quadro de 64: passa 7 pixels para cima (ver ALTURA_EXTRA)
+
+
 def pinscher():
-    CA, CAs, CAl, BG, BGs, RO = "#c06a2b", "#8a4519", "#e08a45", "#e8a565", "#c9864a", "#f0a487"
-    orelha = "M11 22 Q7 10 9 1 Q19 6 22 13 Z"
-    interna = "M12.5 17 Q10.5 10 11.5 5 Q17 8.5 19 13 Z"
-    return montar([
-        (sb(f'<path d="{orelha}"/>', CA, CAs, id_="o1") + f'<path d="{interna}" fill="{RO}"/>', [CA, CAs, RO], True),
-        (sb(f'<path d="{espelho_x(orelha)}"/>', CA, CAs, id_="o2")
-         + f'<path d="{espelho_x(interna)}" fill="{RO}"/>', [CA, CAs, RO], True),
-        (sb('<ellipse cx="24" cy="39" rx="10" ry="8"/>', CA, CAs, id_="b")
-         + f'<ellipse cx="24" cy="39.5" rx="4.5" ry="6" fill="{BG}"/>', [CA, CAs, BG], True),
-        (f'<ellipse cx="20" cy="45" rx="2.6" ry="2.4" fill="{CA}"/><ellipse cx="28" cy="45" rx="2.6" ry="2.4" fill="{CA}"/>',
-         [CA], True),
-        (sb('<ellipse cx="24" cy="23" rx="14" ry="10.5"/>', CA, CAs,
-            f'<ellipse cx="17" cy="15.5" rx="4.5" ry="1.8" fill="{CAl}"/>', id_="h"), [CA, CAs, CAl], True),
-        (sb('<ellipse cx="24" cy="29" rx="6.5" ry="4.3"/>', BG, BGs, dx=-0.8, dy=-1, id_="f"), [BG, BGs], True),
-    ], "#3a200c", detalhes=[
-        (BG, [(15, 18), (16, 18), (31, 18), (32, 18)]),
-        *olhos(16, 31, 20, "#2b1a0e"),
-        ("#1b1b1b", [(22, 26), (23, 26), (24, 26), (25, 26), (23, 27), (24, 27)]),
-        ("#2b1a0e", [(23, 28), (24, 28), (22, 29), (25, 29)]),
-        ("#ff8fa3", [(23, 30), (24, 30)]),
-    ])
+    grade = de_mapa(FREDINHO, FREDINHO_PALETA)
+    grade = Grade(grade)
+    grade.base = Grade(grade)
+    # Outras caras: troca só as células dos olhos (esquerdo x 4..7 e direito x 18..23, y 23..30).
+    corpo, linha, claro = FREDINHO_PALETA["B"], FREDINHO_PALETA["A"], FREDINHO_PALETA["O"]
+
+    def olhos_fechados(grade, ex, tipo):
+        novo = Grade(grade)
+        for (x, y), c in grade.items():
+            if (4 <= x <= 7 or 18 <= x <= 23) and 23 <= y <= 30 and c in (linha, claro):
+                novo[(x, y)] = corpo
+        for x0, x1 in ((4, 7), (19, 22)):
+            if tipo == "pisca":
+                for x in range(x0, x1 + 1):
+                    novo[(x, 27)] = linha
+            else:  # feliz: olho em arco
+                novo[(x0, 28)] = novo[(x1, 28)] = linha
+                novo[(x0 + 1, 27)] = novo[(x1 - 1, 27)] = linha
+        return novo
+
+    def triste(grade):
+        novo = Grade(grade)
+        for x in (5, 21):
+            novo[(x, 31)] = novo[(x, 32)] = "#6ec8ff"
+        return novo
+
+    grade.expressoes = {"pisca": olhos_fechados(grade, None, "pisca"), "feliz": olhos_fechados(grade, None, "feliz"),
+                        "triste": triste(grade)}
+    return grade
 
 
-def corgi():
-    LA, LAs, LAl, BR, BRs, RO = "#e8963d", "#b86a1c", "#f7b46a", "#ffffff", "#dfe3ea", "#f0a487"
-    orelha = "M8 24 Q5 12 8 3 Q18 7 21 15 Z"
-    interna = "M10 19 Q8.5 12 10 7 Q16 10 18 15 Z"
-    return montar([
-        (sb(f'<path d="{orelha}"/>', LA, LAs, id_="o1") + f'<path d="{interna}" fill="{RO}"/>', [LA, LAs, RO], True),
-        (sb(f'<path d="{espelho_x(orelha)}"/>', LA, LAs, id_="o2")
-         + f'<path d="{espelho_x(interna)}" fill="{RO}"/>', [LA, LAs, RO], True),
-        (sb('<ellipse cx="24" cy="39" rx="12" ry="7.5"/>', LA, LAs, id_="b")
-         + f'<ellipse cx="24" cy="40" rx="6" ry="6.5" fill="{BR}"/>', [LA, LAs, BR], True),
-        (f'<ellipse cx="18" cy="45.5" rx="3" ry="2" fill="{BR}"/><ellipse cx="30" cy="45.5" rx="3" ry="2" fill="{BR}"/>',
-         [BR], True),
-        (sb('<ellipse cx="24" cy="24" rx="15" ry="11"/>', LA, LAs,
-            f'<ellipse cx="16" cy="17" rx="4.5" ry="1.8" fill="{LAl}"/>'
-            f'<path d="M21.5 13 H26.5 L28 22 Q32 26 31 32 Q24 37 17 32 Q16 26 20 22 Z" fill="{BR}"/>', id_="h"),
-         [LA, LAs, LAl, BR], True),
-    ], "#4a2608", detalhes=[
-        *olhos(16, 31, 22, "#2b1a0e"),
-        ("#1b1b1b", [(22, 27), (23, 27), (24, 27), (25, 27), (23, 28), (24, 28)]),
-        ("#2b1a0e", [(23, 29), (24, 29), (21, 30), (22, 31), (25, 31), (26, 30)]),
-        ("#ff8fa3", [(23, 31), (24, 31), (23, 32), (24, 32)]),
-        bochechas(12, 34, 27, "#f6a38a"),
-    ])
+RONALDO_PALETA = {
+    "A": "#a14b29",
+    "B": "#bd6038",
+    "C": "#8a4023",
+    "D": "#3b1b0f",
+    "E": "#341810",
+    "F": "#5e372a",
+    "G": "#4a2010",
+    "H": "#14100e",
+    "I": "#bd6139",
+    "J": "#40200f",
+    "K": "#d27b50",
+    "L": "#80503f",
+    "M": "#b0572f",
+    "N": "#7c3820",
+    "O": "#6c4235",
+    "P": "#ffffff",
+    "Q": "#57524d",
+    "R": "#e9b9a6",
+    "S": "#2e2a27"
+}
+RONALDO = """
+..............DDDDDDD.........................
+............DEAAAAAAAEDD......................
+..........ADIIIIAIIAAAAAAD....................
+.........EIIIIIAAAAAAAEDEEDD..................
+.........EDIIIDEEEAAAADAAAADD.................
+........DABBAAAKKEEAFEDOOFFFDD................
+.......DDABBAAHHHAAAFEOOLLFFFFD...............
+.......HHBBBAHRHPHHADEOEFLFFFDD...............
+.......HQBBBAHRHHAHAEELFFFFFFFDD..............
+......NNBBBBAPPPHIHAEELFFFFFFFFD..............
+....CCBBBKBBAAPPREAAEFLFFFFFFFFD..............
+.SSHCRRBKKBBBAAAAAAAEOLFFFFFFFFD..........DD..
+SQQQHKRBBBBBBBBBBBBAELLFFFFFFFFD..........DAD.
+SHHHHCBBBBBBBBBBBBBBELFFFFFFFFD...........EME.
+HHHHCKKBBBBBBBBBBBBEFLFFFFFFFFE..........EMME.
+.HSCBBBBBBBBCHCBBBBEFFFFFFFFFFE..........EEME.
+..CBBBBBBBQQHHBBBBBDFFFFFFFFFFE..........EAAE.
+..CCCCCGGGHHBBBBBBCEFFFFFFFFFFE..........EIAE.
+....JCCCCCCCCCCCCCCEFFFFFFFFFD..........DIIAE.
+.....GGGGGGGGGGJGCCDFFFFFFFFDE..........EIAED.
+............GGCCCCCEFFFFFFDDDD.........EDAAD..
+.............GGCCCCEEFFFDEEEH.....DDDDDDDEAD..
+.............GGCCCCCEEDDDDHH....DDDDDAAAADD...
+.............GGCBCCCCDHHHHEDEEDDDAAAAAAAAAD...
+.............GCCBCCCCEEEEEEDDEAAAAAAAAAIIAAE..
+.............JCCBCCCCEEEEEEEDAAAAAAAAAAIIAAAD.
+.............ECCBBBCCEEEEEEEAAAAAAAAAAAAAAAAE.
+............DECCBBBCCEEEEAAAAAAAAAAAAEAAAAAAE.
+...........DDECBBBBCCAAAAAAAAAAAAAAAAEAAAAAAAD
+...........DDGBBBBBBCAAAAIIAAADAAAAAAEAAAAAAAD
+...........EAJBBBBBBCAAAIMMIAADAAAADDDAAAAAAAD
+...........EACBBBBBBBAAAIIIIMADEEEDDDDDAAAAAAD
+...........EABBBBKBBBDAAIIIIMADEEDEEEDDDAAAAAD
+...........DECBBBKKBBDDAAIIIAAEEEDDDCCDDDDEEAD
+............DCBBBBBBBCDAAAIIAAEEEDCCCCCCDDDDE.
+............DEBBBBBBBJDAAAAAAAEECCCGGGGCCDDDE.
+.............ECBBBBBCCDAAAAAAADCCGGG..GGGCDDCG
+.............EJCCBCCCCDEAAAAADDJJCG.....GCCCCG
+.............EDDCCCCCCCDAAAAADCGCCG.....GGBBCG
+.............EDDDJJCNNNDAAAADJJCCCG.....GCBBCG
+..............DDDCJGGGJDAAAACGCCCG......GBBBCG
+..............EBCCJ....EAAAACGCCG......CBBBBJ.
+............CCBBCCJ....EABBBCGGG......GBBCBBJ.
+...........GKKKCCCJ....DBBBBE.........GCCHBCJ.
+...........GCKHCCCJ...NCBBBBJ.........GGGHGG..
+............GGHHGG...GBBBCBBJ.................
+.....................GCBHCCCJ.................
+......................GGHHGG..................
+"""
 
 
 def salsicha():
-    MA, MAs, MAl, OR = "#8b5a2b", "#6b4220", "#a8743e", "#5a3518"
-    return montar([
-        (f'<path d="M7 34 Q2 30 3 24 L5 24 Q5 29 9 32 Z" fill="{MA}"/>', [MA], True),
-        (sb('<ellipse cx="21" cy="37" rx="16" ry="6.5"/>', MA, MAs, id_="b"), [MA, MAs], True),
-        (f'<rect x="8" y="40" width="4" height="6" rx="1" fill="{MAs}"/><rect x="29" y="40" width="4" height="6" rx="1" fill="{MAs}"/>',
-         [MAs], True),
-        (f'<rect x="12" y="40" width="4" height="7" rx="1" fill="{MA}"/><rect x="33" y="40" width="4" height="7" rx="1" fill="{MA}"/>',
-         [MA], True),
-        (sb('<path d="M28 34 Q24 26 28 19 Q34 14 40 18 Q44 21 46 26 Q47 30 42 31 Q38 32 36 34 Z"/>', MA, MAs,
-            f'<ellipse cx="31" cy="18.5" rx="3.5" ry="1.4" fill="{MAl}"/>', id_="h"), [MA, MAs, MAl], True),
-        (f'<path d="M28 21 Q24 24 25 33 Q27 36 30 33 Q31 27 31 22 Z" fill="{OR}"/>', [OR], True),
-    ], "#2e1a0a", detalhes=[
-        ("#1b1b1b", [(35, 21), (36, 21), (35, 22), (36, 22), (35, 23), (36, 23)]),
-        ("#ffffff", [(35, 21)]),
-        ("#1b1b1b", [(45, 25), (46, 25), (45, 26), (46, 26)]),
-        ("#2e1a0a", [(41, 29), (42, 29), (43, 29)]),
-        ("#ff8fa3", [(42, 30), (43, 30)]),
-    ])
+    grade = Grade(de_mapa(RONALDO, RONALDO_PALETA))
+    grade.base = Grade(grade)
+    corpo, linha = RONALDO_PALETA["A"], RONALDO_PALETA["H"]
+    olho = [(x, y) for y in range(6, 11) for x in range(13, 20)
+            if grade[(x, y)] in (RONALDO_PALETA[k] for k in "HRPQ")]
+
+    def sem_olho():
+        novo = Grade(grade)
+        for p in olho:
+            novo[p] = corpo
+        return novo
+
+    fechado, feliz, triste = sem_olho(), sem_olho(), Grade(grade)
+    for x in range(14, 19):
+        fechado[(x, 8)] = linha
+    for p in ((14, 8), (15, 7), (16, 7), (17, 7), (18, 8)):
+        feliz[p] = linha
+    for p in ((15, 11), (15, 12)):
+        triste[p] = "#6ec8ff"
+    grade.expressoes = {"pisca": fechado, "feliz": feliz, "triste": triste}
+    return grade
 
 
 # ---- outros pets ------------------------------------------------------------------
-
-def passarinho():
-    AZ, AZs, AZl, AS, BR, LJ = "#3b82f6", "#1d4ea8", "#7fb2ff", "#2a5fc0", "#ffffff", "#ffa630"
-    return montar([
-        (f'<path d="M12 36 L2 40 L4 34 L1 30 L12 31 Z" fill="{AS}"/>', [AS], True),
-        (f'<path d="M20 44 L20 47 M28 44 L28 47" stroke="{LJ}" stroke-width="2"/>'
-         f'<rect x="17" y="46" width="5" height="2" fill="{LJ}"/><rect x="26" y="46" width="5" height="2" fill="{LJ}"/>',
-         [LJ], False),
-        (sb('<ellipse cx="24" cy="31" rx="14" ry="13"/>', AZ, AZs,
-            f'<ellipse cx="18" cy="22" rx="5" ry="2" fill="{AZl}"/>'
-            f'<ellipse cx="26" cy="37" rx="8" ry="6.5" fill="{BR}"/>', id_="c"), [AZ, AZs, AZl, BR], True),
-        (f'<path d="M23 16 Q22 10 26 8 Q25 12 28 14 Z" fill="{AZ}"/>', [AZ], True),
-        (sb('<path d="M10 30 Q14 26 20 30 Q20 38 13 40 Q9 36 10 30 Z"/>', AS, "#1d4ea8", id_="a"), [AS, "#1d4ea8"], True),
-        (f'<path d="M37 24 L44 27 L37 30 Z" fill="{LJ}"/>', [LJ, "#d9821a"], True),
-    ], "#13306b", detalhes=[
-        ("#1b1b1b", [(31, 22), (32, 22), (30, 23), (31, 23), (32, 23), (31, 24), (32, 24)]),
-        ("#ffffff", [(31, 22)]),
-        ("#ff9fb5", [(33, 27), (34, 27)]),
-    ])
-
-
-def slime():
-    VE, VEs, VEl = "#5ac54f", "#2f8f3a", "#a6e89a"
-    return montar([
-        (sb('<path d="M4 47 C3 36 10 23 21 21 Q23 18 24 14 Q25 18 27 21 C38 23 45 36 44 47 Z"/>',
-            VE, VEs, f'<ellipse cx="14" cy="30" rx="2.2" ry="3.5" fill="{VEl}"/><circle cx="18" cy="26" r="1.4" fill="{VEl}"/>',
-            id_="s"), [VE, VEs, VEl], True),
-    ], "#1e5a24", detalhes=[
-        *olhos(18, 30, 32, "#1b1b1b", alto=5),
-        ("#1e5a24", [(22, 39), (23, 40), (24, 40), (25, 39)]),
-        bochechas(13, 34, 37, "#8fe08a"),
-    ])
-
-
-def pintinho():
-    AM, AMs, AMl, LJ = "#ffd23f", "#e0a800", "#fff1a6", "#ff8c2e"
-    return montar([
-        (f'<path d="M18 45 V47 M30 45 V47" stroke="{LJ}" stroke-width="2"/>'
-         f'<rect x="15" y="46" width="6" height="2" fill="{LJ}"/><rect x="27" y="46" width="6" height="2" fill="{LJ}"/>',
-         [LJ], False),
-        (f'<path d="M21 15 L22 8 L24 13 L26 7 L27 15 Z" fill="{AM}"/>', [AM], True),
-        (sb('<ellipse cx="24" cy="31" rx="14" ry="14"/>', AM, AMs,
-            f'<ellipse cx="17" cy="22" rx="4.5" ry="2" fill="{AMl}"/>', id_="c"), [AM, AMs, AMl], True),
-        (sb('<ellipse cx="11" cy="33" rx="3.5" ry="5.5"/><ellipse cx="37" cy="33" rx="3.5" ry="5.5"/>',
-            AM, AMs, id_="a"), [AM, AMs], True),
-        (f'<path d="M20 30 L28 30 L24 35 Z" fill="{LJ}"/>', [LJ, "#d9661a"], True),
-    ], "#6b4a00", detalhes=[
-        *olhos(18, 30, 25),
-        bochechas(13, 33, 31, "#ffa98a"),
-    ])
-
-
-def fantasma():
-    BR, BRs, BRl = "#f4f1ff", "#c9c0ef", "#ffffff"
-    corpo = "M10 46 L10 24 Q10 7 24 7 Q38 7 38 24 L38 46 L34 42 L30 46 L26 42 L22 46 L18 42 L14 46 Z"
-    return montar([
-        (sb(f'<path d="{corpo}"/>', BR, BRs, f'<ellipse cx="17" cy="14" rx="4" ry="2" fill="{BRl}"/>', id_="c"),
-         [BR, BRs, BRl], True),
-        (sb('<ellipse cx="8" cy="30" rx="3" ry="4"/><ellipse cx="40" cy="30" rx="3" ry="4"/>', BR, BRs, id_="m"),
-         [BR, BRs], True),
-    ], "#4b3f8a", detalhes=[
-        *olhos(19, 29, 20, "#2a2350", alto=5),
-        ("#2a2350", [(23, 28), (24, 28), (22, 29), (25, 29), (23, 30), (24, 30)]),
-        ("#ff8fb8", [(23, 29), (24, 29)]),
-        bochechas(15, 32, 26, "#ffb3cf"),
-    ])
-
-
-def gato():
-    LA, LAs, LAl, BR, RO = "#f4a259", "#d9822b", "#ffc58a", "#fff4e6", "#f0a487"
-    orelha = "M10 22 L8 6 L20 14 Z"
-    interna = "M11.5 18 L10.5 10 L17 14.5 Z"
-    return montar([
-        (sb('<path d="M34 44 Q46 42 44 30 Q43 25 40 27 Q41 37 32 40 Z"/>', LA, LAs, id_="r"), [LA, LAs], True),
-        (sb(f'<path d="{orelha}"/>', LA, LAs, id_="o1") + f'<path d="{interna}" fill="{RO}"/>', [LA, LAs, RO], True),
-        (sb(f'<path d="{espelho_x(orelha)}"/>', LA, LAs, id_="o2")
-         + f'<path d="{espelho_x(interna)}" fill="{RO}"/>', [LA, LAs, RO], True),
-        (sb('<ellipse cx="24" cy="39" rx="11" ry="7.5"/>', LA, LAs, id_="b")
-         + f'<ellipse cx="24" cy="40" rx="5" ry="5.5" fill="{BR}"/>', [LA, LAs, BR], True),
-        (f'<ellipse cx="19" cy="45.5" rx="3" ry="2" fill="{BR}"/><ellipse cx="29" cy="45.5" rx="3" ry="2" fill="{BR}"/>',
-         [BR], True),
-        (sb('<ellipse cx="24" cy="24" rx="15" ry="11"/>', LA, LAs,
-            f'<ellipse cx="16" cy="17" rx="4" ry="1.6" fill="{LAl}"/>'
-            f'<ellipse cx="24" cy="29.5" rx="6.5" ry="4.3" fill="{BR}"/>', id_="h"), [LA, LAs, LAl, BR], True),
-    ], "#5a2e0e", detalhes=[
-        (LAs, [(23, 14), (23, 15), (23, 16), (20, 15), (20, 16), (26, 15), (26, 16)]),
-        *olhos(17, 31, 21, "#2b1a0e"),
-        ("#ff7b8f", [(23, 27), (24, 27), (23, 28), (24, 28)]),
-        ("#5a2e0e", [(22, 30), (23, 29), (24, 29), (25, 30)]),
-        ("#c7a58a", [(10, 27), (11, 27), (12, 27), (10, 29), (11, 29), (36, 27), (37, 27), (38, 27), (36, 29), (37, 29)]),
-    ])
-
-
-def robo():
-    CI, CIs, CIl, TE, CY, VM = "#b8c2cc", "#7f8b98", "#e2e8ef", "#1f2a37", "#4cc9f0", "#ff595e"
-    return montar([
-        (f'<rect x="23" y="4" width="2" height="7" fill="{CIs}"/>', [CIs], True),
-        (f'<circle cx="24" cy="4" r="2.5" fill="{VM}"/>', [VM], True),
-        (sb('<rect x="13" y="36" width="5" height="10" rx="1"/><rect x="30" y="36" width="5" height="10" rx="1"/>',
-            CI, CIs, id_="p"), [CI, CIs], True),
-        (sb('<rect x="6" y="31" width="5" height="10" rx="2"/><rect x="37" y="31" width="5" height="10" rx="2"/>',
-            CI, CIs, id_="m"), [CI, CIs], True),
-        (sb('<rect x="12" y="29" width="24" height="12" rx="3"/>', CI, CIs, id_="b")
-         + f'<rect x="18" y="32" width="12" height="5" rx="1" fill="{TE}"/>'
-         + f'<rect x="20" y="34" width="2" height="1" fill="{CY}"/><rect x="23" y="34" width="2" height="1" fill="{VM}"/>'
-           f'<rect x="26" y="34" width="2" height="1" fill="#ffd23f"/>', [CI, CIs, TE, CY, VM, "#ffd23f"], True),
-        (sb('<rect x="9" y="10" width="30" height="19" rx="5"/>', CI, CIs,
-            f'<rect x="12" y="12" width="8" height="2" fill="{CIl}"/>', id_="h")
-         + f'<rect x="13" y="14" width="22" height="11" rx="3" fill="{TE}"/>', [CI, CIs, CIl, TE], True),
-    ], "#2b3440", detalhes=[
-        (CY, [(17, 17), (18, 17), (19, 17), (17, 18), (18, 18), (19, 18), (17, 19), (18, 19), (19, 19),
-              (28, 17), (29, 17), (30, 17), (28, 18), (29, 18), (30, 18), (28, 19), (29, 19), (30, 19)]),
-        ("#ffffff", [(17, 17), (28, 17)]),
-        (CY, [(21, 22), (22, 23), (23, 23), (24, 23), (25, 23), (26, 22)]),
-    ])
-
-
-def dragao():
-    VE, VEs, VEl, BA, BAs, AS, CH = "#4caf50", "#2e7d32", "#8bdc8e", "#ffe08a", "#e8b84a", "#7e57c2", "#fff4c2"
-    return montar([
-        (sb('<path d="M14 30 Q2 22 3 12 Q9 18 16 18 Z"/>', AS, "#5a3a9a", id_="a1"), [AS, "#5a3a9a"], True),
-        (sb('<path d="M34 30 Q46 22 45 12 Q39 18 32 18 Z"/>', AS, "#5a3a9a", id_="a2"), [AS, "#5a3a9a"], True),
-        (sb('<path d="M33 42 Q44 44 46 34 L43 33 Q41 39 33 38 Z"/>', VE, VEs, id_="r"), [VE, VEs], True),
-        (sb('<ellipse cx="24" cy="38" rx="11" ry="8.5"/>', VE, VEs, id_="b")
-         + f'<ellipse cx="24" cy="39" rx="6" ry="6.5" fill="{BA}"/>'
-         + f'<path d="M19 37 H29 M19 41 H29" stroke="{BAs}" stroke-width="1"/>', [VE, VEs, BA, BAs], True),
-        (sb('<ellipse cx="18" cy="45.5" rx="3.5" ry="2"/><ellipse cx="30" cy="45.5" rx="3.5" ry="2"/>', VE, VEs, id_="p"),
-         [VE, VEs], True),
-        (f'<path d="M15 14 L13 5 L19 11 Z M33 14 L35 5 L29 11 Z" fill="{CH}"/>', [CH, "#e8c86a"], True),
-        (sb('<ellipse cx="24" cy="22" rx="13" ry="10"/>', VE, VEs,
-            f'<ellipse cx="17" cy="15.5" rx="4" ry="1.6" fill="{VEl}"/>', id_="h")
-         + f'<ellipse cx="24" cy="27" rx="7" ry="4" fill="{VEl}"/>', [VE, VEs, VEl], True),
-    ], "#1b4d1e", detalhes=[
-        *olhos(18, 30, 19),
-        ("#1b4d1e", [(22, 26), (25, 26)]),
-        ("#1b4d1e", [(21, 29), (22, 30), (23, 30), (24, 30), (25, 30), (26, 29)]),
-        ("#ffffff", [(23, 31)]),
-    ])
-
 
 def ovo():
     BR, BRs, BRl, MA, MAs = "#fbfaf5", "#d6d9dc", "#ffffff", "#3fb8af", "#2b8f88"
@@ -260,9 +305,7 @@ def ovo():
     ], "#4a5560")
 
 
-PETS = {"pinscher": pinscher, "corgi": corgi, "salsicha": salsicha, "passarinho": passarinho,
-        "slime": slime, "pintinho": pintinho, "fantasma": fantasma, "gato": gato, "robo": robo,
-        "dragao": dragao, "ovo": ovo}
+PETS = {"pinscher": pinscher, "salsicha": salsicha, "ovo": ovo}
 
 
 # ---- acessórios: (desenho, largura, altura, âncora x, âncora y) --------------------
@@ -365,9 +408,12 @@ def oculos():
     return de_mapa(OCULOS, paleta), 26, 9, 13, 4
 
 
-def cachecol():
-    """Faixa listrada com uma leve curva, nó e a ponta caindo com franja."""
+def cachecol(largura=30):
+    """Faixa listrada com uma leve curva, nó e a ponta caindo com franja. 'largura' é o tamanho da faixa em
+    volta do pescoço (30 para pets de frente, 18 para os de cabeça estreita ou de lado)."""
     K, VM, VMs, VMl, BR, BRs = "#5a1418", "#ff595e", "#c23a3f", "#ff9a9c", "#ffffff", "#e8d2d2"
+    fim = largura - 1
+    no_x = largura // 2 + 1  # coluna do nó
 
     def tricô(x, linha, ultima):
         """Listras na diagonal; linha 1 = luz, última = sombra."""
@@ -376,28 +422,73 @@ def cachecol():
         return VMl if linha == 1 else (VMs if linha == ultima else VM)
 
     g = {}
-    for x in range(30):  # faixa em volta do pescoço
-        topo = (0 if x < 4 or x > 25 else 1) + (x in (0, 29))
-        base = topo + (3 if x in (0, 29) else 5)
+    for x in range(largura):  # faixa em volta do pescoço
+        topo = (0 if 3 < x < fim - 3 else 1) + (x in (0, fim))
+        base = topo + (3 if x in (0, fim) else 5)
         for y in range(topo, base + 1):
-            borda = y in (topo, base) or x in (0, 29)
+            borda = y in (topo, base) or x in (0, fim)
             g[(x, y)] = K if borda else tricô(x, y - topo, base - topo - 1)
     for y in range(6, 13):  # ponta que cai, inclinada para a direita
-        x0 = 17 + (y >= 10)
+        x0 = no_x + 1 + (y >= 10)
         for x in range(x0, x0 + 7):
             borda = x in (x0, x0 + 6) or y == 12
             g[(x, y)] = K if borda else tricô(y, x - x0, 5)
     for y in range(2, 7):  # nó
-        for x in range(16, 22):
-            if x in (16, 21) or y in (2, 6):
+        for x in range(no_x, no_x + 6):
+            if x in (no_x, no_x + 5) or y in (2, 6):
                 g[(x, y)] = K
             else:
-                g[(x, y)] = VMl if x == 17 and y < 5 else (VMs if x == 20 or y == 5 else VM)
-    for x in range(18, 25):  # franja
+                g[(x, y)] = VMl if x == no_x + 1 and y < 5 else (VMs if x == no_x + 4 or y == 5 else VM)
+    for x in range(no_x + 2, no_x + 9):  # franja
         g[(x, 13)] = VM if x % 2 == 0 else K
         if x % 2 == 0:
             g[(x, 14)] = K
-    return g, 30, 15, 15, 2
+    return g, max(largura, no_x + 9), 15, largura // 2, 2
+
+
+def cachecol_estreito():
+    return cachecol(18)
+
+
+def oculos_lado(espelhado=False):
+    """Óculos de perfil (para pets que olham de lado): uma lente e a haste para trás. Âncora = centro da lente.
+    Olhando para a esquerda; espelhado=True para os que olham para a direita."""
+    K, D, d, l, W, F = "#111111", "#22304f", "#3b5a8c", "#6fa0e0", "#ffffff", "#3a3a3a"
+    mapa = """
+..KKKKKKKK......
+.KWWdDDDDDK.....
+KWdDDDDDDDDKKKKK
+KdDDDDDDDDDK....
+KDDDDDDDDDdK....
+KDDDDDDDDdlK....
+.KDDDDddllK.....
+..KKKKKKKK......
+"""
+    grade = de_mapa(mapa, {"K": K, "D": D, "d": d, "l": l, "W": W})
+    ax = 5
+    if espelhado:
+        grade = {(15 - x, y): c for (x, y), c in grade.items()}
+        ax = 10
+    return grade, 16, 8, ax, 3
+
+
+def oculos_lado_dir():
+    return oculos_lado(True)
+
+
+def oculos_lado_mini():
+    """Óculos de perfil pequenos, para cabeças pequenas e cheias de detalhe (serpente de gelo): lente de
+    7 x 6 e haste para trás. Olhando para a esquerda. Âncora = centro da lente."""
+    K, D, d, l, W = "#111111", "#22304f", "#3b5a8c", "#6fa0e0", "#ffffff"
+    mapa = """
+.KKKKK......
+KWWDDDKKKKKK
+KWDDDDK.....
+KDDDDdK.....
+.KDDdlK.....
+..KKKK......
+"""
+    return de_mapa(mapa, {"K": K, "D": D, "d": d, "l": l, "W": W}), 12, 6, 3, 2
 
 
 def mago():
@@ -411,4 +502,7 @@ def coroa():
     return de_mapa(COROA, paleta), 19, 13, 9, 12
 
 
-ACESSORIOS = {"laco": laco, "bone": bone, "oculos": oculos, "cachecol": cachecol, "mago": mago, "coroa": coroa}
+ACESSORIOS = {"laco": laco, "bone": bone, "oculos": oculos, "cachecol": cachecol, "mago": mago, "coroa": coroa,
+              # variantes para pets de lado ou de pescoço estreito (ver AJUSTE_ACESSORIO no catálogo)
+              "oculos_lado": oculos_lado, "oculos_lado_dir": oculos_lado_dir,
+              "oculos_lado_mini": oculos_lado_mini, "cachecol_estreito": cachecol_estreito}

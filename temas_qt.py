@@ -96,6 +96,8 @@ FUNDOS = {
                  {"linhas": "alpha(#33ff66, 0.05)", "passo": 3}],
     "neon": [{"linear": 180, "paradas": [(0, "#14052b"), (0.55, "#2a0845"), (1, "#6a0d6b")]}],
     "mar": [{"linear": 180, "paradas": [(0, "#1e1b4b"), (0.35, "#3730a3"), (0.65, "#6366f1"), (1, "#7dd3fc")]}],
+    "manga": [{"linear": 180, "paradas": [(0, "#000000"), (1, "#0a0a0a")]},
+              {"capa": "manga/fundo.jpg"}],
 }
 
 # Detalhes de cada tema que o CSS do GTK fazia (bordas, sombras, tamanho do título).
@@ -167,6 +169,21 @@ QLineEdit, #cartao { border: 1px solid rgba(51,255,102,115); }
         "qss": """
 #cartao { background-color: rgba(14,22,56,217); border: 1px solid rgba(125,211,252,115); }
 #lateral { border-right: 2px solid rgba(245,158,11,128); }
+""",
+    },
+    "manga": {
+        "titulo_cor": "#ffffff", "titulo_sombra": (3, 3, 0, "alpha(#ffffff, 0.18)"),
+        "cartao_sombra": (6, 6, 0, "alpha(#f5f5f5, 0.9)"),
+        "qss": """
+#lateral { border-right: 2px solid #f5f5f5; }
+#barra { border-bottom: 2px solid #f5f5f5; }
+QLineEdit { border: 1px solid rgba(245,245,245,178); }
+#raiz QLabel[avatar] { border: 1px solid #f5f5f5; }
+#cartao { background-color: rgba(0,0,0,217); border: 2px solid #f5f5f5; }
+QPushButton#conectar { border: 2px solid #f5f5f5; }
+#abas QTabBar { border-bottom: 2px solid #f5f5f5; }
+#abas QTabBar::tab:selected { border: 1px solid #f5f5f5; border-bottom: none; }
+#contatos::item:selected { background-color: #f5f5f5; color: #0a0a0a; }
 """,
     },
 }
@@ -261,6 +278,8 @@ def pintar_fundo(pintor, rect, cfg):
             c, passo = cor(camada["linhas"]), camada["passo"]
             for y in range(rect.top(), rect.bottom(), passo):
                 pintor.fillRect(rect.left(), y, rect.width(), 1, c)
+        elif "capa" in camada:  # imagem de arte/ cobrindo a tela inteira
+            _pintar_imagem_cobrindo(pintor, rect, temas.ARTE / camada["capa"])
         elif "imagem" in camada:
             w, h = camada["tamanho"]
             arte = arte_svg(camada["imagem"], w, h)

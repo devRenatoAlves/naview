@@ -26,6 +26,12 @@
   <main>
     <!-- BAÚS -->
     <section class="tela ativa" id="tela-baus">
+      <div class="progresso-trabalho">
+        <span>Próximo baú de trabalho:</span>
+        <div class="bolinhas" id="rumo-bau"></div>
+        <small id="rumo-texto"></small>
+      </div>
+      <div class="espacos" id="espacos"></div>
       <div class="linha-paineis">
         <div class="painel gratis">
           <h2>Baú grátis</h2>
@@ -39,12 +45,6 @@
           <button class="bt bt-verde" id="bt-diario">Pegar recompensa</button>
         </div>
       </div>
-      <div class="progresso-trabalho">
-        <span>Próximo baú de trabalho:</span>
-        <div class="bolinhas" id="rumo-bau"></div>
-        <small id="rumo-texto"></small>
-      </div>
-      <div class="espacos" id="espacos"></div>
     </section>
 
     <!-- COLEÇÃO -->
@@ -67,8 +67,7 @@
       </div>
       <div class="pet-info">
         <div class="pet-nome-linha">
-          <button class="pet-nome" id="pet-nome" title="Mudar o nome"></button>
-          <button class="bt bt-azul bt-pequeno" id="bt-renomear"><i data-ic="pencil-simple"></i> Renomear</button>
+          <span class="pet-nome" id="pet-nome"></span>
           <span class="pet-estagio" id="pet-estagio"></span>
         </div>
         <div class="barra larga"><div id="pet-xp"></div><span id="pet-xp-texto"></span></div>

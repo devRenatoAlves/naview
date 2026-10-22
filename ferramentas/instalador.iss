@@ -43,3 +43,5 @@ Name: "{userdesktop}\NaView"; Filename: "{app}\NaView.exe"; Tasks: atalho
 
 [Run]
 Filename: "{app}\NaView.exe"; Description: "Abrir o NaView agora"; Flags: nowait postinstall skipifsilent
+; Atualização feita pelo próprio app (modo silencioso): reabre o NaView no final.
+Filename: "{app}\NaView.exe"; Flags: nowait; Check: WizardSilent

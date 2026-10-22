@@ -54,6 +54,21 @@ gerar a página de teste:
    `window.TESTE = {catalogo: catalogo_para_web(), estado: Progresso(...).estado(), recompensa}`.
 4. Use os endereços `#pet`, `#modal:<id da carta>` e `#abrir:<toques>`.
 
+## Desempenho (leveza e fluidez)
+
+Medir com o jogo parado e em cada tela, antes e depois da mudança. Sem `perf` (o kernel bloqueia),
+use o tempo de CPU do processo:
+
+- **Janela GTK parada:** montar o `App` numa `Gtk.OffscreenWindow` e contar `draw` e
+  `time.process_time()` por 6 s em cada tema. Esperado: perto de zero.
+- **Página do jogo:** abrir `web/jogo.html` (modo de teste) num `WebKit2.WebView` dentro de uma
+  `Gtk.OffscreenWindow` (com `WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1`) e
+  somar `utime+stime` do processo do app e dos filhos (`/proc/<pid>/stat`) por 8 s, nas telas
+  `#baus`, `#colecao` e `#pet`, com a página pausada (`window.__pausar(true)`) e sem pausar.
+  Esperado: pausada = quase zero; tela do pet abaixo de ~10% de um núcleo.
+- `document.getAnimations()` na página lista o que está animando; um `MutationObserver` mostra o que
+  mexe no DOM sem ninguém pedir.
+
 ## Sintaxe
 
 ```bash

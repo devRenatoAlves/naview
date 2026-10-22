@@ -26,17 +26,18 @@ def _desenho(caminho, w, h):
 
 @lru_cache(maxsize=16)
 def compor_pet(especie, acessorio, unidade=1):
-    """Imagem do pet (ou do ovo) com o acessório, num quadro de PET_LADO x (PET_LADO + PET_ACIMA).
+    """Imagem do pet (ou do ovo) com o acessório, num quadro de PET_LADO x (PET_LADO + acima), acima = cat.acima_de(pet).
 
-    As PET_ACIMA linhas de cima ficam livres para chapéus. unidade = tamanho de cada pixel do desenho.
+    As linhas de cima ficam livres para chapéus. unidade = tamanho de cada pixel do desenho.
     """
-    lado, acima = cat.PET_LADO, cat.PET_ACIMA
+    lado, acima = cat.PET_LADO, cat.acima_de(especie)
     tela = QImage(lado * unidade, (lado + acima) * unidade, QImage.Format_ARGB32_Premultiplied)
     tela.fill(Qt.transparent)
-    camadas = [(ARTE / "pets" / f"{especie or 'ovo'}.svg", 0, acima, lado, lado)]
+    extra = cat.ALTURA_EXTRA.get(especie, 0)  # pet mais alto que o quadro: passa do topo
+    camadas = [(ARTE / "pets" / f"{especie or 'ovo'}.svg", 0, acima - extra, lado, lado + extra)]
     if especie and acessorio:
         e = cat.encaixe_acessorio(especie, acessorio)
-        camadas.append((ARTE / "acessorios" / f"{acessorio}.svg", e["x"], e["y"], e["w"], e["h"]))
+        camadas.append((ARTE / "acessorios" / f"{e['arquivo']}.svg", e["x"], e["y"], e["w"], e["h"]))
     pintor = QPainter(tela)
     pintor.setClipRect(tela.rect())  # recorta o que passar da borda do quadro
     for caminho, x, y, w, h in camadas:

@@ -8,7 +8,9 @@ import math
 import os
 import re
 import sys
+import threading
 import time
+import webbrowser
 from pathlib import Path
 
 import plataforma
@@ -30,8 +32,8 @@ def migrar_pastas_antigas():
 
 migrar_pastas_antigas()  # antes de temas, contatos e progresso lerem os arquivos
 
-from PySide6.QtCore import (QEasingCurve, QEvent, QPoint, QPointF, QRect, QSize, Qt,  # noqa: E402
-                            QTimer, QVariantAnimation)
+from PySide6.QtCore import (QEasingCurve, QEvent, QObject, QPoint, QPointF, QRect, QSize, Qt,  # noqa: E402
+                            QTimer, QVariantAnimation, Signal)
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QGuiApplication, QIcon, QKeySequence,  # noqa: E402
                            QPainter, QPen, QShortcut, QWindow)
 from PySide6.QtWidgets import (QApplication, QDialog, QDialogButtonBox, QFrame,  # noqa: E402
@@ -40,6 +42,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QDialogButtonBox, QFrame, 
                                QSizePolicy, QStackedWidget, QTabBar, QTabWidget, QToolButton, QVBoxLayout,
                                QWidget)
 
+import atualizador  # noqa: E402
 import temas  # noqa: E402
 import temas_qt  # noqa: E402
 from contatos import Contatos, formatar_id  # noqa: E402
@@ -643,6 +646,13 @@ class App(QWidget):
         if self.j.FORCAR_FOCO:
             QTimer(self, interval=FOCO_MS, timeout=self.manter_foco).start()
         QTimer(self, interval=60_000, timeout=self.batimento).start()
+        # 30 s depois de abrir (não disputa com a abertura); depois, a cada 6 h. Só rede, em thread.
+        self._atualizacao = None  # Atualizacao achada pelo site (ver atualizador.py)
+        self._atualizando = False
+        self._ponte = PonteAtualizacao(self)
+        self._ponte.consultou.connect(self.on_atualizacao)
+        self._ponte.preparou.connect(self.on_atualizacao_pronta)
+        QTimer.singleShot(30_000, self.primeira_verificacao)
         if self.progresso.equipados().get("som"):
             QTimer.singleShot(3000, self.sons.preparar)
 
@@ -676,11 +686,16 @@ class App(QWidget):
         self.bt_jogo.clicked.connect(self.on_alternar_jogo)
         self.selo_jogo = QLabel(self.bt_jogo, objectName="selo", alignment=Qt.AlignCenter)
         self.selo_jogo.hide()
+        # Só aparece quando o site tem uma versão mais nova (ver verificar_atualizacao).
+        self.bt_atualizar = QToolButton(text="Atualizar", toolButtonStyle=Qt.ToolButtonTextBesideIcon)
+        self.bt_atualizar.clicked.connect(self.atualizar_agora)
+        self.bt_atualizar.hide()
+        linha.addWidget(self.bt_atualizar)
         linha.addWidget(self.bt_jogo)
 
         self.bt_menu = QToolButton(toolTip="Mais opções", popupMode=QToolButton.InstantPopup)
         menu = QMenu(self.bt_menu)
-        menu.addAction("Aparência e temas…", self.abrir_aparencia)
+        menu.addAction("Opções de aparência…", self.abrir_aparencia)
         menu.addAction("Capturar janela do AnyDesk…", self.on_capturar)
         self.bt_menu.setMenu(menu)
         linha.addWidget(self.bt_menu)
@@ -848,6 +863,11 @@ class App(QWidget):
         fonte.setPointSizeF(tamanho)
         self.setFont(fonte)
         self.setStyleSheet(temas_qt.gerar_qss(cfg, dourado=dourado, moldura=self.progresso.equipados()["moldura"]))
+        # Cada tema pode trazer o próprio ícone (janela e barra de tarefas); sem ele, o do NaView.
+        icone = QIcon(str(temas.icone_do_tema(cfg["tema"])))
+        self.setWindowIcon(icone)
+        temas.instalar_icone_do_tema(cfg["tema"])  # ícone do atalho/dock (GNOME)
+        self.notificacoes.icone_qt = icone
         cores = temas.cores_do_tema(cfg)
         self._cor_icones = cores["texto"]
         self._cor_icones_barra = cores["texto_barra"]
@@ -888,6 +908,7 @@ class App(QWidget):
         barra, lateral = self._cor_icones_barra, self._cor_icones_lateral
         self.bt_lateral.setIcon(temas_qt.icone("sidebar-simple", barra))
         self.bt_jogo.setIcon(temas_qt.icone("gift", barra))
+        self.bt_atualizar.setIcon(temas_qt.icone("arrow-fat-up", barra))
         self.bt_menu.setIcon(temas_qt.icone("dots-three-vertical", barra))
         self.bt_minimizar.setIcon(temas_qt.icone("minus", barra, 14))
         self.bt_maximizar.setIcon(temas_qt.icone("copy-simple" if self.isMaximized() else "square", barra, 14))
@@ -907,7 +928,7 @@ class App(QWidget):
             self.aplicar_tema()
             temas.salvar(self.cfg)
 
-        JanelaAparencia(self, self.cfg, ao_mudar, possui=self.progresso.possui_tema).exec()
+        JanelaAparencia(self, self.cfg, ao_mudar).exec()
 
     def on_alternar_lateral(self, visivel):
         self.lateral.setVisible(visivel)
@@ -1023,8 +1044,9 @@ class App(QWidget):
         """Mantém o título no centro da barra, com espaços iguais dos dois lados."""
         linha = self.barra.layout()
         esquerda = self.bt_lateral.sizeHint().width()
-        direita = sum(b.sizeHint().width() for b in (self.bt_jogo, self.bt_menu, self.bt_minimizar,
-                                                     self.bt_maximizar, self.bt_fechar_janela)) + 8
+        direita = sum(b.sizeHint().width() for b in (self.bt_atualizar, self.bt_jogo, self.bt_menu,
+                                                     self.bt_minimizar, self.bt_maximizar,
+                                                     self.bt_fechar_janela) if not b.isHidden()) + 8
         diferenca = direita - esquerda
         linha.setContentsMargins(8 + max(0, diferenca), 0, 8 + max(0, -diferenca), 0)
 
@@ -1065,6 +1087,7 @@ class App(QWidget):
         visivel = self.tela_visivel()
         if visivel != "jogo":
             self._antes_do_jogo = visivel
+        self.tela_jogo.pausar(False)
         self.tela_jogo.atualizar()
         self.mostrar_tela(self.tela_jogo)
         self.bt_jogo.setChecked(True)
@@ -1078,6 +1101,7 @@ class App(QWidget):
         self.bt_jogo.setChecked(False)
         self.devolver_teclado_a_sessao()
         if self.tela_jogo:
+            self.tela_jogo.pausar(True)  # página escondida: sem animações nem relógio
             self._liberar_jogo.start()
 
     def liberar_jogo(self):
@@ -1230,6 +1254,63 @@ class App(QWidget):
         self.bt_lateral.setChecked(True)
         self.trazer_teclado_ao_app()
         self.busca.setFocus()
+
+    # ---- atualização -----------------------------------------------------------
+
+    def primeira_verificacao(self):
+        self.verificar_atualizacao()
+        QTimer(self, interval=6 * 3600 * 1000, timeout=self.verificar_atualizacao).start()
+
+    def verificar_atualizacao(self):
+        if not self._atualizacao and not self._atualizando:
+            threading.Thread(target=lambda: self._ponte.consultou.emit(atualizador.consultar()),
+                             daemon=True).start()
+
+    def on_atualizacao(self, achada):
+        if achada and not self._atualizacao:
+            self._atualizacao = achada
+            self.bt_atualizar.setToolTip(f"Nova versão {achada.versao}")
+            self.bt_atualizar.show()
+            self._centralizar_titulo()
+            if achada.obrigatoria:
+                self.atualizar_agora()
+
+    def atualizar_agora(self):
+        achada = self._atualizacao
+        if not achada or self._atualizando:
+            return
+        if not atualizador.pode_atualizar_sozinho():
+            webbrowser.open(achada.pagina)  # pasta sem permissão ou cópia de desenvolvimento
+            return
+        n = len(self.abas)
+        texto = ("O NaView fecha e abre de novo, já atualizado. "
+                 + ("" if not n else "A conexão aberta será encerrada." if n == 1
+                    else f"As {n} conexões abertas serão encerradas."))
+        if not self.confirmar(f"Atualizar o NaView para a versão {achada.versao}?", texto.strip(),
+                              "Atualizar e reiniciar"):
+            return
+        self._atualizando = True
+        self.bt_atualizar.setEnabled(False)
+        self.avisar("Baixando a atualização…", "arrow-fat-up")
+
+        def baixar():
+            try:
+                self._ponte.preparou.emit(atualizador.preparar(achada))
+            except Exception:
+                self._ponte.preparou.emit(None)
+
+        threading.Thread(target=baixar, daemon=True).start()
+
+    def on_atualizacao_pronta(self, preparado):
+        if not preparado:
+            self._atualizando = False
+            self.bt_atualizar.setEnabled(True)
+            self.avisar("Não consegui baixar a atualização. Tente de novo mais tarde.", "prohibit")
+            return
+        atualizador.agendar(preparado)  # troca os arquivos / roda o instalador quando o programa terminar
+        for aba in list(self.abas):
+            self.fechar(aba)
+        self.close()
 
     # ---- avisos ----------------------------------------------------------------
 
@@ -1571,6 +1652,12 @@ class App(QWidget):
             self.fechar(aba)
         self.aviso.hide()
         evento.accept()
+
+
+class PonteAtualizacao(QObject):
+    """Leva o resultado das threads de rede para a thread da interface."""
+    consultou = Signal(object)
+    preparou = Signal(object)
 
 
 def main():

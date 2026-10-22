@@ -10,7 +10,9 @@ import os
 import re
 import signal
 import subprocess
+import threading
 import time
+import webbrowser
 from pathlib import Path
 
 os.environ["GDK_BACKEND"] = "x11"  # precisa vir antes de importar o Gtk
@@ -47,6 +49,7 @@ def migrar_pastas_antigas():
 
 migrar_pastas_antigas()  # antes de temas, contatos e progresso lerem os arquivos
 
+import atualizador  # noqa: E402
 import temas  # noqa: E402
 from contatos import Contatos, formatar_id  # noqa: E402
 from jogo import catalogo as cat_jogo  # noqa: E402
@@ -188,6 +191,8 @@ class App(Gtk.Window):
         self.abas = []
         self._lista_atual = None
         self._aviso_timer = None
+        self._atualizacao = None  # Atualizacao achada pelo site (ver atualizador.py)
+        self._atualizando = False
         self._decor = []
         self._regiao_vidro = ()  # () = ainda não enviada; None = desfoque desligado
         self.cfg = temas.carregar()
@@ -264,6 +269,7 @@ class App(Gtk.Window):
         GLib.timeout_add(TITULO_MS, self.atualizar_titulos)
         GLib.timeout_add(FOCO_MS, self.manter_foco)
         GLib.timeout_add_seconds(60, self.batimento)
+        GLib.timeout_add_seconds(30, self.primeira_verificacao)
         if self.progresso.equipados().get("som"):
             # Carrega o som antes da primeira conexão (senão a sessão nova trava um instante).
             GLib.timeout_add_seconds(3, self.sons.preparar)
@@ -280,7 +286,7 @@ class App(Gtk.Window):
 
         menu = Gtk.Popover()
         itens = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=8)
-        for texto, acao in (("Aparência e temas…", self.abrir_aparencia),
+        for texto, acao in (("Opções de aparência…", self.abrir_aparencia),
                             ("Capturar janela do AnyDesk…", self.on_capturar)):
             item = Gtk.ModelButton(text=texto)
             item.connect("clicked", lambda _b, a=acao: a())
@@ -289,6 +295,12 @@ class App(Gtk.Window):
         menu.add(itens)
         self.cabecalho.pack_end(Gtk.MenuButton(image=icone("ph-dots-three-vertical-symbolic"), popover=menu,
                                                tooltip_text="Mais opções"))
+
+        # Só aparece quando o site tem uma versão mais nova (ver verificar_atualizacao).
+        self.bt_atualizar = classes(Gtk.Button(image=icone("ph-arrow-fat-up-symbolic"), label="Atualizar",
+                                               always_show_image=True, no_show_all=True), "suggested-action")
+        self.bt_atualizar.connect("clicked", lambda _b: self.atualizar_agora())
+        self.cabecalho.pack_end(self.bt_atualizar)
 
         self.bt_jogo = Gtk.ToggleButton(image=icone("ph-gift-symbolic"), tooltip_text="Baús, coleção e pet")
         self.bt_jogo.connect("toggled", self.on_alternar_jogo)
@@ -458,6 +470,19 @@ class App(Gtk.Window):
 
     # ---- tema e aparência -------------------------------------------------------
 
+    def aplicar_icone(self, tema):
+        temas.instalar_icone_do_tema(self.cfg["tema"])  # ícone do atalho/dock (GNOME)
+        """Cada tema pode trazer o próprio ícone da janela; sem ele, vale o ícone \"naview\" instalado."""
+        if tema.get("icone"):
+            try:
+                self.set_icon_from_file(str(temas.icone_do_tema(self.cfg["tema"])))
+                return
+            except GLib.Error:
+                pass
+        # A lista de ícones (de arquivo) tem prioridade sobre o nome: limpa antes de voltar ao padrão.
+        self.set_icon(None)
+        self.set_icon_name("naview")
+
     def aplicar_tema(self):
         # Tema no nível máximo da coleção ganha a versão dourada; a moldura vem do jogo.
         dourado = self.progresso.nivel_carta(f"tema-{self.cfg['tema']}") >= cat_jogo.NIVEL_MAX
@@ -469,6 +494,7 @@ class App(Gtk.Window):
         self.titulo_inicio.set_text(titulo)
         self.sub_inicio.set_text(sub)
         self.cursor.set_visible(bool(tema.get("cursor")))
+        self.aplicar_icone(tema)
         self.montar_decor()
         self.ajustar_margem_conteudo()  # o tema pode mudar a largura da barra (ex.: vidro)
         self.agendar_vidro()
@@ -478,7 +504,7 @@ class App(Gtk.Window):
             self.aplicar_tema()
             temas.salvar(self.cfg)
 
-        JanelaAparencia(self, self.cfg, ao_mudar, possui=self.progresso.possui_tema).present()
+        JanelaAparencia(self, self.cfg, ao_mudar).present()
 
     def ajustar_margem_conteudo(self):
         """Abre espaço para a barra lateral (de uma vez, não a cada quadro da animação)."""
@@ -570,6 +596,7 @@ class App(Gtk.Window):
         visivel = self.pilha.get_visible_child_name()
         if visivel != "jogo":
             self._antes_do_jogo = visivel
+        self.tela_jogo.pausar(False)
         self.tela_jogo.atualizar()
         self.mostrar_tela("jogo")
         self._marcar_botao_jogo(True)
@@ -583,6 +610,8 @@ class App(Gtk.Window):
             self.mostrar_tela("abas" if self.abas else "inicio")
         self._marcar_botao_jogo(False)
         self.set_focus(None)
+        if self.tela_jogo:
+            self.tela_jogo.pausar(True)  # página escondida: sem animações nem relógio
         if self.tela_jogo and self._liberar_jogo_timer is None:
             self._liberar_jogo_timer = GLib.timeout_add_seconds(JOGO_LIBERAR_S, self._liberar_jogo)
 
@@ -753,6 +782,67 @@ class App(Gtk.Window):
             return False
 
         self._aviso_timer = GLib.timeout_add(AVISO_MS, esconder)
+
+    # ---- atualização -----------------------------------------------------------
+
+    def primeira_verificacao(self):
+        # 30 s depois de abrir (não disputa com a abertura); depois, a cada 6 h. Só rede em thread.
+        self.verificar_atualizacao()
+        GLib.timeout_add_seconds(6 * 3600, self.verificar_atualizacao)
+        return False
+
+    def verificar_atualizacao(self):
+        if not self._atualizacao and not self._atualizando:
+            threading.Thread(target=lambda: GLib.idle_add(self.on_atualizacao, atualizador.consultar()),
+                             daemon=True).start()
+        return True
+
+    def on_atualizacao(self, achada):
+        if achada and not self._atualizacao:
+            self._atualizacao = achada
+            self.bt_atualizar.set_tooltip_text(f"Nova versão {achada.versao}")
+            self.bt_atualizar.show()
+            if achada.obrigatoria:
+                self.atualizar_agora()
+        return False
+
+    def atualizar_agora(self):
+        achada = self._atualizacao
+        if not achada or self._atualizando:
+            return
+        if not atualizador.pode_atualizar_sozinho():
+            webbrowser.open(achada.pagina)  # pasta sem permissão ou cópia de desenvolvimento
+            return
+        n = len(self.abas)
+        texto = ("O NaView fecha e abre de novo, já atualizado. "
+                 + ("" if not n else "A conexão aberta será encerrada." if n == 1
+                    else f"As {n} conexões abertas serão encerradas."))
+        if not self.confirmar(f"Atualizar o NaView para a versão {achada.versao}?", texto.strip(),
+                              "Atualizar e reiniciar"):
+            return
+        self._atualizando = True
+        self.bt_atualizar.set_sensitive(False)
+        self.avisar("Baixando a atualização…", "arrow-fat-up")
+
+        def baixar():
+            try:
+                GLib.idle_add(self.on_atualizacao_pronta, atualizador.preparar(achada))
+            except Exception:
+                GLib.idle_add(self.on_atualizacao_pronta, None)
+
+        threading.Thread(target=baixar, daemon=True).start()
+
+    def on_atualizacao_pronta(self, preparado):
+        if not preparado:
+            self._atualizando = False
+            self.bt_atualizar.set_sensitive(True)
+            self.avisar("Não consegui baixar a atualização. Tente de novo mais tarde.", "prohibit")
+            return False
+        atualizador.agendar(preparado)  # troca os arquivos e reabre quando o programa terminar
+        for aba in list(self.abas):
+            self.fechar(aba)
+        Gtk.main_quit()
+        return False
 
     # ---- contatos --------------------------------------------------------------
 

@@ -27,6 +27,7 @@ class TelaJogo(WebKit2.WebView):
         self.ao_mudar = ao_mudar
         self.ao_fechar = ao_fechar
         self._pronta = False
+        self._pausada = False
         self._tela_inicial = None
 
         config = self.get_settings()
@@ -60,11 +61,19 @@ class TelaJogo(WebKit2.WebView):
         self._pronta = True
         self._js(f"window.__iniciar({json.dumps(catalogo_para_web())}, {json.dumps(self.estado())},"
                  f" {json.dumps(self._tela_inicial)})")
+        if self._pausada:
+            self._js("window.__pausar(true)")
 
     def atualizar(self):
         """O app chama quando algo mudou fora da página (ex.: terminou um atendimento)."""
         if self._pronta:
             self._js(f"window.__estado({json.dumps(self.estado())})")
+
+    def pausar(self, sim):
+        """Com o jogo escondido, a página para as animações e o relógio (não gasta CPU à toa)."""
+        self._pausada = sim
+        if self._pronta:
+            self._js(f"window.__pausar({json.dumps(sim)})")
 
     def mostrar(self, tela):
         if self._pronta:

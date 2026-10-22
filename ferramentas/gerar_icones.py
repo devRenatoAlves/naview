@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Prepara os ícones Phosphor (icones/phosphor/, licença MIT) para a página do jogo e para o GTK.
+"""Prepara os ícones Phosphor (icones/phosphor/, licença MIT) para o GTK.
 
-- web/icones.js: os desenhos embutidos no JavaScript (a página não depende de fonte de ícones).
+Os ícones da página do jogo são pixel art própria (gerar_icones_pixel.py, web/icones.js).
+
 - icones/gtk/ph-<nome>-symbolic.svg: o GTK pinta ícones "-symbolic" com a cor do texto do tema.
 """
-import json
 import re
 import shutil
 from pathlib import Path
@@ -27,14 +27,6 @@ def main():
         miolo = re.search(r"<svg[^>]*>(.*)</svg>", svg, re.S).group(1).strip()
         icones[arquivo.stem] = miolo
         (GTK / f"ph-{arquivo.stem}-symbolic.svg").write_text(svg)
-    (RAIZ / "web" / "icones.js").write_text(
-        "// Gerado por ferramentas/gerar_icones.py a partir de Phosphor Icons (MIT).\n"
-        f"window.ICONES = {json.dumps(icones, indent=0)};\n"
-        "window.ic = (nome, classe = \"\") => {\n"
-        "  if (!(nome in window.ICONES)) console.warn(`Ícone desconhecido: ${nome}`);\n"
-        "  return `<svg class=\"ic ${classe}\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\">"
-        "${window.ICONES[nome] || \"\"}</svg>`;\n"
-        "};\n")
     print(len(icones), "ícones")
 
 

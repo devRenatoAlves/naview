@@ -3,9 +3,12 @@
 Cada tema é só dados. gerar_css() junta o CSS base (estrutura comum a todos) com os
 valores do tema, os ajustes do usuário e o CSS extra que cada tema quiser.
 """
+import base64
 import hashlib
 import json
 import os
+import re
+import subprocess
 from pathlib import Path
 from string import Template
 
@@ -335,9 +338,41 @@ TEMAS = {
         ],
         "previa": ("#3730a3", "#0e1638", "#f59e0b"),
     },
+    "manga": {
+        "nome": "Mangá Noir", "descricao": "Preto e branco de mangá: retrato em tinta, sombras fortes",
+        "fonte": "Zen Dots", "tamanho": "10pt",
+        # Ícone da janela enquanto o tema estiver ativo (relativo a arte/).
+        "icone": "manga/icone.png",
+        "cores": {
+            "fundo": "#0a0a0a", "lateral": "#000000", "barra": "#000000", "superficie": "#161616",
+            "destaque": "#f5f5f5", "texto": "#f2f2f2", "texto_lateral": "#f2f2f2",
+            "texto_barra": "#f2f2f2", "texto_destaque": "#0a0a0a", "aba_ativa": "#161616",
+        },
+        "avatares": ["#f5f5f5", "#d4d4d4", "#a3a3a3", "#737373", "#525252", "#e5e5e5"],
+        "raio": "2px", "raio_peq": "2px",
+        "frases": ("Nenhuma missão em andamento", "Informe o ID do cliente para começar"),
+        # Wallpaper preto e branco (arte/manga/fundo.jpg), cobrindo a tela inicial.
+        "inicio": f'background-image: url("{arte("manga/fundo.jpg")}");'
+                  " background-size: cover; background-position: center; background-repeat: no-repeat;",
+        "css": """
+.janela-principal .titulo-inicio { color: #ffffff; text-shadow: 3px 3px 0 #000000; }
+.janela-principal .cartao-conectar { background-color: alpha(#000000, 0.85); border: 2px solid #f5f5f5;
+  box-shadow: 6px 6px 0 alpha(#f5f5f5, 0.9); }
+.janela-principal button.conectar { border: 2px solid #f5f5f5; box-shadow: 3px 3px 0 alpha(#f5f5f5, 0.6); }
+.janela-principal button.conectar:active { box-shadow: 1px 1px 0 alpha(#f5f5f5, 0.6); }
+.janela-principal .sidebar { border-right: 2px solid #f5f5f5; }
+.janela-principal headerbar { border-bottom: 2px solid #f5f5f5; }
+.janela-principal entry { border: 1px solid alpha(#f5f5f5, 0.7); }
+.janela-principal .avatar { border: 1px solid #f5f5f5; }
+.janela-principal notebook.abas > header { border-bottom: 2px solid #f5f5f5; }
+.janela-principal notebook.abas > header > tabs > tab:checked { border: 1px solid #f5f5f5; border-bottom: none; }
+.janela-principal .sidebar row:selected { background-color: #f5f5f5; color: #0a0a0a; }
+""",
+        "previa": ("#0a0a0a", "#000000", "#f5f5f5"),
+    },
 }
 
-ORDEM = ["padrao", "grafite", "claro", "oceano", "vidro", "pixel", "hq", "espaco", "terminal", "neon", "mar"]
+ORDEM = ["padrao", "grafite", "claro", "oceano", "vidro", "pixel", "hq", "espaco", "terminal", "neon", "mar", "manga"]
 
 
 # ---- preferências ----------------------------------------------------------
@@ -367,6 +402,8 @@ def carregar():
             cfg[chave] = dados[chave]
     if cfg["tema"] not in TEMAS:
         cfg["tema"] = "padrao"
+    # Cores e imagem de fundo escolhidas à mão não existem mais: o tema vale como ele é.
+    cfg["ajustes"], cfg["imagem"] = {k: None for k in AJUSTES}, None
     return cfg
 
 
@@ -575,6 +612,68 @@ ANIMACOES = """
 .anim-piscar-lento { animation: piscar 2.6s ease-in-out infinite alternate; }
 .cursor { animation: cursor 0.6s steps(1) infinite alternate; }
 """
+
+
+def icone_do_tema(chave):
+    """Arquivo SVG do ícone do app: o do tema, se ele tiver um (\"icone\"), senão o do NaView."""
+    arquivo = TEMAS.get(chave, {}).get("icone")
+    return ARTE / arquivo if arquivo else PASTA / "icone.svg"
+
+
+_icone_instalado = None
+
+
+def instalar_icone_do_tema(chave):
+    """Faz o ícone do atalho instalado (dock/barra de tarefas) acompanhar o tema.
+
+    No GNOME e no KDE a barra de tarefas mostra o ícone do atalho (.desktop), não o da janela.
+    Reescrever o arquivo do ícone não adianta: o shell guarda o ícone pelo nome. Por isso cada
+    tema com ícone próprio ganha um ícone de nome novo (naview-<tema>) e a linha Icon= do atalho
+    passa a apontar para ele; sem ícone próprio, volta ao "naview" instalado pelo instalar.sh.
+    Só mexe nos arquivos do usuário (~/.local/share) e só se o atalho foi instalado.
+    """
+    global _icone_instalado
+    if not plataforma.LINUX or _icone_instalado == chave:
+        return
+    base = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+    atalho = base / "applications" / "naview.desktop"
+    if not atalho.is_file():
+        return
+    try:
+        nome = "naview"
+        if TEMAS.get(chave, {}).get("icone"):
+            nome = f"naview-{chave}"
+            pasta = base / "icons/hicolor/scalable/apps"
+            pasta.mkdir(parents=True, exist_ok=True)
+            origem = icone_do_tema(chave)
+            if origem.suffix == ".svg":
+                conteudo = origem.read_bytes()
+            else:  # PNG vira um SVG que o embute, para ficar na pasta de ícones escaláveis
+                png = base64.b64encode(origem.read_bytes()).decode()
+                conteudo = ('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+                            'viewBox="0 0 512 512"><image width="512" height="512" '
+                            f'xlink:href="data:image/png;base64,{png}"/></svg>\n').encode()
+            arquivo = pasta / f"{nome}.svg"
+            if not arquivo.is_file() or arquivo.read_bytes() != conteudo:
+                arquivo.write_bytes(conteudo)
+                _rodar(["gtk-update-icon-cache", "-q", "-t", "-f", str(base / "icons/hicolor")])
+        texto = atalho.read_text()
+        novo = re.sub(r"(?m)^Icon=.*$", f"Icon={nome}", texto)
+        if novo != texto:
+            atalho.write_text(novo)
+            _rodar(["update-desktop-database", "-q", str(atalho.parent)])
+            _rodar(["kbuildsycoca6"])  # KDE; sem efeito nos outros ambientes
+        _icone_instalado = chave
+    except OSError:
+        pass
+
+
+def _rodar(comando):
+    """Roda uma ferramenta opcional do sistema, sem esperar nem falhar se ela não existir."""
+    try:
+        subprocess.Popen(comando, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        pass
 
 
 def cores_do_tema(cfg):

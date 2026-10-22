@@ -25,6 +25,8 @@ const ARTE = "../arte/";
 $$("[data-ic]").forEach((n) => { n.innerHTML = ic(n.dataset.ic); });
 const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const SONS = "../sons/";
+// Pixel art anda em poucos quadros por segundo: 30 fps basta e gasta bem menos CPU que 60.
+if (window.gsap) gsap.ticker.fps(30);
 const confete = window.confetti ? confetti.create($("#confete"), { resize: true }) : () => {};
 
 /* ---------------- ponte com o Python ---------------- */
@@ -58,6 +60,12 @@ window.__iniciar = (catalogo, estado, tela) => {
 };
 window.__estado = (estado) => aplicarEstado(estado);
 window.__mostrar = (tela) => irPara(tela);
+// Jogo escondido: congela as animações do CSS e o relógio do GSAP (o app chama ao fechar/abrir).
+window.__pausar = (sim) => {
+  document.documentElement.classList.toggle("pausado", sim);
+  if (window.gsap) { if (sim) gsap.ticker.sleep(); else gsap.ticker.wake(); }
+  if (!sim) agendarQuadros();
+};
 
 async function acao(nome, dados) {
   try {
@@ -122,7 +130,7 @@ function irPara(tela) {
   $$(".tela").forEach((t) => t.classList.toggle("ativa", t.id === "tela-" + tela));
   $$(".menu-bt").forEach((b) => b.classList.toggle("ativo", b.dataset.tela === tela));
   desenharTela(tela);
-  if (tela === "pet") animarPetParado();
+  if (tela === "pet") { animarPetParado(); agendarQuadros(); }
 }
 
 // Só a tela visível é redesenhada quando o estado muda; as outras ficam marcadas e são
@@ -168,7 +176,7 @@ function aplicarEstado(e) {
 // Relógios andam sozinhos; quando algo fica pronto, pede o estado de novo ao Python.
 // Com o jogo escondido (document.hidden) não faz nada: o app atualiza o estado ao reabrir.
 setInterval(() => {
-  if (!EST || animando || document.hidden) return;
+  if (!EST || animando || document.hidden || document.documentElement.classList.contains("pausado")) return;
   const pronto = EST.baus.some((b) => b && b.situacao === "destravando" && b.falta_s - passou() <= 0)
     || (EST.gratis.proximo_s !== null && EST.gratis.proximo_s - passou() <= 0);
   if (pronto) { chamar("estado").then(aplicarEstado).catch(() => {}); return; }
@@ -320,7 +328,6 @@ async function animarAbertura(rec) {
   const revelacao = $("#revelacao");
   const restantes = $("#restantes");
   const cartas = [...rec.cartas].sort((a, b) => ordemRaridade(a) - ordemRaridade(b));
-  const melhor = cartas.length ? CAT.raridades[carta(cartas[cartas.length - 1].id).raridade] : null;
 
   ov.hidden = false;
   $("#resumo").hidden = true;
@@ -335,14 +342,17 @@ async function animarAbertura(rec) {
   tocar("carta");
   await esperarToque();
 
-  // Treme cada vez mais forte e brilha com a cor da melhor carta lá dentro.
+  // O baú treme de lado (pixel a pixel, sem girar nem desfocar), abre mostrando o brilho de dentro e some.
   tocar("abrir");
-  const brilho = melhor ? melhor.cor : "#ffffff";
+  const aberto = `${ARTE}baus/${rec.bau}_aberto.svg`;
+  new Image().src = aberto;  // carrega antes, para não piscar na troca
   await gsap.timeline()
-    .to(bau, { rotation: -5, duration: 0.05, yoyo: true, repeat: 5 })
-    .to(bau, { rotation: 8, scale: 1.08, duration: 0.05, yoyo: true, repeat: 7 })
-    .to(bau, { rotation: -12, scale: 1.15, filter: `drop-shadow(0 0 30px ${brilho})`, duration: 0.04, yoyo: true, repeat: 9 })
-    .to(bau, { scale: 1.6, opacity: 0, duration: 0.25, ease: "power2.in" });
+    .to(bau, { x: -6, duration: 0.05, yoyo: true, repeat: 5, ease: "none" })
+    .to(bau, { x: 10, duration: 0.04, yoyo: true, repeat: 9, ease: "none" })
+    .add(() => { bau.src = aberto; })
+    .fromTo(bau, { scale: 1 }, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1, ease: "steps(3)" })
+    .to({}, { duration: 0.3 })
+    .to(bau, { opacity: 0, duration: 0.2, ease: "steps(4)" });
   gsap.to(raios, { opacity: 1, duration: 0.3 });
   gsap.to(raios, { rotation: 360, duration: 24, ease: "none", repeat: -1 });
   gsap.to(titulo, { opacity: 0, duration: 0.3 });
@@ -446,6 +456,20 @@ async function mostrarResumo(rec, cartas) {
 
 /* ---------------- cartas ---------------- */
 
+// Imagem do pet recortada no desenho (sem o espaço vazio do quadro de 64), para encher a carta ou o botão.
+// cheio = parte do lado do espaço que o desenho pode ocupar.
+function petMini(especie, arte, cheio = 0.84) {
+  const [x0, y0, w, h] = CAT.pet.caixas[especie];
+  const m = el("div", "pet-mini");
+  const larga = w >= h;
+  m.style.aspectRatio = `${w} / ${h}`;
+  m.style[larga ? "width" : "height"] = `${cheio * 100}%`;
+  const totalH = CAT.pet.lado + (CAT.pet.extra[especie] || 0);
+  m.innerHTML = `<img src="${ARTE}${arte}" alt="" style="width:${(CAT.pet.lado / w) * 100}%;`
+    + `left:${(-x0 / w) * 100}%;top:${(-y0 / h) * 100}%;height:${(totalH / h) * 100}%">`;
+  return m;
+}
+
 function arteDe(c) {
   const a = el("div");
   if (c.tipo === "tema") {
@@ -457,7 +481,7 @@ function arteDe(c) {
       + `<span class="nome-fonte" style="font-family:'${t.fonte || "Noto Sans"}';color:${t.texto}">${t.nome}</span>`;
   } else if (c.tipo === "pet") {
     a.className = "arte-pet";
-    a.innerHTML = `<img src="${ARTE}${c.arte}" alt="">`;
+    a.appendChild(petMini(c.alvo, c.arte));
   } else if (c.tipo === "acessorio") {
     a.className = "arte-acc";
     const { lado, acima } = CAT.pet;
@@ -598,18 +622,30 @@ $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") fech
 
 let toquesOvo = 0;
 
-function petEl(especie, acessorio, largura) {
-  const { lado, acima } = CAT.pet;
+// Cara do pet: dormindo = olhos fechados, feliz e triste têm desenho próprio (só os pets próprios).
+const CARA = { dormindo: "pisca", feliz: "feliz", triste: "triste" };
+const arquivoPet = (especie, cara) =>
+  `${ARTE}pets/${especie}${cara && CAT.pet.expressoes.includes(especie) ? "_" + cara : ""}.svg`;
+
+const acimaDe = (especie) => CAT.pet.acima_pet[especie] || CAT.pet.acima;
+// Os quadros da animação são PNG (decodificam bem mais leve que SVG a cada troca).
+const arquivoQuadro = (especie, i) => `${ARTE}pets/${especie}_q${i}.png`;
+
+function petEl(especie, acessorio, largura, cara = null) {
+  const { lado } = CAT.pet;
+  const acima = acimaDe(especie);
   const u = largura / lado;
   const p = el("div", "pet");
   p.style.width = `${largura}px`;
   p.style.height = `${(lado + acima) * u}px`;
-  p.innerHTML = `<img style="top:${acima * u}px" src="${ARTE}pets/${especie}.svg" alt="">`;
+  const extra = (CAT.pet.extra[especie] || 0);  // pets mais altos que o quadro passam do topo
+  p.innerHTML = `<img style="top:${(acima - extra) * u}px" src="${arquivoPet(especie, cara)}" alt="">`;
   if (acessorio) {
     const e = CAT.encaixes[especie][acessorio];
     p.innerHTML += `<img style="left:${e.x * u}px;top:${e.y * u}px;width:${e.w * u}px"`
-      + ` src="${ARTE}acessorios/${acessorio}.svg" alt="">`;
+      + ` src="${ARTE}acessorios/${e.arquivo}.svg" alt="">`;
   }
+  p.dataset.u = u;
   return p;
 }
 
@@ -631,8 +667,11 @@ function desenharPet() {
       area.appendChild(petEl("ovo", null, lado * 4));
     } else {
       const px = Math.round(10 * pet.tamanho) / 2;  // bebê 4, jovem 4,5, adulto 5
-      area.appendChild(petEl(pet.especie, pet.acessorio, lado * px));
+      const escala = CAT.pet.escala[pet.especie] || 1;  // o dragão tem mais pixels: aparece menor
+      quadroAtual = 0;
+      area.appendChild(petEl(pet.especie, pet.acessorio, lado * px * escala, CARA[pet.humor] || null));
     }
+    agendarPiscada();
   }
   $("#palco").classList.toggle("noite", pet.dormindo);
   $("#pet-fala").textContent = pet.fala;
@@ -673,7 +712,6 @@ function desenharPet() {
 
   // Guarda-roupa separado por tipo; o que falta aparece apagado, para dar vontade de colecionar.
   $("#guarda-roupa").hidden = !pet.chocado;
-  $("#bt-renomear").hidden = !pet.chocado;
   for (const tipo of ["pet", "acessorio"]) {
     const destino = $(tipo === "pet" ? "#roupas-especies" : "#roupas-acessorios");
     destino.innerHTML = "";
@@ -692,7 +730,9 @@ function desenharPet() {
     todas.forEach((c) => {
       const tenho = Boolean(minha(c.id));
       const r = el("button", "roupa" + (emUso(c) ? " ativa" : "") + (tenho ? "" : " bloqueada"),
-        `<img src="${ARTE}${c.arte}" alt="">`);
+        "");
+      if (tipo === "pet") r.appendChild(petMini(c.alvo, c.arte, 0.9));
+      else r.innerHTML = `<img src="${ARTE}${c.arte}" alt="">`;
       r.title = tenho ? c.nome : `${c.nome} (${CAT.raridades[c.raridade].nome}) · encontre em baús`;
       r.addEventListener("click", async () => {
         if (!tenho) { avisar(`${c.nome}: encontre em baús ou na loja.`, "lock-simple"); return; }
@@ -702,6 +742,62 @@ function desenharPet() {
     });
   }
   if (mudou && $("#tela-pet").classList.contains("ativa")) animarPetParado();
+  if (mudou) agendarQuadros();
+}
+
+// Pets que vieram como GIF: troca o quadro do desenho (e leva o acessório junto com a cabeça) no ritmo
+// do GIF. Só roda com a tela do pet à vista e o pet acordado; fora disso não há timer nenhum.
+let quadrosTimer = null;
+let quadroAtual = 0;
+const preCarregados = new Set();
+function petParado() {
+  return document.hidden || document.documentElement.classList.contains("pausado")
+    || !$("#tela-pet").classList.contains("ativa");
+}
+function agendarQuadros() {
+  clearTimeout(quadrosTimer);
+  quadrosTimer = null;
+  const pet = EST && EST.pet;
+  const desloc = pet && pet.chocado && !pet.dormindo && CAT.pet.quadros[pet.especie];
+  const el0 = $("#pet-area .pet");
+  if (!desloc || !el0 || petParado()) return;
+  for (let i = 0; i < desloc.length; i++) {  // deixa os quadros prontos para a troca não piscar
+    const f = arquivoQuadro(pet.especie, i);
+    if (!preCarregados.has(f)) { preCarregados.add(f); new Image().src = f; }
+  }
+  quadrosTimer = setTimeout(() => {
+    const el = $("#pet-area .pet");
+    if (el && !petParado() && EST.pet.especie === pet.especie) {
+      quadroAtual = (quadroAtual + 1) % desloc.length;
+      const u = Number(el.dataset.u);
+      const imgs = el.querySelectorAll("img");
+      imgs[0].setAttribute("src", arquivoQuadro(pet.especie, quadroAtual));
+      if (imgs[1]) {
+        const e = CAT.encaixes[pet.especie][pet.acessorio];
+        imgs[1].style.left = `${(e.x + desloc[quadroAtual][0]) * u}px`;
+        imgs[1].style.top = `${(e.y + desloc[quadroAtual][1]) * u}px`;
+      }
+    }
+    agendarQuadros();
+  }, CAT.pet.quadro_ms);
+}
+
+// De vez em quando o pet pisca (olhos fechados por 160 ms). Só com a tela do pet à vista.
+let piscadaTimer = null;
+function agendarPiscada() {
+  clearTimeout(piscadaTimer);
+  piscadaTimer = setTimeout(() => {
+    const pet = EST && EST.pet;
+    const img = $("#pet-area .pet img");
+    const parado = document.hidden || document.documentElement.classList.contains("pausado")
+      || !$("#tela-pet").classList.contains("ativa");
+    if (pet && pet.chocado && img && !parado && !pet.dormindo && CAT.pet.expressoes.includes(pet.especie)) {
+      const normal = img.getAttribute("src");
+      img.setAttribute("src", arquivoPet(pet.especie, "pisca"));
+      setTimeout(() => img.setAttribute("src", normal), 160);
+    }
+    agendarPiscada();
+  }, 3000 + Math.random() * 3500);
 }
 
 function animarPetParado() {
@@ -709,13 +805,14 @@ function animarPetParado() {
   gsap.killTweensOf(area);
   if (!EST || EST.pet.dormindo) return;
   if (!EST.pet.chocado) {
-    gsap.to(area, { rotation: 4, duration: 0.6, yoyo: true, repeat: -1, ease: "sine.inOut", transformOrigin: "50% 100%" });
+    gsap.to(area, { rotation: 4, duration: 0.6, yoyo: true, repeat: -1, ease: "steps(2)", transformOrigin: "50% 100%" });
   } else if (EST.pet.humor === "feliz") {
-    gsap.to(area, { y: -14, duration: 0.45, yoyo: true, repeat: -1, ease: "power1.out" });
+    gsap.to(area, { y: -14, duration: 0.45, yoyo: true, repeat: -1, ease: "steps(3)" });
   } else if (EST.pet.humor === "triste") {
-    gsap.to(area, { scaleY: 0.94, duration: 1.6, yoyo: true, repeat: -1, ease: "sine.inOut", transformOrigin: "50% 100%" });
-  } else {
-    gsap.to(area, { scaleY: 0.97, scaleX: 1.02, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut", transformOrigin: "50% 100%" });
+    gsap.to(area, { scaleY: 0.94, duration: 1.6, yoyo: true, repeat: -1, ease: "steps(2)", transformOrigin: "50% 100%" });
+  } else if (!CAT.pet.quadros[EST.pet.especie]) {
+    // Pets de GIF já se mexem pelos quadros; o balanço só repintaria a tela à toa.
+    gsap.to(area, { scaleY: 0.97, scaleX: 1.02, duration: 1, yoyo: true, repeat: -1, ease: "steps(1)", transformOrigin: "50% 100%" });
   }
 }
 
@@ -731,7 +828,7 @@ $("#pet-area").addEventListener("click", async () => {
       if (pet) {
         tocar("lendaria");
         confete({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-        avisar(`Nasceu um ${carta("pet-" + pet.especie).nome}! Dê um nome a ele.`);
+        avisar(`Nasceu um ${carta("pet-" + pet.especie).nome}!`);
         gsap.from("#pet-area", { scale: 0, duration: 0.6, ease: "back.out(3)" });
       }
     }
@@ -776,27 +873,6 @@ async function acaoPet(nome, botao) {
     avisar(`${EST.pet.nome} foi tirar uma soneca.`);
   }
 }
-
-$("#bt-renomear").addEventListener("click", () => $("#pet-nome").click());
-$("#pet-nome").addEventListener("click", () => {
-  if (!EST.pet.chocado) return;
-  const bt = $("#pet-nome");
-  const input = el("input");
-  input.value = EST.pet.nome;
-  input.maxLength = 20;
-  input.style.cssText = "font:30px Bangers;width:220px;border-radius:10px;border:3px solid #0a0f22;padding:2px 8px";
-  bt.replaceWith(input);
-  input.focus();
-  input.select();
-  const salvar = async () => {
-    input.replaceWith(bt);
-    if (input.value.trim() && input.value.trim() !== EST.pet.nome) {
-      if (await acao("pet_renomear", { nome: input.value }) !== null) avisar("Nome novo, quem é o pet mais lindo?");
-    }
-  };
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") input.blur(); if (e.key === "Escape") { input.value = ""; input.blur(); } });
-  input.addEventListener("blur", salvar, { once: true });
-});
 
 /* ---------------- loja ---------------- */
 

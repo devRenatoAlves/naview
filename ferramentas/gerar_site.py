@@ -10,6 +10,9 @@ Uso: python3 ferramentas/gerar_site.py
   copia para download/ e preenche a página piloto/ (não divulgada, ver specs/06-windows.md).
 - Windows: se o GitHub Actions já guardou site/windows/NaView-instalador.exe, copia para
   download/windows/ com o windows.json (versão, tamanho, SHA-256) que a página lê.
+- Atualização: gera download/versao.json, que o próprio app consulta (atualizador.py): versão,
+  arquivo e SHA-256 de cada sistema. Cada sistema tem a sua versão, porque o instalador do Windows
+  chega depois do pacote do Linux. VERSAO_MINIMA (opcional) obriga a atualizar quem estiver abaixo.
 """
 import hashlib
 import json
@@ -25,7 +28,7 @@ SAIDA = RAIZ / "site" / "publico"
 # O que vai no pacote do app (o resto, como docs/ e site/, fica de fora).
 ARQUIVOS_APP = [
     "app.py", "contatos.py", "fontes.py", "janela_aparencia.py", "plataforma.py", "temas.py", "x11.py",
-    "app_qt.py", "aparencia_qt.py", "temas_qt.py",
+    "app_qt.py", "aparencia_qt.py", "temas_qt.py", "atualizador.py",
     "icone.svg", "instalar.sh", "README.md", "VERSAO",
 ]
 PASTAS_APP = ["arte", "fonts", "icones", "janelas", "jogo", "sons", "web"]
@@ -34,6 +37,7 @@ PILOTO_WINDOWS = RAIZ / "site" / "piloto-windows" / "naview-piloto-windows.zip"
 # Guardados pelo GitHub Actions (.github/workflows/windows.yml).
 INSTALADOR_WINDOWS = RAIZ / "site" / "windows" / "NaView-instalador.exe"
 VERSAO_WINDOWS = RAIZ / "site" / "windows" / "VERSAO"
+VERSAO_MINIMA = RAIZ / "VERSAO_MINIMA"
 
 PASTAS_ARTE_SITE = ["mar", "neon", "espaco", "pixel", "hq", "pets", "acessorios", "baus"]
 ICONES_SITE = ["sparkle.svg", "speaker-high.svg"]
@@ -107,9 +111,24 @@ def preencher_windows():
     dados = destino.read_bytes()
     versao = VERSAO_WINDOWS.read_text().strip() if VERSAO_WINDOWS.is_file() else ""
     info = {"versao": versao, "arquivo": destino.name, "tamanho": tamanho_legivel(len(dados)),
-            "sha256": hashlib.sha256(dados).hexdigest()}
+            "sha256": hashlib.sha256(dados).hexdigest(), "bytes": len(dados)}
     (pasta / "windows.json").write_text(json.dumps(info, ensure_ascii=False))
     return info
+
+
+def escrever_manifesto(versao, pacote, sha256, windows):
+    """download/versao.json: o que o app lê para saber se há versão nova (caminhos relativos a ele)."""
+    manifesto = {
+        "formato": 1,
+        "minimo": VERSAO_MINIMA.read_text().strip() if VERSAO_MINIMA.is_file() else "",
+        "pagina": "/",
+        "linux": {"versao": versao, "arquivo": pacote.name, "sha256": sha256,
+                  "tamanho": pacote.stat().st_size},
+    }
+    if windows and windows["versao"]:
+        manifesto["windows"] = {"versao": windows["versao"], "arquivo": f"windows/{windows['arquivo']}",
+                                "sha256": windows["sha256"], "tamanho": windows["bytes"]}
+    (SAIDA / "download" / "versao.json").write_text(json.dumps(manifesto, ensure_ascii=False, indent=2))
 
 
 def main():
@@ -152,6 +171,7 @@ def main():
     (SAIDA / "index.html").write_text(html)
     piloto = preencher_piloto()
     windows = preencher_windows()
+    escrever_manifesto(versao, pacote, sha256, windows)
 
     print(f"Site gerado em {SAIDA}")
     print(f"Pacote: {pacote.name} ({tamanho_legivel(len(dados))})")

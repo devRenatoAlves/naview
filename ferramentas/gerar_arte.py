@@ -11,9 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import desenhos_pets  # noqa: E402
-from pixel_vetor import de_mapa, no_quadro, svg as svg_pixels  # noqa: E402
+from pixel_vetor import de_mapa, no_quadro, expressao, svg as svg_pixels  # noqa: E402
 
 PET_LADO = 64  # igual a jogo/catalogo.py
+EXPRESSOES = ("pisca", "feliz", "triste")  # igual a jogo/catalogo.py
 
 SAIDA = Path(__file__).resolve().parent.parent / "arte"
 
@@ -399,43 +400,17 @@ def bau(cor, faixa, brilho, gema):
 def gerar_jogo():
     # Pets e acessórios desenhados (os Pokémon vêm de baixar_sprites.py).
     for nome, desenho in desenhos_pets.PETS.items():
-        salvar(f"pets/{nome}.svg", no_quadro(desenho(), PET_LADO)[0])
+        grade = desenho()
+        salvar(f"pets/{nome}.svg", no_quadro(grade, PET_LADO)[0])
+        for tipo in EXPRESSOES:  # outras caras do mesmo pet (pisca, feliz, triste) para a página do jogo
+            variante = expressao(grade, tipo)
+            if variante:
+                salvar(f"pets/{nome}_{tipo}.svg", no_quadro(variante, PET_LADO)[0])
     for nome, desenho in desenhos_pets.ACESSORIOS.items():
         grade, w, h, _ax, _ay = desenho()
         salvar(f"acessorios/{nome}.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" '
                                          f'shape-rendering="crispEdges">{"".join(svg_pixels(grade))}</svg>')
-    salvar("jogo/petisco.svg", '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">'
-                               + "".join(svg_pixels(de_mapa(PETISCO, PALETA_PETISCO))) + "</svg>")
-    baus = {
-        "madeira": ("#8b5a2b", "#5d3a17", "#c48a4a", "#e0c08a"),
-        "prata": ("#8a96a3", "#5d6873", "#dfe6ee", "#7dd3fc"),
-        "ouro": ("#d99a1e", "#8a5a00", "#ffe08a", "#ff595e"),
-        "magico": ("#7b3fe4", "#3d1a8f", "#c4a5ff", "#4cc9f0"),
-        "lendario": ("#ff7a1a", "#7a1fa2", "#ffd166", "#ffffff"),
-    }
-    for nome, (cor, faixa, brilho, gema) in baus.items():
-        salvar(f"baus/{nome}.svg", bau(cor, faixa, brilho, gema))
-    salvar("jogo/moeda.svg", f"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <defs>
-    <linearGradient id="f" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffe680"/><stop offset="0.55" stop-color="#f5b81b"/><stop offset="1" stop-color="#d98c00"/>
-    </linearGradient>
-    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f7c23a"/><stop offset="1" stop-color="#b87300"/>
-    </linearGradient>
-  </defs>
-  <circle cx="20" cy="21.5" r="17.5" fill="#7a4d00"/>
-  <circle cx="20" cy="19.5" r="17.5" fill="url(#b)" stroke="#7a4d00" stroke-width="2"/>
-  <circle cx="20" cy="19.5" r="13" fill="url(#f)" stroke="#c98a0b" stroke-width="1.5"/>
-  <path d="{estrela_d(20, 20, 7.5, 3.2)}" fill="#fff1a8" stroke="#b87800" stroke-width="1.2" stroke-linejoin="round"/>
-  <path d="M8.5 14 A12.5 12.5 0 0 1 15 7.5" fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="2.4" stroke-linecap="round"/>
-</svg>""")
-
-
-# ---- alto-mar (marca do NaView) ----------------------------------------------
-#
-# Cores da logo: índigo #6366f1, azul-céu #0ea5e9, marinho #1e1b4b, âmbar #f59e0b e branco.
+    # Baús, moeda e petisco são pixel art própria: ferramentas/gerar_itens_pixel.py.
 
 def ondas_svg(largura, altura, crista, amplitude, periodo, topo, base, espuma):
     """Faixa de ondas que se repete na horizontal (largura múltipla do período)."""

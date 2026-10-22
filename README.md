@@ -28,8 +28,8 @@ Junta várias conexões do AnyDesk em abas, numa única janela (Linux; versão p
 
 ## Temas
 
-Menu ⋮ da barra de título > Aparência e temas…. Tudo aplica na hora e fica salvo em
-`~/.config/naview/config.json`. Trocar de tema mantém a imagem de fundo escolhida.
+O tema se escolhe no jogo (botão de presente na barra de título > Coleção > Usar). Menu ⋮ > Opções de aparência…: intensidade do vidro, desenhos e animações. Tudo aplica na hora e fica salvo em
+`~/.config/naview/config.json`.
 
 | Tema | O que muda |
 |---|---|
@@ -40,10 +40,11 @@ Menu ⋮ da barra de título > Aparência e temas…. Tudo aplica na hora e fica
 | Espaço | Fonte Orbitron, estrelas, planeta e foguete |
 | Terminal | Fonte VT323, fósforo verde, linhas de varredura e cursor piscando |
 | Neon 80s | Fonte Audiowide, sol retrô, montanhas e grade neon |
+| Mangá Noir | Preto e branco, fonte Zen Dots, wallpaper de anime em preto e branco e ícone do app próprio |
 | Alto-mar | Fonte Fredoka, cores da logo, o veleiro do NaView balançando, farol piscando, sol poente, gaivotas e ondas |
 
-Ajustes por cima de qualquer tema: cores (destaque, fundo, barra de contatos, barra de título),
-imagem de fundo da tela inicial, desenhos e animações (podem ser desligados).
+Opções por cima de qualquer tema: desenhos e animações (podem ser desligados) e, no vidro, a
+intensidade.
 
 - Desenhos e animações só existem na tela inicial; com uma sessão aberta nada fica animando.
 - Desempenho (GTK3 desenha tudo no processador): a barra lateral desliza por cima do conteúdo e
@@ -63,10 +64,10 @@ Botão de presente na barra de título (a bolinha vermelha conta as novidades). 
 janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.db`. Fechado há
 10 min, o jogo sai da memória (reabrir leva um instante a mais).
 
-- **Cartas** (31): temas, pets, acessórios do pet, molduras dos avatares e sons de conexão, em 4
+- **Cartas** (39): temas, pets, acessórios do pet, molduras dos avatares e sons de conexão, em 4
   raridades (Comum, Rara, Épica, Lendária) e a Mítica, só para os temas mais elaborados
-  (Aventura Pixel e Heróis HQ; Espaço, Neon e Alto-mar são Lendários). Cópias repetidas + moedas sobem o nível (até 5). Tema
-  no nível 5 ganha a versão dourada. Temas que você não tem ficam bloqueados na Aparência.
+  (Aventura Pixel, Heróis HQ e Mangá Noir; Espaço, Neon e Alto-mar são Lendários). Cópias repetidas + moedas sobem o nível (até 5). Tema
+  no nível 5 ganha a versão dourada. Temas que você não tem ficam bloqueados na Coleção.
 - **Baús**: 4 espaços; um baú de trabalho a cada 10 atendimentos (sessões de 3 min ou mais). Cada
   baú leva um tempo para destravar (15 min a 8 h) ou abre na hora pagando moedas. Baú grátis a
   cada 8 h (acumula 1). Garantia de lendária a cada 40 baús.
@@ -76,7 +77,9 @@ janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.
 - **Loja**: 3 ofertas por dia e petiscos.
 - **Pet (Tamagotchi)**: nasce de um ovo, tem comida, alegria e energia que caem com o tempo,
   dorme quando o app está fechado, come petiscos, brinca, tira soneca, cresce (bebê, jovem,
-  adulto) e usa acessórios. Guarda-roupa separado em Espécies e Acessórios; botão de renomear. Fica no rodapé da barra de contatos.
+  adulto) e usa acessórios. Guarda-roupa separado em Espécies e Acessórios. O nome é sempre o da espécie (não dá para renomear). Fica no rodapé da barra de contatos.
+  12 espécies: slime, galinha, Fredinho, gato preto, Jonatas, Ronaldo, astronauta, serpente de gelo e
+  quatro Pokémon. Gato, Jonatas, astronauta e serpente de gelo andam (animação do GIF) na tela do pet.
 - **Avisos**: notificação do sistema quando um baú fica pronto e para a recompensa diária.
 
 Arquitetura: `jogo/progresso.py` guarda tudo e faz todos os sorteios; a tela (`web/jogo.html`,
@@ -87,11 +90,12 @@ servidor da equipe, basta trocar `Progresso` por uma classe com os mesmos métod
 
 - `app.py`: janela, abas, contatos, conexões e foco do teclado.
 - `temas.py`: definição dos temas, preferências e geração do CSS.
-- `janela_aparencia.py`: galeria de temas e ajustes.
+- `janela_aparencia.py`: galeria de temas e opções.
 - `contatos.py`: leitura dos contatos do AnyDesk e apelidos.
 - `x11.py`: acesso à libX11 (listar janelas, PID, foco, desfoque).
 - `fontes.py`, `fonts/`, `arte/`, `ferramentas/gerar_arte.py`: fontes e desenhos dos temas e do jogo
-  (pets em `ferramentas/desenhos_pets.py`; sprites dos Pokémon por `ferramentas/baixar_sprites.py`).
+  (Fredinho e Ronaldo em `ferramentas/desenhos_pets.py`; os pets de GIF e PNG em
+  `ferramentas/importar_pets.py`; sprites dos Pokémon por `ferramentas/baixar_sprites.py`).
 - `jogo/catalogo.py` (cartas, baús, regras), `jogo/progresso.py` (motor e banco),
   `jogo/tela.py` (página do jogo no WebKitGTK), `jogo/gtk.py` (pet no rodapé, sons, notificações).
 - `web/`: página do jogo; `web/vendor/`: GSAP 3.12.5 e canvas-confetti 1.9.3.
@@ -100,7 +104,9 @@ servidor da equipe, basta trocar `Progresso` por uma classe com os mesmos métod
 - `icones/phosphor/`: ícones Phosphor Icons 2.1.1 (licença MIT, `LICENSE`), estilo preenchido.
   `ferramentas/gerar_icones.py` gera `web/icones.js` (página do jogo) e `icones/gtk/ph-*-symbolic.svg`
   (app GTK, pintados com a cor do texto do tema). A interface não usa emojis.
-- `VERSAO`: versão do app (formato data, ex.: `2026.10.14`).
+- `VERSAO`: versão do app (formato `AAAA.MM.DD.N`, ex.: `2026.10.22.1`). Rode
+  `python3 ferramentas/nova_versao.py` antes de cada push que deva chegar aos usuários.
+- `atualizador.py`: consulta o site, baixa e aplica a atualização (ver abaixo).
 - `site/fonte/`: página de apresentação com download. `python3 ferramentas/gerar_site.py` monta
   `site/publico/` (página + `download/naview-<versão>.tar.gz`); `site/Dockerfile` serve com nginx.
 
@@ -142,6 +148,14 @@ sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 gir1.2-notify-0.7 
 ```
 
 Sem o WebKit, o app funciona normalmente e só o jogo fica indisponível (aparece um aviso).
+
+## Atualizações
+
+O NaView confere o site 30 s depois de abrir e a cada 6 horas. Havendo versão nova, aparece o botão
+**Atualizar** na barra: ele baixa, confere o arquivo, fecha o app e abre de novo já atualizado (no
+Windows roda o instalador sozinho). Suas configurações e seu progresso não são tocados. Se a pasta
+do NaView não permitir a troca, o botão abre a página de download. Quem tem uma versão anterior a
+esta precisa baixar o NaView de novo uma vez.
 
 ## Limitações conhecidas
 
