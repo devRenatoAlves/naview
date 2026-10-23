@@ -106,7 +106,11 @@
   const MOLDURA = "arte/icones/sparkle.svg";
   const SOM = "arte/icones/speaker-high.svg";
 
+  const pet = (nome, raridade, descricao, arquivo) => comArte(nome, raridade, descricao, `arte/pets/${arquivo}.svg`);
+
   const CARTAS = [
+    tema("Padrão", "comum", "Segue o tema do sistema.", "linear-gradient(135deg,#3a3d44 60%,#4f8cff 60%)"),
+    tema("Mangá Noir", "mitica", "Preto e branco de mangá: retrato em tinta e ícone próprio.", "linear-gradient(135deg,#0a0a0a 60%,#f2f2f2 60%)"),
     tema("Grafite", "comum", "Escuro, sóbrio e sem distrações.", "linear-gradient(135deg,#1f2125 60%,#7c8cff 60%)"),
     tema("Claro", "comum", "Limpo e luminoso.", "linear-gradient(135deg,#f6f7f9 60%,#2563eb 60%)"),
     tema("Oceano", "rara", "Azul profundo.", "linear-gradient(135deg,#0f2537 60%,#1fa2ff 60%)"),
@@ -117,12 +121,25 @@
     tema("Alto-mar", "lendaria", "O veleiro do NaView, farol e ondas.", "linear-gradient(135deg,#111a44 60%,#f59e0b 60%)"),
     tema("Aventura Pixel", "mitica", "Monstrinhos, grama e fonte de videogame.", "linear-gradient(135deg,#8fd3ff 60%,#e8402a 60%)"),
     tema("Heróis HQ", "mitica", "Cores fortes, pontos e explosões.", "linear-gradient(135deg,#ffd600 60%,#e53935 60%)"),
+    pet("Slime", "comum", "Gosmento e muito carinhoso.", "slime"),
+    pet("Galinha", "comum", "Cocoricó! Bota ovo e acorda a equipe cedo.", "galinha"),
+    pet("Gatinho preto", "rara", "Dorme em cima do teclado.", "gato"),
+    pet("Ronaldo", "rara", "Salsicha comprido o bastante para alcançar o cabo de rede.", "salsicha"),
+    pet("Astronauta", "epica", "Suporte remoto de verdade: atende de órbita.", "astronauta"),
+    pet("Jonatas", "epica", "Sempre com pressa para o próximo atendimento.", "jonatas"),
+    pet("Jigglypuff", "epica", "Canta até o problema dormir.", "jigglypuff"),
+    pet("Eevee", "epica", "Pode evoluir para qualquer coisa. Até técnico.", "eevee"),
+    pet("Fredinho", "lendaria", "Pinscher caramelo: pequeno no tamanho, gigante na bravura.", "pinscher"),
+    pet("Serpente de gelo", "lendaria", "Congela os bugs antes que eles se espalhem.", "dragao"),
+    pet("Pikachu", "lendaria", "Pika! Reinicia o servidor no choque.", "pikachu"),
+    pet("Gengar", "lendaria", "Sorri no escuro e assombra os bugs.", "gengar"),
     comArte("Laço", "comum", "Um charme.", "arte/acessorios/laco.svg"),
     comArte("Boné", "comum", "Pronto para a visita técnica.", "arte/acessorios/bone.svg"),
     comArte("Óculos escuros", "rara", "Estilo de quem resolve tudo.", "arte/acessorios/oculos.svg"),
     comArte("Cachecol", "rara", "Para o ar-condicionado do escritório.", "arte/acessorios/cachecol.svg"),
     comArte("Chapéu de mago", "epica", "Para feitiços de suporte remoto.", "arte/acessorios/mago.svg"),
     comArte("Coroa", "lendaria", "Majestade do atendimento.", "arte/acessorios/coroa.svg"),
+    comArte("Anel simples", "comum", "Um anel discreto em volta dos avatares.", MOLDURA),
     comArte("Moldura pontilhada", "comum", "Borda tracejada nos contatos.", MOLDURA),
     comArte("Anel duplo", "rara", "Dois anéis coloridos nos contatos.", MOLDURA),
     comArte("Moldura neon", "epica", "Brilho neon em volta dos avatares.", MOLDURA),
