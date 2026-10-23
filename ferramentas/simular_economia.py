@@ -71,6 +71,9 @@ def rodar(semente, atendimentos, olhadas, dias, pasta):
     banco.unlink(missing_ok=True)
     p = Progresso(banco, agora=lambda: relogio[0],
                   hoje=lambda: datetime.date.fromtimestamp(relogio[0]), rnd=random.Random(semente))
+    # Banco descartável: sem esperar o disco gravar a cada commit (era ~90% do tempo da simulação).
+    p.db.execute("PRAGMA synchronous=OFF")
+    p.db.execute("PRAGMA journal_mode=MEMORY")
     marcos = {}
     contador = [0]
     for d in range(dias):

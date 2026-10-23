@@ -460,18 +460,21 @@ class Progresso:
     # ---- loja ----------------------------------------------------------------------
 
     def _loja(self):
-        hoje = self.hoje()
-        compradas = self._kv("loja", {}).get(hoje.isoformat(), [])
-        especial = self.rnd.choice(["epica", "epica", "epica", "lendaria", "lendaria", "mitica"])
-        itens = [("comum", cat.PRECO_CARTA["comum"]),
-                 ("rara", cat.PRECO_CARTA["rara"]),
-                 (especial, cat.PRECO_CARTA[especial])]
-        self.rnd.shuffle(itens)  # a ordem dos itens é aleatória
-        ofertas = []
-        for i, (raridade, preco) in enumerate(itens):
-            cid = self.rnd.choice([c["id"] for c in cat.CARTAS if c["raridade"] == raridade])
-            ofertas.append({"indice": i, "carta": cid, "preco": preco,
-                            "comprada": i in compradas})
+        """Ofertas do dia. Sorteadas uma vez por dia para cada usuário e guardadas: consultar a loja
+        de novo (ou comprar) não muda o que está à venda."""
+        hoje = self.hoje().isoformat()
+        compradas = self._kv("loja", {}).get(hoje, [])
+        dia = self._kv("loja_dia")
+        if not dia or dia.get("dia") != hoje:
+            especial = self.rnd.choice(["epica", "epica", "epica", "lendaria", "lendaria", "mitica"])
+            raridades = ["comum", "rara", especial]
+            self.rnd.shuffle(raridades)  # a ordem dos itens também é aleatória
+            dia = {"dia": hoje, "ofertas": [
+                {"carta": self.rnd.choice([c["id"] for c in cat.CARTAS if c["raridade"] == r]),
+                 "preco": cat.PRECO_CARTA[r]} for r in raridades]}
+            with self.db:
+                self._salvar_kv("loja_dia", dia)
+        ofertas = [dict(o, indice=i, comprada=i in compradas) for i, o in enumerate(dia["ofertas"])]
         return {"ofertas": ofertas, "preco_petisco": cat.PRECO_PETISCO}
 
     def comprar_oferta(self, indice):

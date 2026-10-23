@@ -175,23 +175,23 @@
 ### Ritmo medido
 
 Medido por `python3 ferramentas/simular_economia.py`, com a mediana de 20 sorteios em dias
-corridos (22/10/2026, com 39 cartas: reformulação dos pets e tema Mangá Noir; a rodada completa leva
-cerca de 25 min nesta máquina):
+corridos (23/10/2026, com 39 cartas, Fredinho lendário, Jonatas épico e loja aleatória; a rodada
+completa leva cerca de 2 min, porque o simulador usa um banco sem espera de gravação em disco):
 
 | Marco | 25 atend./dia | 15 atend./dia |
 |---|---|---|
-| Metade da coleção | 5 | 10 |
-| Todas as épicas | 32 | 52 |
-| Primeira mítica | 31 | 62 |
-| Todas as lendárias | 144 (80-204) | 204 (136-298) |
-| Coleção completa | 183 (96-270) | 297 (186-327; só 15 de 20 chegaram em 400 dias) |
+| Metade da coleção | 8 | 15 |
+| Todas as épicas | 38 | 58 |
+| Primeira mítica | 31 | 87 |
+| Todas as lendárias | 139 (109-200) | 208 (152-354) |
+| Coleção completa | 195 (148-283) | 291 (194-362; só 16 de 20 chegaram em 400 dias) |
 | Conta nível 10 | 19 | 33 |
-| Primeiro tema dourado | 86 | 148 |
+| Primeiro tema dourado | 74 | 124 |
 
-A reformulação dos pets tirou 2 cartas (14 pets para 12, com uma comum e uma rara a menos). Comparada
-com a medição de 14/10/2026 (160 e 288 dias para a coleção completa), a de hoje é um pouco mais lenta:
-o que mudou entre as duas, além dos pets, foi a carta mítica do Mangá Noir (0,3% de chance), que domina o
-tempo até completar. O ritmo continua lento.
+Comparada com a de 22/10/2026 (183 e 297 dias para a coleção completa), o ritmo quase não mudou: a
+troca de raridade de dois pets e a loja aleatória pesam pouco perto da carta mítica (0,3% de chance),
+que domina o tempo até completar. O ritmo continua lento. O limite de 2 atendimentos por ID em 24 h
+não entra na simulação, que usa um ID diferente por atendimento.
 
 **Ao mudar qualquer número da economia, rodar o simulador de novo e atualizar esta tabela.**
 
