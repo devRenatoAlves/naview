@@ -135,6 +135,8 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
 - [x] "Meu AnyDesk" também no GTK (`app.py`, usado no Linux), versão `2026.10.22.3` (22/10/2026)
 - [ ] Testar a atualização no Windows: instalar uma versão, publicar outra, clicar em Atualizar
 - [x] Versão `2026.10.22.1` (primeira com o atualizador, junto com a reformulação dos pets) enviada em 22/10/2026
+- [x] Versão `2026.10.23.1` enviada em 23/10/2026: loja aleatória por dia, limite de 2 atendimentos por ID em 24 h,
+  Fredinho lendário, Jonatas épico, óculos removido, cachecol estreito em Pikachu e Eevee
 - [ ] Avisar a equipe para baixar o NaView de novo uma vez (versões antigas não têm o atualizador)
 - [x] Versão `2026.10.22.2` (correções do teste no Windows + ID do AnyDesk) enviada em 22/10/2026; falta provar a atualização no Windows
 - [ ] Mais tarde, se a equipe crescer: assinar o manifesto
