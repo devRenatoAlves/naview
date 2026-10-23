@@ -61,6 +61,8 @@ Legenda: `[x]` feito, `[ ]` a fazer, `[~]` em andamento ou aguardando alguém.
   gato preto, Jonatas, astronauta, serpente de gelo (GIFs animados), galinha e slime (PNGs); acessórios
   encaixados; migração do progresso antigo (D46)
 - [x] (22/10/2026) Nome do pet fixo, o da espécie; renomear removido (D47)
+- [x] (23/10/2026) Anti-trapaça: mesmo ID conta no máximo 2 atendimentos em 24 h (D51)
+- [ ] Usuário testar a regra em sessões reais (3ª sessão no mesmo ID em 24 h deve avisar "não conta")
 - [ ] Usuário abrir `python3 app.py`, conferir os pets novos (animação na tela do pet, rodapé, acessórios)
   e a parte Qt (`app_qt.py`, só compilada: sem PySide6 aqui)
 - [ ] Caras por humor (pisca, feliz, triste) para o slime e a galinha, se o usuário quiser

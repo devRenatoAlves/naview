@@ -91,3 +91,11 @@ python3 -m py_compile app.py jogo/*.py && node --check web/jogo.js
   usando o app.
 - Ao sair com abas abertas, o app pergunta "Fechar o NaView?": num teste, esvazie `App.abas` antes
   de `app.quit()`.
+
+## Ver o tema dourado e a moldura dourada (só desenvolvimento)
+
+`NAVIEW_DEMO_DOURADO=1 python3 app.py` abre o app com um progresso descartável
+(`<cache>/progresso_demo.db`, recriado a cada abertura): Padrão, Oceano, Terminal, Espaço e
+Aventura Pixel no nível 5 (um de cada raridade) e a moldura dourada equipada. O progresso real
+não é lido nem alterado. Sem a variável, nada muda. Obs.: trocar de tema no jogo grava o tema no
+`config.json` normal.

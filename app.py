@@ -660,6 +660,10 @@ class App(Gtk.Window):
         aba.inicio = None
         if not resultado:
             return  # sessão curta demais
+        if resultado.get("limitado"):
+            self.avisar(f"Este ID já rendeu {cat_jogo.ATENDIMENTOS_MAX_POR_ID} atendimentos nas últimas "
+                        f"{cat_jogo.ATENDIMENTOS_JANELA_H} h: esta sessão não conta.", "lock-simple")
+            return
         nivel = self.progresso.perfil()["nivel"]
         # Subir de nível é só comemoração, sem prêmio (como conquista de videogame).
         subiu = f"Você chegou ao nível {nivel}! " if nivel > nivel_antes else ""

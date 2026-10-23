@@ -68,8 +68,8 @@
   - Os ids `pet-slime`, `pet-gato` e `pet-dragao` foram mantidos (arte nova), para não perder cartas e
     pets já salvos. Novos: `pet-galinha`, `pet-jonatas`, `pet-astronauta`. O ovo agora choca slime ou
     galinha.
-  - Raridades: Comum: slime, galinha, Fredinho. Rara: gato, Jonatas, Ronaldo. Épica: astronauta,
-    Jigglypuff, Eevee. Lendária: serpente de gelo, Pikachu, Gengar.
+  - Raridades: Comum: slime, galinha. Rara: gato, Ronaldo. Épica: astronauta, Jigglypuff, Eevee,
+    Jonatas. Lendária: Fredinho, serpente de gelo, Pikachu, Gengar.
   - **Animação:** a página troca o quadro do `<img>` no ritmo do GIF (`QUADRO_MS`) só com a tela do pet à
     vista, o pet acordado e o jogo sem pausa (sem timer nenhum fora disso, `agendarQuadros` em
     `jogo.js`). O acessório acompanha a cabeça com `QUADROS` (deslocamento x, y da cabeça em cada
@@ -142,7 +142,12 @@
   - `compor_pet` e `pet_rodape` ficam em cache (`lru_cache`). O GStreamer carrega 3 s depois de abrir o app, se
     houver som de conexão equipado (`Sons.preparar`).
 - **`app.py`:**
-  - `registrar_atendimento`: só sessões de 180 s ou mais contam.
+  - `registrar_atendimento`: só sessões de 180 s ou mais contam. **Anti-trapaça (23/10/2026):** o mesmo ID
+    (espaços ignorados) conta no máximo 2 vezes em 24 h, janela deslizante (`ATENDIMENTOS_MAX_POR_ID`,
+    `ATENDIMENTOS_JANELA_H`); a 3ª sessão devolve `{"limitado": True}` e o app avisa que não conta. IDs
+    diferentes não têm limite. Sessão sem ID conhecido (`cid` None) conta sempre. Sessão recusada não é
+    gravada, então não estende a janela. O limite vale só no cliente local: a validação real vem com o
+    servidor (D14).
   - `batimento` a cada 60 s: avisa quando um baú fica pronto e quando a recompensa diária está
     disponível.
   - Avisa quando a conta sobe de nível.
@@ -154,14 +159,15 @@
 | Cartas | 39: 12 temas, 12 pets, 6 acessórios, 5 molduras, 4 sons |
 | Raridades (peso no sorteio) | Comum 70, Rara 22, Épica 6.5, Lendária 1.2, Mítica 0.3 |
 | Míticas | Só os temas Aventura Pixel, Heróis HQ e Mangá Noir |
-| Baú de trabalho | 1 a cada **10** atendimentos de 3 min ou mais; sorteio Madeira 50, Prata 35, Ouro 12, Mágico 3 |
+| Baú de trabalho | 1 a cada **10** atendimentos de 3 min ou mais (mesmo ID: no máximo 2 em 24 h); sorteio Madeira 50, Prata 35, Ouro 12, Mágico 3 |
 | Cartas por baú | Madeira 1, Prata 2, Ouro 3 (mínimo rara), Mágico 5 (mínimo épica), Lendário 3 (mínimo lendária) |
 | Tempo para destravar | Madeira 15 min, Prata 1 h, Ouro 3 h, Mágico 8 h; só um baú destrava por vez |
 | Espaços de baú | 4 |
 | Baú grátis | Madeira, a cada 8 h, acumula 1 |
 | Garantia | Lendária depois de 40 baús seguidos sem lendária |
 | Recompensa diária (7 dias) | 10 moedas; 1 petisco; 20 moedas; Madeira; 30 moedas + 2 petiscos; Madeira; Prata. Fim de semana não quebra a sequência |
-| Loja | 3 ofertas por dia (comum, rara e uma especial); preços 40, 150, 600, 3.000 e 8.000 |
+- **Loja**: 3 ofertas por dia (comum, rara e uma especial), sorteadas aleatoriamente para cada
+  usuário, com a ordem embaralhada a cada renovação; preços 40, 150, 600, 3.000 e 8.000.
 | Atendimento | +3 moedas, +10 XP |
 | Melhorar carta | Cópias 2, 4, 8, 16 e moedas 20, 50, 120, 300 (nível 1 a 5) |
 | Nível da conta | Nível n exige 100 × n XP; **não dá prêmio** |
@@ -192,8 +198,9 @@ tempo até completar. O ritmo continua lento.
 ## Situação
 
 - Pronto: R1 a R7.
-- Pets (reformulados em 22/10/2026): slime, galinha e Fredinho (comuns), gato, Jonatas e Ronaldo
-  (raros), astronauta, Jigglypuff e Eevee (épicos), serpente de gelo, Pikachu e Gengar (lendários).
+- Pets (reformulados em 22/10/2026): slime, galinha (comuns), gato e Ronaldo (raros),
+  astronauta, Jigglypuff, Eevee e Jonatas (épicos), serpente de gelo, Pikachu, Gengar e
+  Fredinho (lendário).
 - Arte dos pets: pixel art num quadro de 64 x 64 (`PET_LADO`), com 16 linhas livres acima para
   chapéus (`PET_ACIMA`).
   - Pets próprios: camadas vetoriais convertidas em pixels com contorno e sombra em blocos

@@ -72,6 +72,7 @@ def rodar(semente, atendimentos, olhadas, dias, pasta):
     p = Progresso(banco, agora=lambda: relogio[0],
                   hoje=lambda: datetime.date.fromtimestamp(relogio[0]), rnd=random.Random(semente))
     marcos = {}
+    contador = [0]
     for d in range(dias):
         base = datetime.datetime(2026, 1, 5) + datetime.timedelta(days=d)
         if base.weekday() >= 5:
@@ -82,7 +83,8 @@ def rodar(semente, atendimentos, olhadas, dias, pasta):
                 _olhar_jogo(p)
             # Espalha os atendimentos do dia pelas 10 horas de trabalho.
             for _ in range(atendimentos // 10 + (1 if hora - 9 < atendimentos % 10 else 0)):
-                p.registrar_atendimento("simulado", 600)
+                p.registrar_atendimento(f"cliente{contador[0]}", 600)  # IDs sempre diferentes
+                contador[0] += 1
         dia = d + 1
         cartas = p.cartas()
         for r, ids in POR_RARIDADE.items():

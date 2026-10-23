@@ -145,10 +145,10 @@ CARTAS = [
     _c("pet-slime", "pet", "Slime", "comum", "Gosmento e muito carinhoso.", "pets/slime.svg", alvo="slime"),
     _c("pet-galinha", "pet", "Galinha", "comum", "Cocoricó! Bota ovo e acorda a equipe cedo.",
        "pets/galinha.svg", alvo="galinha"),
-    _c("pet-pinscher", "pet", "Fredinho", "comum",
+    _c("pet-pinscher", "pet", "Fredinho", "lendaria",
        "Pinscher caramelo: pequeno no tamanho, gigante na bravura.", "pets/pinscher.svg", alvo="pinscher"),
     _c("pet-gato", "pet", "Gatinho preto", "rara", "Dorme em cima do teclado.", "pets/gato.svg", alvo="gato"),
-    _c("pet-jonatas", "pet", "Jonatas", "rara", "Sempre com pressa para o próximo atendimento.",
+    _c("pet-jonatas", "pet", "Jonatas", "epica", "Sempre com pressa para o próximo atendimento.",
        "pets/jonatas.svg", alvo="jonatas"),
     _c("pet-salsicha", "pet", "Ronaldo", "rara", "Salsicha comprido o bastante para alcançar o cabo de rede.",
        "pets/salsicha.svg", alvo="salsicha"),
@@ -218,6 +218,9 @@ SORTEIO_BAU_TRABALHO = {"madeira": 50, "prata": 35, "ouro": 12, "magico": 3}
 ESPACOS_BAU = 4
 ATENDIMENTOS_POR_BAU = 10  # ritmo lento de propósito: a demanda de atendimentos é alta
 ATENDIMENTO_MINIMO_S = 180  # sessão mais curta que isso não conta (evita abrir/fechar à toa)
+# Anti-trapaça: o mesmo ID conta no máximo N vezes dentro de uma janela de H horas (deslizante).
+ATENDIMENTOS_MAX_POR_ID = 2
+ATENDIMENTOS_JANELA_H = 24
 BAU_GRATIS_HORAS = 8
 BAU_GRATIS_MAX = 1
 GARANTIA_LENDARIA = 40  # baús seguidos sem lendária (ou mítica) -> uma carta vira lendária

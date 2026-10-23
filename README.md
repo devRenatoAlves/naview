@@ -68,13 +68,14 @@ janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.
   raridades (Comum, Rara, Épica, Lendária) e a Mítica, só para os temas mais elaborados
   (Aventura Pixel, Heróis HQ e Mangá Noir; Espaço, Neon e Alto-mar são Lendários). Cópias repetidas + moedas sobem o nível (até 5). Tema
   no nível 5 ganha a versão dourada. Temas que você não tem ficam bloqueados na Coleção.
-- **Baús**: 4 espaços; um baú de trabalho a cada 10 atendimentos (sessões de 3 min ou mais). Cada
+- **Baús**: 4 espaços; um baú de trabalho a cada 10 atendimentos (sessões de 3 min ou mais; o mesmo ID conta no máximo 2 vezes em 24 h). Cada
   baú leva um tempo para destravar (15 min a 8 h) ou abre na hora pagando moedas. Baú grátis a
   cada 8 h (acumula 1). Garantia de lendária a cada 40 baús.
 - **Nível da conta**: sobe com XP (atendimentos, baús abertos, cartas melhoradas). Não dá prêmio:
   é só comemoração, como conquista de videogame.
 - **Recompensa diária**: calendário de 7 dias; fim de semana não quebra a sequência.
-- **Loja**: 3 ofertas por dia e petiscos.
+- **Loja**: 3 ofertas por dia (comum, rara e uma especial), sorteadas aleatoriamente para cada
+  usuário, com a ordem embaralhada a cada renovação; petiscos custam 15 moedas.
 - **Pet (Tamagotchi)**: nasce de um ovo, tem comida, alegria e energia que caem com o tempo,
   dorme quando o app está fechado, come petiscos, brinca, tira soneca, cresce (bebê, jovem,
   adulto) e usa acessórios. Guarda-roupa separado em Espécies e Acessórios. O nome é sempre o da espécie (não dá para renomear). Fica no rodapé da barra de contatos.

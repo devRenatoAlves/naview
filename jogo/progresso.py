@@ -7,6 +7,7 @@ servidor da equipe, basta trocar esta classe por outra com os mesmos métodos qu
 import datetime
 import json
 import math
+import os
 import random
 import sqlite3
 import time
@@ -38,6 +39,10 @@ class Progresso:
         self.agora = agora
         self.hoje = hoje
         self.rnd = rnd or random.Random()
+        demo = bool(os.environ.get("NAVIEW_DEMO_DOURADO")) and caminho is None
+        if demo:  # só desenvolvimento: banco descartável, o progresso real não é tocado
+            caminho = plataforma.CACHE / "progresso_demo.db"
+            Path(caminho).unlink(missing_ok=True)
         caminho = caminho or ARQUIVO
         Path(caminho).parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(str(caminho))
@@ -53,10 +58,24 @@ class Progresso:
         if self._kv("perfil") is None:
             self._comecar(tema_atual)
         self._migrar_pets()
+        if demo:
+            self._montar_demo_dourado()
         if liberar_tudo:  # modo de teste: todas as cartas, inclusive as que entrarem depois
             with self.db:
                 self.db.executemany("INSERT OR IGNORE INTO cartas VALUES (?, 1, 0)",
                                     [(c["id"],) for c in cat.CARTAS])
+
+    def _montar_demo_dourado(self):
+        """Só para ver o design (NAVIEW_DEMO_DOURADO=1): um tema de cada raridade no nível máximo,
+        a moldura dourada equipada e moedas de sobra. Roda num banco temporário."""
+        temas = ["tema-padrao", "tema-oceano", "tema-terminal", "tema-espaco", "tema-pixel"]
+        with self.db:
+            self.db.executemany("INSERT OR REPLACE INTO cartas VALUES (?, ?, 0)",
+                                [(t, cat.NIVEL_MAX) for t in temas])
+            self.db.execute("INSERT OR REPLACE INTO cartas VALUES ('mold-dourada', 1, 0)")
+            equipados = self._kv("equipados")
+            equipados["moldura"] = "dourada"
+            self._salvar_kv("equipados", equipados)
 
     def _migrar_pets(self):
         """Tira do progresso as cartas que saíram do catálogo (pets antigos). Se o pet atual era um deles,
@@ -178,9 +197,20 @@ class Progresso:
     # ---- atendimentos -----------------------------------------------------------
 
     def registrar_atendimento(self, contato, segundos):
-        """Chamado quando uma sessão termina. Só conta se durou o mínimo."""
+        """Chamado quando uma sessão termina. Só conta se durou o mínimo e se o mesmo ID ainda não
+        atingiu o limite das últimas 24 h (devolve {"limitado": True} nesse caso)."""
         if segundos < cat.ATENDIMENTO_MINIMO_S:
             return None
+        # Anti-trapaça: o mesmo ID conta no máximo ATENDIMENTOS_MAX_POR_ID vezes por janela de 24 h.
+        # Sem ID conhecido (sessão capturada sem ID no título) não dá para conferir, então conta.
+        contato = "".join(str(contato).split()) if contato else None
+        if contato:
+            desde = self.agora() - cat.ATENDIMENTOS_JANELA_H * HORA
+            recentes = self.db.execute(
+                "SELECT COUNT(*) FROM atendimentos WHERE REPLACE(contato, ' ', '') = ? AND fim > ?",
+                (contato, desde)).fetchone()[0]
+            if recentes >= cat.ATENDIMENTOS_MAX_POR_ID:
+                return {"limitado": True, "moedas": 0, "xp": 0, "bau": None}
         resultado = {"moedas": cat.MOEDAS_ATENDIMENTO, "xp": cat.XP_ATENDIMENTO, "bau": None}
         with self.db:
             self.db.execute("INSERT INTO atendimentos (contato, fim, segundos) VALUES (?, ?, ?)",
@@ -431,13 +461,16 @@ class Progresso:
 
     def _loja(self):
         hoje = self.hoje()
-        rnd = random.Random(hoje.toordinal())  # mesma oferta o dia todo
         compradas = self._kv("loja", {}).get(hoje.isoformat(), [])
+        especial = self.rnd.choice(["epica", "epica", "epica", "lendaria", "lendaria", "mitica"])
+        itens = [("comum", cat.PRECO_CARTA["comum"]),
+                 ("rara", cat.PRECO_CARTA["rara"]),
+                 (especial, cat.PRECO_CARTA[especial])]
+        self.rnd.shuffle(itens)  # a ordem dos itens é aleatória
         ofertas = []
-        especial = rnd.choice(["epica", "epica", "epica", "lendaria", "lendaria", "mitica"])
-        for i, raridade in enumerate(["comum", "rara", especial]):
-            cid = rnd.choice([c["id"] for c in cat.CARTAS if c["raridade"] == raridade])
-            ofertas.append({"indice": i, "carta": cid, "preco": cat.PRECO_CARTA[raridade],
+        for i, (raridade, preco) in enumerate(itens):
+            cid = self.rnd.choice([c["id"] for c in cat.CARTAS if c["raridade"] == raridade])
+            ofertas.append({"indice": i, "carta": cid, "preco": preco,
                             "comprada": i in compradas})
         return {"ofertas": ofertas, "preco_petisco": cat.PRECO_PETISCO}
 
