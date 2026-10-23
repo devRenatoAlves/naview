@@ -156,7 +156,7 @@
 
 | Item | Valor |
 |---|---|
-| Cartas | 39: 12 temas, 12 pets, 6 acessórios, 5 molduras, 4 sons |
+| Cartas | 38: 12 temas, 12 pets, 5 acessórios, 5 molduras, 4 sons |
 | Raridades (peso no sorteio) | Comum 70, Rara 22, Épica 6.5, Lendária 1.2, Mítica 0.3 |
 | Míticas | Só os temas Aventura Pixel, Heróis HQ e Mangá Noir |
 | Baú de trabalho | 1 a cada **10** atendimentos de 3 min ou mais (mesmo ID: no máximo 2 em 24 h); sorteio Madeira 50, Prata 35, Ouro 12, Mágico 3 |
@@ -175,22 +175,23 @@
 ### Ritmo medido
 
 Medido por `python3 ferramentas/simular_economia.py`, com a mediana de 20 sorteios em dias
-corridos (23/10/2026, com 39 cartas, Fredinho lendário, Jonatas épico e loja aleatória; a rodada
+corridos (23/10/2026, com 38 cartas, sem o óculos, Fredinho lendário, Jonatas épico e loja aleatória; a rodada
 completa leva cerca de 2 min, porque o simulador usa um banco sem espera de gravação em disco):
 
 | Marco | 25 atend./dia | 15 atend./dia |
 |---|---|---|
-| Metade da coleção | 8 | 15 |
-| Todas as épicas | 38 | 58 |
-| Primeira mítica | 31 | 87 |
-| Todas as lendárias | 139 (109-200) | 208 (152-354) |
-| Coleção completa | 195 (148-283) | 291 (194-362; só 16 de 20 chegaram em 400 dias) |
+| Metade da coleção | 8 | 12 |
+| Todas as épicas | 38 | 49 |
+| Primeira mítica | 25 | 82 |
+| Todas as lendárias | 157 (121-246) | 234 (155-295) |
+| Coleção completa | 198 (127-304) | 304 (199-400; só 14 de 20 chegaram em 400 dias) |
 | Conta nível 10 | 19 | 33 |
-| Primeiro tema dourado | 74 | 124 |
+| Primeiro tema dourado | 76 | 126 |
 
 Comparada com a de 22/10/2026 (183 e 297 dias para a coleção completa), o ritmo quase não mudou: a
-troca de raridade de dois pets e a loja aleatória pesam pouco perto da carta mítica (0,3% de chance),
-que domina o tempo até completar. O ritmo continua lento. O limite de 2 atendimentos por ID em 24 h
+troca de raridade de dois pets, a loja aleatória e a saída de uma carta rara pesam pouco perto da carta
+mítica (0,3% de chance), que domina o tempo até completar; as lendárias ficaram 1 carta maior (Fredinho)
+e levam mais tempo. O ritmo continua lento. O limite de 2 atendimentos por ID em 24 h
 não entra na simulação, que usa um ID diferente por atendimento.
 
 **Ao mudar qualquer número da economia, rodar o simulador de novo e atualizar esta tabela.**
@@ -201,6 +202,15 @@ não entra na simulação, que usa um ID diferente por atendimento.
 - Pets (reformulados em 22/10/2026): slime, galinha (comuns), gato e Ronaldo (raros),
   astronauta, Jigglypuff, Eevee e Jonatas (épicos), serpente de gelo, Pikachu, Gengar e
   Fredinho (lendário).
+- **Óculos removido (23/10/2026):** a carta `acc-oculos`, o encaixe e as variantes (`oculos_lado`,
+  `oculos_lado_dir`, `oculos_lado_mini`) saíram; as notas acima sobre óculos são histórico. Restam 5
+  acessórios: laço, boné, chapéu de mago, coroa e cachecol. `Progresso._migrar_pets` apaga a carta
+  do banco e tira o óculos do pet que o estiver usando (o pet e o resto ficam).
+- **Encaixe nos Pokémon (23/10/2026):** conferidos os 5 acessórios em Pikachu, Eevee, Jigglypuff e Gengar
+  (folha de contato 6x do alto da cabeça e do pescoço). Chapéus, laço e coroa assentam bem. O cachecol de
+  30 px passava ~4 px para cada lado do corpo de Pikachu e Eevee (~22 px): os dois passaram a usar
+  `cachecol_estreito` (`AJUSTE_ACESSORIO`). Jigglypuff e Gengar (sem pescoço, cachecol sob a boca) ficaram
+  como estavam. Limite conhecido: a orelha alta do Eevee aparece acima do boné e entre as pontas da coroa.
 - Arte dos pets: pixel art num quadro de 64 x 64 (`PET_LADO`), com 16 linhas livres acima para
   chapéus (`PET_ACIMA`).
   - Pets próprios: camadas vetoriais convertidas em pixels com contorno e sombra em blocos

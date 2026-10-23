@@ -71,26 +71,25 @@ ENCAIXE_PET = {
 ENCAIXE_ACESSORIO = {
     "laco": ("topo", 7, 9, 15, 11), "bone": ("topo", 11, 10, 26, 13),
     "mago": ("topo", 13, 17, 27, 20), "coroa": ("topo", 9, 12, 19, 13),
-    "oculos": ("olhos", 13, 4, 26, 9), "cachecol": ("pescoco", 15, 2, 30, 15),
+    "cachecol": ("pescoco", 15, 2, 30, 15),
 }
 
 
 # Ajuste de um acessório num pet específico (quando o encaixe padrão não serve, como nos pets de lado):
 # (pet, acessório) -> (arquivo do desenho, (x, y) do ponto no quadro do pet, âncora x, âncora y, largura, altura).
-# "arquivo" é uma variante de arte/acessorios/ (oculos_lado, oculos_lado_dir, oculos_lado_mini, cachecol_estreito).
+# "arquivo" é uma variante de arte/acessorios/ (cachecol_estreito).
 AJUSTE_ACESSORIO = {
     # Fredinho: cabeça de frente com olhos bem afastados (15 px), pescoço curto sob o queixo.
-    ("pinscher", "oculos"): ("oculos", (18, 21), 13, 4, 26, 9),
     ("pinscher", "cachecol"): ("cachecol_estreito", (25, 32), 9, 2, 19, 15),
     # Ronaldo: de lado, olhando para a esquerda; pescoço entre a cabeça e o peito.
-    ("salsicha", "oculos"): ("oculos_lado", (25, 25), 5, 3, 16, 8),
     ("salsicha", "cachecol"): ("cachecol_estreito", (24, 37), 9, 2, 19, 15),
     # Serpente de gelo: de perfil, olhando para a esquerda; o chapéu assenta na crina.
-    ("dragao", "oculos"): ("oculos_lado_mini", (21, -26), 3, 2, 12, 6),
     ("dragao", "cachecol"): ("cachecol_estreito", (38, -6), 9, 2, 19, 15),
     # Galinha: de lado, olhando para a esquerda.
-    ("galinha", "oculos"): ("oculos_lado", (16, 12), 5, 3, 16, 8),
     ("galinha", "cachecol"): ("cachecol_estreito", (21, 24), 9, 2, 19, 15),
+    # Pikachu e Eevee: corpo de ~22 px; o cachecol de 30 px passava 4 px para cada lado.
+    ("pikachu", "cachecol"): ("cachecol_estreito", (24, 45), 9, 2, 19, 15),
+    ("eevee", "cachecol"): ("cachecol_estreito", (24, 46), 9, 2, 19, 15),
 }
 
 
@@ -168,8 +167,6 @@ CARTAS = [
     _c("acc-laco", "acessorio", "Laço", "comum", "Um charme.", "acessorios/laco.svg", alvo="laco"),
     _c("acc-bone", "acessorio", "Boné", "comum", "Pronto para a visita técnica.", "acessorios/bone.svg",
        alvo="bone"),
-    _c("acc-oculos", "acessorio", "Óculos escuros", "rara", "Estilo de quem resolve tudo.",
-       "acessorios/oculos.svg", alvo="oculos"),
     _c("acc-cachecol", "acessorio", "Cachecol", "rara", "Para o ar-condicionado do escritório.",
        "acessorios/cachecol.svg", alvo="cachecol"),
     _c("acc-mago", "acessorio", "Chapéu de mago", "epica", "Para feitiços de suporte remoto.",

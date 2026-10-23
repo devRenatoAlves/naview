@@ -78,13 +78,16 @@ class Progresso:
             self._salvar_kv("equipados", equipados)
 
     def _migrar_pets(self):
-        """Tira do progresso as cartas que saíram do catálogo (pets antigos). Se o pet atual era um deles,
-        ele vira o Slime, mantendo nome, XP e acessório."""
+        """Tira do progresso as cartas que saíram do catálogo (pets antigos, óculos). Se o pet atual era um
+        deles, ele vira o Slime, mantendo nome, XP e acessório; um acessório removido sai do pet."""
         with self.db:
             for (cid,) in self.db.execute("SELECT id FROM cartas").fetchall():
                 if cid not in cat.CARTAS_POR_ID:
                     self.db.execute("DELETE FROM cartas WHERE id = ?", (cid,))
             pet = self._kv("pet")
+            if pet and pet.get("acessorio") and pet["acessorio"] not in cat.ENCAIXE_ACESSORIO:
+                pet["acessorio"] = None  # acessório que saiu do catálogo (ex.: óculos)
+                self._salvar_kv("pet", pet)
             if pet and pet["especie"] and f"pet-{pet['especie']}" not in cat.CARTAS_POR_ID:
                 pet["especie"] = "slime"
                 self._salvar_kv("pet", pet)

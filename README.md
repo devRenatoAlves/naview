@@ -64,7 +64,7 @@ Botão de presente na barra de título (a bolinha vermelha conta as novidades). 
 janela, sem fechar as sessões. Tudo local, em `~/.local/share/naview/progresso.db`. Fechado há
 10 min, o jogo sai da memória (reabrir leva um instante a mais).
 
-- **Cartas** (39): temas, pets, acessórios do pet, molduras dos avatares e sons de conexão, em 4
+- **Cartas** (38): temas, pets, acessórios do pet, molduras dos avatares e sons de conexão, em 4
   raridades (Comum, Rara, Épica, Lendária) e a Mítica, só para os temas mais elaborados
   (Aventura Pixel, Heróis HQ e Mangá Noir; Espaço, Neon e Alto-mar são Lendários). Cópias repetidas + moedas sobem o nível (até 5). Tema
   no nível 5 ganha a versão dourada. Temas que você não tem ficam bloqueados na Coleção.

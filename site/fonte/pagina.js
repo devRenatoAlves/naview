@@ -135,7 +135,6 @@
     pet("Gengar", "lendaria", "Sorri no escuro e assombra os bugs.", "gengar"),
     comArte("Laço", "comum", "Um charme.", "arte/acessorios/laco.svg"),
     comArte("Boné", "comum", "Pronto para a visita técnica.", "arte/acessorios/bone.svg"),
-    comArte("Óculos escuros", "rara", "Estilo de quem resolve tudo.", "arte/acessorios/oculos.svg"),
     comArte("Cachecol", "rara", "Para o ar-condicionado do escritório.", "arte/acessorios/cachecol.svg"),
     comArte("Chapéu de mago", "epica", "Para feitiços de suporte remoto.", "arte/acessorios/mago.svg"),
     comArte("Coroa", "lendaria", "Majestade do atendimento.", "arte/acessorios/coroa.svg"),

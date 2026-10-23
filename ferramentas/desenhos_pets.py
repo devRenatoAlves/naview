@@ -343,17 +343,6 @@ BONE = """
 ................KKKKKKKKK.
 """
 
-OCULOS = """
-.KKKKKKKKKK....KKKKKKKKKK.
-KWWdDDDDDDDKKKKKWWdDDDDDDK
-KWdDDDDDDDDKFFKKWdDDDDDDDK
-KdDDDDDDDDDK....KdDDDDDDDK
-KDDDDDDDDDdK....KDDDDDDDdK
-KDDDDDDDDdlK....KDDDDDDdlK
-.KDDDDdlllK......KDDDdllK.
-..KKKKKKKK........KKKKKK..
-"""
-
 MAGO = """
 ...............KKK.........
 .............KKPMK.........
@@ -403,11 +392,6 @@ def bone():
     return de_mapa(BONE, paleta), 26, 13, 11, 10
 
 
-def oculos():
-    paleta = {"K": "#111111", "F": "#3a3a3a", "D": "#22304f", "d": "#3b5a8c", "l": "#6fa0e0", "W": "#ffffff"}
-    return de_mapa(OCULOS, paleta), 26, 9, 13, 4
-
-
 def cachecol(largura=30):
     """Faixa listrada com uma leve curva, nó e a ponta caindo com franja. 'largura' é o tamanho da faixa em
     volta do pescoço (30 para pets de frente, 18 para os de cabeça estreita ou de lado)."""
@@ -450,47 +434,6 @@ def cachecol_estreito():
     return cachecol(18)
 
 
-def oculos_lado(espelhado=False):
-    """Óculos de perfil (para pets que olham de lado): uma lente e a haste para trás. Âncora = centro da lente.
-    Olhando para a esquerda; espelhado=True para os que olham para a direita."""
-    K, D, d, l, W, F = "#111111", "#22304f", "#3b5a8c", "#6fa0e0", "#ffffff", "#3a3a3a"
-    mapa = """
-..KKKKKKKK......
-.KWWdDDDDDK.....
-KWdDDDDDDDDKKKKK
-KdDDDDDDDDDK....
-KDDDDDDDDDdK....
-KDDDDDDDDdlK....
-.KDDDDddllK.....
-..KKKKKKKK......
-"""
-    grade = de_mapa(mapa, {"K": K, "D": D, "d": d, "l": l, "W": W})
-    ax = 5
-    if espelhado:
-        grade = {(15 - x, y): c for (x, y), c in grade.items()}
-        ax = 10
-    return grade, 16, 8, ax, 3
-
-
-def oculos_lado_dir():
-    return oculos_lado(True)
-
-
-def oculos_lado_mini():
-    """Óculos de perfil pequenos, para cabeças pequenas e cheias de detalhe (serpente de gelo): lente de
-    7 x 6 e haste para trás. Olhando para a esquerda. Âncora = centro da lente."""
-    K, D, d, l, W = "#111111", "#22304f", "#3b5a8c", "#6fa0e0", "#ffffff"
-    mapa = """
-.KKKKK......
-KWWDDDKKKKKK
-KWDDDDK.....
-KDDDDdK.....
-.KDDdlK.....
-..KKKK......
-"""
-    return de_mapa(mapa, {"K": K, "D": D, "d": d, "l": l, "W": W}), 12, 6, 3, 2
-
-
 def mago():
     paleta = {"K": "#1f1660", "M": "#6a5ae0", "m": "#4434b0", "P": "#9d8ff5", "Y": "#ffd166", "y": "#e0a030"}
     return de_mapa(MAGO, paleta), 27, 20, 13, 17
@@ -502,7 +445,6 @@ def coroa():
     return de_mapa(COROA, paleta), 19, 13, 9, 12
 
 
-ACESSORIOS = {"laco": laco, "bone": bone, "oculos": oculos, "cachecol": cachecol, "mago": mago, "coroa": coroa,
+ACESSORIOS = {"laco": laco, "bone": bone, "cachecol": cachecol, "mago": mago, "coroa": coroa,
               # variantes para pets de lado ou de pescoço estreito (ver AJUSTE_ACESSORIO no catálogo)
-              "oculos_lado": oculos_lado, "oculos_lado_dir": oculos_lado_dir,
-              "oculos_lado_mini": oculos_lado_mini, "cachecol_estreito": cachecol_estreito}
+              "cachecol_estreito": cachecol_estreito}
