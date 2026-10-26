@@ -126,8 +126,12 @@ class Janelas:
         topo = user32.GetAncestor(janela, GA_ROOT)
         if not topo or user32.GetForegroundWindow() != topo:
             return  # outro programa está na frente: não roubar o foco dele
-        if user32.GetFocus() != janela:
-            user32.SetFocus(janela)
+        atual = user32.GetFocus()
+        # Foco já na sessão ou num controle dentro dela (ex.: campo de senha do AnyDesk): não mexer.
+        # Puxar o foco para a janela-mãe tirava o cursor do campo logo depois do clique.
+        if atual and (atual == janela or user32.IsChild(janela, atual)):
+            return
+        user32.SetFocus(janela)
 
     def e_sessao(self, hwnd, janela):
         """A janela hwnd é a da sessão (ou algo dentro dela)?"""

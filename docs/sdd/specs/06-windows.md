@@ -171,3 +171,14 @@ Modos de encaixe do piloto:
   e `%APPDATA%\AnyDesk\*.conf` (Linux: `/etc/anydesk/system.conf`, `~/.anydesk/*.conf`); se não achar,
   `anydesk --get-id` numa thread. Caminhos do Windows ainda não confirmados no PC real.
 
+
+### Senha do AnyDesk sem foco no Windows (26/10/2026)
+
+- Relato de um testador (escala 125%): ao clicar no campo de senha do AnyDesk o cursor aparecia e,
+  em menos de 1 s, o campo perdia o foco. Com escala 100% funcionava. O DPI per-monitor v2 em
+  `app_qt.py` não resolveu sozinho.
+- Causa provável (**hipótese, ainda sem confirmação no PC dele**): todo clique na sessão dispara
+  `restaurar_foco`, que fazia `SetFocus(janela)` sempre que `GetFocus() != janela`. Com o foco num
+  controle filho (o campo de senha), isso puxava o foco para a janela-mãe e tirava o cursor do campo.
+- Correção: `janelas/win32.py` só chama `SetFocus` quando o foco está fora da sessão (nem a janela
+  nem um filho dela).
