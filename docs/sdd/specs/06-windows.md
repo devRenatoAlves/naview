@@ -120,10 +120,11 @@ Modos de encaixe do piloto:
     tudo não aconteceu).
   - As sessões abertas pelo NaView herdam o administrador dele (`admin=True`); as janelas do
     AnyDesk abertas antes, fora do NaView, rodam sem administrador.
-  Ainda em aberto: (a) NaView **sem** administrador; (b) escala de tela 125% ou 150%, comum em
-  notebooks (risco 2); (c) antivírus (risco 5); (d) o travamento do primeiro teste, que não se
-  repetiu. A versão nova do piloto (modos de encaixe e registro em arquivo) serve para os colegas
-  testarem esses pontos.
+  Ainda em aberto: (a) NaView **sem** administrador; (b) escala de tela 125% ou 150%,
+  notebooks (risco 2) — houve uma tentativa de fix: `SetProcessDpiAwareness` no
+  `app_qt.py` (Janela 2026-10); a confirmação final depende de testar no PC; (c) antivírus (risco 5);
+  (d) o travamento do primeiro teste, que não se repetiu. A versão nova do piloto (modos de encaixe e
+  registro em arquivo) serve para os colegas testarem esses pontos.
 - 16/10/2026: **fase 1 começou.** Versão Qt do app em `app_qt.py`, ao lado do `app.py` (GTK), que
   continua sendo o usado até a versão Qt chegar ao mesmo nível. Feito e testado no Linux:
   - `plataforma.py`: pastas e AnyDesk de cada sistema. No Linux os caminhos são os mesmos de antes;

@@ -11,6 +11,7 @@ import sys
 import threading
 import time
 import webbrowser
+import ctypes
 from pathlib import Path
 
 import plataforma
@@ -1741,7 +1742,25 @@ class PonteAtualizacao(QObject):
     achou_id = Signal(str)
 
 
+def _configure_dpi_awareness():
+    """Ativa o DPI awareness apenas no Windows.
+
+    Sem isso o processo não entra em "per-monitor" DPI-aware e o encaixe do
+    AnyDesk (QWindow.fromWinId + createWindowContainer) fica em escala diferente
+    do NaView, deixando a sessão borrada ou o input desalinhado (risco 2,
+    docs/sdd/specs/06-windows.md). 1 = PROCESS_PER_MONITOR_DPI_AWARE.
+    """
+    if not plataforma.WINDOWS:
+        return
+    try:
+        set_dpi_awareness = ctypes.windll.shcore.SetProcessDpiAwareness
+        set_dpi_awareness(1)
+    except Exception:
+        pass
+
+
 def main():
+    _configure_dpi_awareness()
     # Nome do programa para o sistema: liga a janela ao atalho naview.desktop (StartupWMClass) e
     # faz a barra de tarefas mostrar o ícone certo.
     sys.argv[0] = "naview"
