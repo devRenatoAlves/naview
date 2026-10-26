@@ -1743,15 +1743,24 @@ class PonteAtualizacao(QObject):
 
 
 def _configure_dpi_awareness():
-    """Ativa o DPI awareness apenas no Windows.
+    """Ativa o DPI awareness no Windows, de modo que o encaixe do AnyDesk
+    (QWindow.fromWinId + createWindowContainer) fique na escala certa.
 
-    Sem isso o processo não entra em "per-monitor" DPI-aware e o encaixe do
-    AnyDesk (QWindow.fromWinId + createWindowContainer) fica em escala diferente
-    do NaView, deixando a sessão borrada ou o input desalinhado (risco 2,
-    docs/sdd/specs/06-windows.md). 1 = PROCESS_PER_MONITOR_DPI_AWARE.
+    A 100% funciona; na 125% ou 150% o encaixe ficava borrado/desalinhado
+    (risco 2, docs/sdd/specs/06-windows.md). Usa v2 (per-monitor) se o Windows
+    for novo o suficiente, cai no v1 caso contrario.
     """
     if not plataforma.WINDOWS:
         return
+    try:
+        set_dpi_awareness_context = ctypes.windll.shcore.SetProcessDpiAwarenessContext
+        set_dpi_awareness_context.argtypes = [ctypes.c_void_p]
+        hr = set_dpi_awareness_context(ctypes.c_void_p(-4))  # v2, Windows 10 1607+
+        if hr == 0:
+            return
+    except Exception:
+        pass
+    # Se o sistema for antigo demais, cai no per-monitor v1 (conserta a escala básica).
     try:
         set_dpi_awareness = ctypes.windll.shcore.SetProcessDpiAwareness
         set_dpi_awareness(1)
@@ -1760,6 +1769,7 @@ def _configure_dpi_awareness():
 
 
 def main():
+    QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     _configure_dpi_awareness()
     # Nome do programa para o sistema: liga a janela ao atalho naview.desktop (StartupWMClass) e
     # faz a barra de tarefas mostrar o ícone certo.
