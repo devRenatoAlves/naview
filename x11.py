@@ -1,6 +1,7 @@
 """Acesso mínimo à libX11 via ctypes: listar janelas e ler suas propriedades."""
 import ctypes
 import ctypes.util
+import time
 
 _xlib = ctypes.cdll.LoadLibrary(ctypes.util.find_library("X11") or "libX11.so.6")
 
@@ -63,6 +64,9 @@ _xlib.XQueryPointer.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_uint),
 ]
 _xlib.XFlush.argtypes = [ctypes.c_void_p]
+_xlib.XSync.argtypes = [ctypes.c_void_p, ctypes.c_int]
+_xlib.XDefaultScreen.argtypes = [ctypes.c_void_p]
+_xlib.XWithdrawWindow.argtypes = [ctypes.c_void_p, Window, ctypes.c_int]
 _xlib.XChangeProperty.argtypes = [ctypes.c_void_p, Window, Atom, Atom, ctypes.c_int, ctypes.c_int,
                                   ctypes.c_void_p, ctypes.c_int]
 _xlib.XDeleteProperty.argtypes = [ctypes.c_void_p, Window, Atom]
@@ -167,6 +171,31 @@ class X11:
         return found
 
     # ---- teclado -----------------------------------------------------------
+
+    def withdraw(self, win):
+        """Tira a janela do controle do gerenciador de janelas (ICCCM: desmapeia e avisa a raiz).
+
+        Sem isso, gerenciadores novos (Mutter 50) readotam a janela assim que ela é encaixada
+        em outro pai e a tiram do socket logo em seguida (o AnyDesk abre e fecha na hora).
+        """
+        _xlib.XWithdrawWindow(self.dpy, win, _xlib.XDefaultScreen(self.dpy))
+        _xlib.XSync(self.dpy, False)
+        # O gerenciador demora uns 30 ms para largar a moldura; encaixar antes disso falha.
+        limite = time.monotonic() + 0.5
+        while not self.is_toplevel_free(win) and time.monotonic() < limite:
+            time.sleep(0.005)
+
+    def is_toplevel_free(self, win):
+        """True se a janela está direto na raiz (o gerenciador de janelas já largou a moldura)."""
+        root, parent = Window(), Window()
+        kids = ctypes.POINTER(Window)()
+        n = ctypes.c_uint()
+        if not _xlib.XQueryTree(self.dpy, win, ctypes.byref(root), ctypes.byref(parent),
+                                ctypes.byref(kids), ctypes.byref(n)):
+            return False
+        if kids:
+            _xlib.XFree(kids)
+        return parent.value == self.root
 
     def focused(self):
         """Janela que recebe o teclado agora."""

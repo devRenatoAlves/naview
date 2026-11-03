@@ -1082,6 +1082,8 @@ class App(Gtk.Window):
         aba.spinner.hide()
         aba.ponto.show()
         # O socket precisa estar realizado (ter janela X11 própria) antes de receber a janela.
+        # Antes, a janela sai do controle do gerenciador de janelas; senão ele a tira do socket.
+        self.x.withdraw(xid)
         aba.socket.add_id(xid)
         # Disparado quando a janela do AnyDesk some (conexão encerrada do outro lado, etc.).
         aba.socket.connect("plug-removed", lambda _s: self.remover_aba(aba) or True)
