@@ -7,7 +7,7 @@ Junta várias conexões do AnyDesk em abas, numa única janela (Linux; versão p
 - O app e o AnyDesk rodam pelo X11/XWayland (`GDK_BACKEND=x11`). Isso permite encaixar a janela do
   AnyDesk dentro de uma aba (`Gtk.Socket`).
 - **Contatos** (barra lateral): importados do catálogo do AnyDesk (`ad.roster.items` em
-  `~/.anydesk/user.conf`), com busca e avatar colorido. O lápis renomeia num balão; o nome fica
+  `~/.anydesk/user.conf`), com busca e avatar colorido. O lápis renomeia num balão (na aba aberta, dois cliques rápidos na identificação abrem o mesmo balão); o nome fica
   salvo em `~/.config/naview/contatos.json` (o arquivo do AnyDesk não é alterado). A lista mostra
   primeiro os conectados, depois os usados recentemente.
 - **Conectar**: dois cliques (ou Enter) no contato, ID na busca + Enter, o campo da tela inicial ou
@@ -22,13 +22,13 @@ Junta várias conexões do AnyDesk em abas, numa única janela (Linux; versão p
   AnyDesk (o `Gtk.Socket` não repassa bem as teclas, porque o AnyDesk não usa XEMBED). Clicar num
   campo ou na lista de contatos devolve o teclado ao app; clicar na tela da sessão devolve ao AnyDesk.
 - **Atalhos** (quando o teclado está no app): F9 mostra/esconde contatos, Ctrl+F vai para a busca.
-- **Menu > Capturar janela do AnyDesk…**: encaixa uma janela do AnyDesk já aberta (precisa ter
+- **Botão de janela na barra de título (Capturar janela do AnyDesk…)**: encaixa uma janela do AnyDesk já aberta (precisa ter
   sido aberta com `GDK_BACKEND=x11`).
 - Fechar o app encerra todas as conexões, depois de pedir confirmação.
 
 ## Temas
 
-O tema se escolhe no jogo (botão de presente na barra de título > Coleção > Usar). Menu ⋮ > Opções de aparência…: intensidade do vidro, desenhos e animações. Tudo aplica na hora e fica salvo em
+O tema se escolhe no jogo (botão de presente na barra de título > Coleção > Usar). As opções de aparência (intensidade do vidro, desenhos e animações) saíram da tela; os valores salvos continuam valendo. Tudo aplica na hora e fica salvo em
 `~/.config/naview/config.json`.
 
 | Tema | O que muda |

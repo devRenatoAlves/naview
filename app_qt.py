@@ -39,7 +39,7 @@ from PySide6.QtGui import (QColor, QFont, QFontMetrics, QGuiApplication, QIcon, 
                            QPainter, QPen, QShortcut, QWindow)
 from PySide6.QtWidgets import (QApplication, QDialog, QDialogButtonBox, QFrame,  # noqa: E402
                                QGraphicsDropShadowEffect, QGridLayout, QHBoxLayout, QLabel, QLayout,
-                               QLineEdit, QListWidget, QListWidgetItem, QMenu, QMessageBox, QPushButton,
+                               QLineEdit, QListWidget, QListWidgetItem, QMessageBox, QPushButton,
                                QSizePolicy, QStackedWidget, QTabBar, QTabWidget, QToolButton, QVBoxLayout,
                                QWidget)
 
@@ -427,10 +427,25 @@ class TelaInicio(QWidget):
 
 # ---- abas e contatos -----------------------------------------------------------------
 
+class CabecaAba(QWidget):
+    """Identificação da aba; duplo clique pede para renomear a sessão."""
+
+    def __init__(self, ao_duplo_clique):
+        super().__init__()
+        self._ao_duplo_clique = ao_duplo_clique
+
+    def mouseDoubleClickEvent(self, evento):
+        if evento.button() == Qt.LeftButton:
+            self._ao_duplo_clique()
+            evento.accept()
+        else:
+            super().mouseDoubleClickEvent(evento)
+
+
 class Aba:
     """Uma conexão: a janela do AnyDesk dentro de uma aba."""
 
-    def __init__(self, cid):
+    def __init__(self, cid, ao_renomear=lambda: None):
         self.cid = cid  # ID ou apelido usado para conectar (None se capturada sem ID no título)
         self.janela = None  # identificador da janela do AnyDesk (X11 ou Windows)
         self.pid = None
@@ -441,7 +456,7 @@ class Aba:
         self.caixa = None  # container do Qt com a janela do AnyDesk
         self.qjanela = None
 
-        self.cabeca = QWidget()
+        self.cabeca = CabecaAba(ao_renomear)
         linha = QHBoxLayout(self.cabeca)
         linha.setContentsMargins(0, 0, 0, 0)
         linha.setSpacing(7)
@@ -694,7 +709,7 @@ class App(QWidget):
         titulos = QVBoxLayout(self.caixa_titulo)
         titulos.setContentsMargins(0, 0, 0, 0)
         titulos.setSpacing(0)
-        self.titulo = QLabel("NaView", objectName="titulo", alignment=Qt.AlignCenter)
+        self.titulo = QLabel(f"NaView  v{atualizador.versao_atual()}", objectName="titulo", alignment=Qt.AlignCenter)
         self.subtitulo = QLabel(objectName="subtitulo", alignment=Qt.AlignCenter)
         self.subtitulo.hide()
         titulos.addStretch(1)
@@ -714,11 +729,8 @@ class App(QWidget):
         linha.addWidget(self.bt_atualizar)
         linha.addWidget(self.bt_jogo)
 
-        self.bt_menu = QToolButton(toolTip="Mais opções", popupMode=QToolButton.InstantPopup)
-        menu = QMenu(self.bt_menu)
-        menu.addAction("Opções de aparência…", self.abrir_aparencia)
-        menu.addAction("Capturar janela do AnyDesk…", self.on_capturar)
-        self.bt_menu.setMenu(menu)
+        self.bt_menu = QToolButton(toolTip="Capturar janela do AnyDesk…")
+        self.bt_menu.clicked.connect(lambda _c=False: self.on_capturar())
         linha.addWidget(self.bt_menu)
 
         linha.addSpacing(8)
@@ -958,12 +970,11 @@ class App(QWidget):
         self.bt_lateral.setIcon(temas_qt.icone("sidebar-simple", barra))
         self.bt_jogo.setIcon(temas_qt.icone("gift", barra))
         self.bt_atualizar.setIcon(temas_qt.icone("arrow-fat-up", barra))
-        self.bt_menu.setIcon(temas_qt.icone("dots-three-vertical", barra))
+        self.bt_menu.setIcon(temas_qt.icone("app-window", barra))
         self.bt_minimizar.setIcon(temas_qt.icone("minus", barra, 14))
         self.bt_maximizar.setIcon(temas_qt.icone("copy-simple" if self.isMaximized() else "square", barra, 14))
         self.bt_fechar_janela.setIcon(temas_qt.icone("x", barra, 14))
         self.bt_mais.setIcon(temas_qt.icone("plus", barra))
-        self.bt_menu.setStyleSheet("QToolButton::menu-indicator { image: none; }")
         for aba in self.abas:
             self.estilizar_cabeca(aba)
         for i in range(self.lista.count()):
@@ -1466,7 +1477,12 @@ class App(QWidget):
         self.vazio.setVisible(visiveis == 0)
         self.lista.setVisible(visiveis > 0)
 
-    def on_renomear(self, cid, botao):
+    def renomear_da_aba(self, aba):
+        """Duplo clique na identificação da aba: abre o mesmo balão de nome da barra lateral."""
+        if aba.cid:  # sem ID não há contato para guardar o nome
+            self.on_renomear(aba.cid, aba.cabeca, embaixo=True)
+
+    def on_renomear(self, cid, botao, embaixo=False):
         balao = QDialog(self, Qt.Popup)
         balao.setStyleSheet(self.styleSheet())
         coluna = QVBoxLayout(balao)
@@ -1496,7 +1512,10 @@ class App(QWidget):
         entrada.returnPressed.connect(lambda: gravar(entrada.text().strip()))
         remover.clicked.connect(lambda: gravar(""))
         balao.adjustSize()
-        canto = botao.mapToGlobal(QPoint(botao.width() + 4, -balao.height() // 2 + botao.height() // 2))
+        if embaixo:
+            canto = botao.mapToGlobal(QPoint(0, botao.height() + 4))
+        else:
+            canto = botao.mapToGlobal(QPoint(botao.width() + 4, -balao.height() // 2 + botao.height() // 2))
         balao.move(canto)
         entrada.setFocus()
         balao.exec()
@@ -1607,7 +1626,7 @@ class App(QWidget):
 
     def nova_aba(self, cid):
         self.fechar_jogo()  # conectou em alguém: mostra a conexão
-        aba = Aba(cid)
+        aba = Aba(cid, lambda: self.renomear_da_aba(aba))
         self.abas.append(aba)
         self.estilizar_cabeca(aba)
         aba.fechar.clicked.connect(lambda: self.pedir_fechar(aba))

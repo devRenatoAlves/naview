@@ -283,24 +283,17 @@ class App(Gtk.Window):
     # ---- montagem da interface -------------------------------------------------
 
     def montar_cabecalho(self):
-        self.cabecalho = Gtk.HeaderBar(show_close_button=True, title="NaView")
+        self.cabecalho = Gtk.HeaderBar(show_close_button=True, title=f"NaView  v{atualizador.versao_atual()}")
         self.bt_lateral = Gtk.ToggleButton(image=icone("ph-sidebar-simple-symbolic"),
                                            active=self.cfg["lateral_visivel"],
                                            tooltip_text="Mostrar/esconder contatos (F9)")
         self.bt_lateral.connect("toggled", self.on_alternar_lateral)
         self.cabecalho.pack_start(self.bt_lateral)
 
-        menu = Gtk.Popover()
-        itens = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=8)
-        for texto, acao in (("Opções de aparência…", self.abrir_aparencia),
-                            ("Capturar janela do AnyDesk…", self.on_capturar)):
-            item = Gtk.ModelButton(text=texto)
-            item.connect("clicked", lambda _b, a=acao: a())
-            itens.pack_start(item, False, False, 0)
-        itens.show_all()
-        menu.add(itens)
-        self.cabecalho.pack_end(Gtk.MenuButton(image=icone("ph-dots-three-vertical-symbolic"), popover=menu,
-                                               tooltip_text="Mais opções"))
+        bt_capturar = Gtk.Button(image=icone("ph-app-window-symbolic"),
+                                 tooltip_text="Capturar janela do AnyDesk…")
+        bt_capturar.connect("clicked", lambda _b: self.on_capturar())
+        self.cabecalho.pack_end(bt_capturar)
 
         # Só aparece quando o site tem uma versão mais nova (ver verificar_atualizacao).
         self.bt_atualizar = classes(Gtk.Button(image=icone("ph-arrow-fat-up-symbolic"), label="Atualizar",
@@ -917,8 +910,8 @@ class App(Gtk.Window):
         ca, cb = chave(a), chave(b)
         return (ca > cb) - (ca < cb)
 
-    def on_renomear(self, cid, botao):
-        balao = Gtk.Popover(relative_to=botao, position=Gtk.PositionType.RIGHT)
+    def on_renomear(self, cid, botao, posicao=Gtk.PositionType.RIGHT):
+        balao = Gtk.Popover(relative_to=botao, position=posicao)
         caixa = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, margin=12)
         caixa.pack_start(Gtk.Label(label=f"Nome para {formatar_id(cid)}", xalign=0), False, False, 0)
         entrada = Gtk.Entry(text=self.contatos.nome(cid), placeholder_text="Ex.: Padaria – caixa 1",
@@ -1063,8 +1056,7 @@ class App(Gtk.Window):
         rotulo.pack_start(fechar, False, False, 0)
         aba.cabeca.add(rotulo)
         # Botão do meio do mouse na aba fecha a conexão, como no navegador.
-        aba.cabeca.connect("button-press-event",
-                           lambda _w, e: e.button == 2 and (self.pedir_fechar(aba) or True))
+        aba.cabeca.connect("button-press-event", lambda _w, e: self.on_clique_aba(aba, e))
         aba.cabeca.show_all()
 
         aba.rotulo.set_text(f"Conectando {self.nome_aba(aba)}…")
@@ -1075,6 +1067,16 @@ class App(Gtk.Window):
         self.notebook.set_current_page(indice)
         self.marcar_conectados()
         return aba
+
+    def on_clique_aba(self, aba, evento):
+        if evento.button == 2:
+            self.pedir_fechar(aba)
+            return True
+        # Duplo clique na identificação da aba renomeia a sessão (sem ID não há contato para nomear).
+        if evento.button == 1 and evento.type == Gdk.EventType.DOUBLE_BUTTON_PRESS and aba.cid:
+            self.on_renomear(aba.cid, aba.cabeca, Gtk.PositionType.BOTTOM)
+            return True
+        return False
 
     def encaixar(self, aba, xid):
         aba.xid = xid
