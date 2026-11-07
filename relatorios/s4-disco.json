@@ -1,0 +1,37 @@
+{
+  "gerado_em": "2026-10-26T17:11:48-03:00",
+  "maquina": {
+    "cpu": 12,
+    "mem_total_mb": 7240.3,
+    "sistema": "Linux"
+  },
+  "escenario": "S4",
+  "resultado": {
+    "escenario": "S4",
+    "disco": [
+      {
+        "rotulo": "repositorio de desenvolvimento (tudo)",
+        "mb": 1151.1,
+        "arquivos": 842
+      },
+      {
+        "rotulo": "programa do Linux (fonte + arte + sons + fonts + web + icones)",
+        "mb": 2.4,
+        "arquivos": 222
+      }
+    ],
+    "nota": "O programa distribuível e menor que o repositorio. No Windows o instalador e enxugado para caber nos 100 MB do GitHub (92,7 MB)."
+  },
+  "comandos": {
+    "S1": "python3 ferramentas/provisao_uso.py --escenario S1 --segundos 60",
+    "S2": "python3 ferramentas/provisao_uso.py --escenario S2 --segundos 60",
+    "S3": "python3 ferramentas/provisao_uso.py --escenario S3 --segundos 60  (no desktop do usuario)",
+    "S4": "python3 ferramentas/provisao_uso.py --escenario S4"
+  },
+  "observacoes": [
+    "Nenhum contato, progresso ou configuracao do usuario foi alterada.",
+    "S1: mede o anydesk em daemon/tray (sem sessao). Sessao ativa exige janela X11 (medida no seu desktop).",
+    "S2: jogo isolado num navegador headless, nao o WebKit do NaView. O .pausado pausa as animacoes CSS (o mecanismo do app).",
+    "S3: mede o NaView aberto no seu desktop (veja testes.md)."
+  ]
+}

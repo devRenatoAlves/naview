@@ -1,0 +1,44 @@
+{
+  "gerado_em": "2026-10-26T17:10:27-03:00",
+  "maquina": {
+    "cpu": 12,
+    "mem_total_mb": 7240.3,
+    "sistema": "Linux"
+  },
+  "escenario": "S2",
+  "resultado": {
+    "escenario": "S2",
+    "paginas": [
+      "/tmp/naview-provisao/jogo_correndo.html",
+      "/tmp/naview-provisao/jogo_pausado.html"
+    ],
+    "chrome_solo": {
+      "rss_mb": 95.5,
+      "cpu_pct": 198.1
+    },
+    "em_curso": {
+      "rss_mb": 89.7,
+      "cpu_pct": 204.6
+    },
+    "pausado": {
+      "rss_mb": 89.2,
+      "cpu_pct": 206.8
+    },
+    "diferenca_correndo_versus_pausado": {
+      "rss_mb": 0.5,
+      "cpu_pct": -2.2
+    }
+  },
+  "comandos": {
+    "S1": "python3 ferramentas/provisao_uso.py --escenario S1 --segundos 60",
+    "S2": "python3 ferramentas/provisao_uso.py --escenario S2 --segundos 60",
+    "S3": "python3 ferramentas/provisao_uso.py --escenario S3 --segundos 60  (no desktop do usuario)",
+    "S4": "python3 ferramentas/provisao_uso.py --escenario S4"
+  },
+  "observacoes": [
+    "Nenhum contato, progresso ou configuracao do usuario foi alterada.",
+    "S1: mede o anydesk em daemon/tray (sem sessao). Sessao ativa exige janela X11 (medida no seu desktop).",
+    "S2: jogo isolado num navegador headless, nao o WebKit do NaView. O .pausado pausa as animacoes CSS (o mecanismo do app).",
+    "S3: mede o NaView aberto no seu desktop (veja testes.md)."
+  ]
+}

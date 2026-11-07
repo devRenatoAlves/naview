@@ -171,6 +171,11 @@ esta precisa baixar o NaView de novo uma vez.
 - Testado só com a janela principal do AnyDesk. Falta testar com sessões remotas de verdade.
 - Sem o pacote `python3-gi-cairo`, os desenhos não ficam mais nítidos em telas HiDPI.
 
+## Desempenho
+
+Quanto o NaView pesa a mais que o AnyDesk puro (RAM, CPU, rede, disco), com números marcados como
+medidos ou projetados: [`BENCHMARKS.md`](BENCHMARKS.md).
+
 ## Licença
 
 GPLv3 — veja [LICENSE](LICENSE). Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md).

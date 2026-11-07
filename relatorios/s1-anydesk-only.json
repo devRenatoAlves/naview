@@ -1,0 +1,44 @@
+{
+  "gerado_em": "2026-10-26T17:06:18-03:00",
+  "maquina": {
+    "cpu": 12,
+    "mem_total_mb": 7240.3,
+    "sistema": "Linux"
+  },
+  "escenario": "S1",
+  "resultado": {
+    "escenario": "S1",
+    "media_rss_mb": 3.8,
+    "media_cpu_pct": 0.0,
+    "tempo_segundos": 30,
+    "processos": [
+      {
+        "pid": 1622,
+        "cmdline": "/usr/bin/anydesk --service",
+        "rss_mb": 4.6,
+        "portas": [],
+        "fds": 0
+      },
+      {
+        "pid": 5247,
+        "cmdline": "/usr/bin/anydesk --tray",
+        "rss_mb": 3.0,
+        "portas": [],
+        "fds": 197
+      }
+    ],
+    "nota": "Qualquerco sozinho, sem sessao aberta. Sessao ativa exige janela X11 (medida no seu desktop, veja testes.md)."
+  },
+  "comandos": {
+    "S1": "python3 ferramentas/provisao_uso.py --escenario S1 --segundos 60",
+    "S2": "python3 ferramentas/provisao_uso.py --escenario S2 --segundos 60",
+    "S3": "python3 ferramentas/provisao_uso.py --escenario S3 --segundos 60  (no desktop do usuario)",
+    "S4": "python3 ferramentas/provisao_uso.py --escenario S4"
+  },
+  "observacoes": [
+    "Nenhum contato, progresso ou configuracao do usuario foi alterada.",
+    "S1: mede o anydesk em daemon/tray (sem sessao). Sessao ativa exige janela X11 (medida no seu desktop).",
+    "S2: jogo isolado num navegador headless, nao o WebKit do NaView. O .pausado pausa as animacoes CSS (o mecanismo do app).",
+    "S3: mede o NaView aberto no seu desktop (veja testes.md)."
+  ]
+}
