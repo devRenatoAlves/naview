@@ -148,6 +148,9 @@ code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: .92e
   max-width: var(--largura); margin: 0 auto; padding: 20px var(--gutter);
 }
 .marca { display: flex; align-items: center; gap: 10px; color: var(--h-texto); text-decoration: none; font: 600 1.375rem var(--fonte); }
+.nav-acoes { display: flex; align-items: center; gap: 20px; }
+.nav-github { display: flex; align-items: center; gap: 6px; color: var(--h-sub); font-weight: 600; text-decoration: none; opacity: .85; }
+.nav-github:hover { opacity: 1; }
 .nav-baixar { color: var(--h-texto); font-weight: 600; text-decoration: none; padding: 10px 4px; border-bottom: 2px solid currentColor; }
 
 .hero-grade {
@@ -406,6 +409,8 @@ code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: .92e
 
 .rodape { background: #091030; color: #b9c6ec; padding: 36px 0 44px; }
 .rodape p { display: flex; align-items: center; gap: 10px; }
+.rodape-codigo { display: block !important; margin-top: 10px; }
+.rodape-codigo a { color: #8fd3ff; font-weight: 600; text-decoration: underline; }
 .rodape-miudo { margin-top: 12px; font-size: .8125rem; color: #8392c4; display: block !important; }
 
 /* ---------- Telas menores ---------- */
