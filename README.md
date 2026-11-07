@@ -1,5 +1,11 @@
 # NaView
 
+> **English:** NaView embeds multiple AnyDesk connections as tabs in a single window, so a
+> support team doesn't juggle one AnyDesk window per client. GTK3 on Linux, a Qt (PySide6) port
+> for Windows in testing. Includes theming and an optional, deliberately slow collectible-card
+> mini-game for the team. Licensed under GPLv3 — see [LICENSE](LICENSE). Contributions welcome,
+> see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Junta várias conexões do AnyDesk em abas, numa única janela (Linux; versão para Windows em teste).
 
 ## Como funciona
@@ -165,7 +171,11 @@ esta precisa baixar o NaView de novo uma vez.
 - Testado só com a janela principal do AnyDesk. Falta testar com sessões remotas de verdade.
 - Sem o pacote `python3-gi-cairo`, os desenhos não ficam mais nítidos em telas HiDPI.
 
-## Documentação do projeto (SDD)
+## Licença
 
-Especificações, decisões e tarefas ficam em [`docs/sdd/`](docs/sdd/README.md). A lista de tarefas
-está em [`docs/sdd/tarefas.md`](docs/sdd/tarefas.md).
+GPLv3 — veja [LICENSE](LICENSE). Quer contribuir? Veja [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Os sprites de Pikachu, Eevee e Jigglypuff em `arte/pets/` vêm do
+[PokeAPI sprites](https://github.com/PokeAPI/sprites) e são propriedade da Nintendo/Game Freak;
+estão aqui como arte de fã, sem fins comerciais. Fontes usam licença OFL e os ícones são
+[Phosphor](https://phosphoricons.com/) (MIT).
