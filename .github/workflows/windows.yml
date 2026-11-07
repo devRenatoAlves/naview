@@ -100,7 +100,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "Instalador: {0:N1} MB" -f ((Get-Item saida/NaView-instalador.exe).Length / 1MB)
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: NaView-instalador
           path: saida/NaView-instalador.exe
