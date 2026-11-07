@@ -4,3 +4,4 @@ site/publico/
 .playwright-mcp/
 relatorio-windows.txt
 naview-piloto-log.txt
+docs/sdd/
